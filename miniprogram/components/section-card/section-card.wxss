@@ -11,14 +11,14 @@
 }
 
 .section-card__title {
-  color: var(--brand-ink);
+  color: var(--color-text);
   font-size: 30rpx;
   font-weight: 800;
   flex: 1;
 }
 
 .section-card__extra {
-  color: var(--brand-gold);
+  color: var(--color-gold);
   font-size: 22rpx;
   font-weight: 600;
 }

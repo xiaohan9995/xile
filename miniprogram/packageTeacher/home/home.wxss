@@ -1,160 +1,163 @@
-/* ===== Teacher Home (我的认证首屏) ===== */
+/* ===== Teacher Home (我的认证) — Prototype Match ===== */
 .teacher-home-page {
   padding-top: 0;
 }
 
 .home-body {
-  padding: 0 28rpx;
+  padding: 0 32rpx;
 }
 
-/* Greeting */
-.greeting-section {
-  padding: 32rpx 0 16rpx;
-}
-
-.greeting-text {
-  font-size: 30rpx;
-  color: var(--brand-ink-soft);
-}
-
-.greeting-name {
-  font-size: 34rpx;
-  font-weight: 900;
-  color: var(--brand-ink);
-}
-
-/* Certification Status Card */
-.cert-status-card {
-  margin-top: 16rpx;
+/* ---- Mine Card ---- */
+.mine-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 128rpx 1fr;
+  gap: 28rpx;
   padding: 28rpx;
-  background: var(--brand-green);
-  border-radius: 28rpx;
-  box-shadow: 0 12rpx 36rpx rgba(93, 114, 97, 0.25);
-}
-
-.cert-card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.cert-card-left {
-  display: flex;
-  align-items: center;
-  gap: 18rpx;
-}
-
-.cert-avatar-ring {
-  width: 88rpx;
-  height: 88rpx;
-  border-radius: 50%;
-  border: 3rpx solid rgba(255, 255, 255, 0.5);
+  border-radius: 32rpx;
   overflow: hidden;
+  border: 0;
+  margin-top: 24rpx;
+}
+
+.mine-card__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.mine-card__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(95, 115, 101, 0.95), rgba(132, 148, 129, 0.94));
+}
+
+.mine-card__content {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 128rpx 1fr;
+  gap: 28rpx;
+  grid-column: 1 / -1;
+  align-items: center;
+}
+
+.mine-card__avatar {
+  width: 128rpx;
+  height: 128rpx;
+  border-radius: 28rpx;
   flex-shrink: 0;
 }
 
-.cert-avatar {
-  width: 88rpx;
-  height: 88rpx;
-}
-
-.cert-info {
+.mine-card__info {
   display: flex;
   flex-direction: column;
   gap: 8rpx;
 }
 
-.cert-name {
-  color: #fff;
+.mine-card__greeting {
   font-size: 30rpx;
-  font-weight: 800;
-}
-
-.cert-tier-badge {
-  background: rgba(255, 248, 231, 0.2);
-  border-color: rgba(255, 248, 231, 0.3);
-  color: #FFF8E7;
-}
-
-.cert-tier-dot {
-  font-size: 14rpx;
-}
-
-.cert-card-right {
-  flex-shrink: 0;
-}
-
-.cert-valid-tag {
-  padding: 8rpx 20rpx;
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
-  font-size: 22rpx;
   font-weight: 700;
-  border-radius: 999rpx;
+  color: #fff;
 }
 
-/* Days Countdown */
-.days-countdown {
+.mine-card__tier-row {
   display: flex;
-  align-items: baseline;
-  gap: 8rpx;
-  margin-top: 24rpx;
-  padding-top: 20rpx;
-  border-top: 1rpx solid rgba(255, 255, 255, 0.15);
+  align-items: center;
+  gap: 10rpx;
 }
 
-.days-number {
-  font-size: 56rpx;
-  font-weight: 900;
-  color: #FFF8E7;
-  line-height: 1;
+.mine-card__tier-dot {
+  width: 18rpx;
+  height: 18rpx;
+  border-radius: 50%;
+  background: #b89a63;
 }
 
-.days-label {
-  font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.75);
+.mine-card__tier-label {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #fff;
 }
 
-/* Quick Menu */
-.quick-menu {
-  margin-top: 36rpx;
+.mine-card__valid {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.78);
 }
 
-.menu-section-title {
-  display: block;
-  font-size: 28rpx;
-  font-weight: 800;
-  color: var(--brand-ink);
-  margin-bottom: 18rpx;
-}
-
-.menu-grid {
+/* ---- Metric Row ---- */
+.metric-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 18rpx;
+  gap: 20rpx;
+  margin: 24rpx 0;
 }
 
-.menu-card {
+.metric-item {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 36rpx 20rpx;
-  gap: 14rpx;
-  transition: all 0.2s ease;
+  padding: 30rpx 20rpx;
+  text-align: center;
+  border: 1rpx solid rgba(31, 37, 33, 0.08);
+  border-radius: 32rpx;
+  background: #fff;
 }
 
-.menu-card:active {
-  transform: scale(0.97);
-  box-shadow: 0 4rpx 16rpx rgba(93, 114, 97, 0.12);
+.metric-label {
+  font-size: 24rpx;
+  color: #7e857e;
 }
 
-.menu-card-icon {
-  font-size: 44rpx;
+.metric-value {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 36rpx;
+  font-weight: 800;
+  color: #1f2521;
 }
 
-.menu-card-label {
-  font-size: 26rpx;
-  font-weight: 700;
-  color: var(--brand-ink);
+/* ---- Menu List ---- */
+.menu-list {
+  display: grid;
+  gap: 8rpx;
+}
+
+.menu-item {
+  display: grid;
+  grid-template-columns: 56rpx 1fr 36rpx;
+  align-items: center;
+  height: 92rpx;
+  border-bottom: 1rpx solid rgba(31, 37, 33, 0.08);
+  background: transparent;
+}
+
+.menu-item:last-child {
+  border-bottom: none;
+}
+
+.menu-item:active {
+  opacity: 0.7;
+}
+
+.menu-item__icon {
+  font-size: 36rpx;
+  color: #5f7365;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-item__label {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #1f2521;
+}
+
+.menu-item__arrow {
+  font-size: 32rpx;
+  color: #7e857e;
+  text-align: right;
 }

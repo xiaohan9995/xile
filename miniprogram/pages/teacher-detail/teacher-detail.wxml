@@ -7,55 +7,66 @@
   </view>
 
   <view wx:if="{{teacher}}" class="detail-body">
-    <!-- Avatar section -->
-    <view class="profile-hero">
-      <view class="avatar-wrap">
-        <image class="avatar-img" src="{{teacher.avatarUrl}}" mode="aspectFill" />
-        <view class="avatar-badge">✓</view>
+    <!-- Profile head -->
+    <view class="profile-head">
+      <image class="profile-avatar" src="{{teacher.avatarUrl}}" mode="aspectFill" />
+      <view class="profile-info">
+        <text class="profile-name">{{teacher.name}}</text>
+        <view class="profile-tier">
+          <view class="level-badge">{{teacher.tier || 'L'}}</view>
+          <text class="tier-label">认证导师</text>
+        </view>
+        <text class="profile-status">认证有效</text>
       </view>
-      <text class="profile-name">{{teacher.name}}</text>
-      <view class="profile-tier">
-        <text class="tier-dot"></text>
-        <text>{{teacher.tierName}}</text>
-      </view>
-      <text class="profile-status">{{teacher.certificationStatus}}</text>
     </view>
 
-    <!-- Info definition list -->
+    <!-- Info card -->
     <view class="info-card">
       <view class="info-row">
-        <text class="info-label">喜乐名</text>
-        <text class="info-value">{{teacher.xileName}}</text>
+        <text class="info-dt">喜乐名</text>
+        <text class="info-dd">{{teacher.xileName}}</text>
       </view>
       <view class="info-row">
-        <text class="info-label">教师编号</text>
-        <text class="info-value">{{teacher.teacherNo}}</text>
+        <text class="info-dt">教师编号</text>
+        <text class="info-dd">{{teacher.teacherNo}}</text>
       </view>
       <view class="info-row">
-        <text class="info-label">认证等级</text>
-        <text class="info-value">{{teacher.tierName}}</text>
+        <text class="info-dt">认证等级</text>
+        <text class="info-dd">{{teacher.tierName}}</text>
       </view>
       <view class="info-row">
-        <text class="info-label">认证时间</text>
-        <text class="info-value">{{teacher.certifiedAt}}</text>
+        <text class="info-dt">认证时间</text>
+        <text class="info-dd">{{teacher.certifiedAt}}</text>
       </view>
       <view class="info-row">
-        <text class="info-label">有效期至</text>
-        <text class="info-value">{{teacher.validUntil}}</text>
+        <text class="info-dt">有效期至</text>
+        <text class="info-dd">{{teacher.validUntil}}</text>
       </view>
       <view class="info-row">
-        <text class="info-label">所属地区</text>
-        <text class="info-value">{{teacher.city}} {{teacher.district}}</text>
+        <text class="info-dt">所属地区</text>
+        <text class="info-dd">{{teacher.city}} {{teacher.district}}</text>
       </view>
       <view class="info-row">
-        <text class="info-label">擅长方向</text>
-        <text class="info-value">{{specialtiesText}}</text>
+        <text class="info-dt">擅长方向</text>
+        <text class="info-dd">{{specialtiesText}}</text>
       </view>
     </view>
 
-    <!-- Certification note -->
-    <view class="cert-note">
-      <text class="cert-note-text">本信息由喜乐瑜伽认证系统提供，如需核验证书详情请联系管理员。</text>
+    <!-- Certificate card -->
+    <view class="cert-card">
+      <view class="cert-header">
+        <text class="cert-title">证书展示</text>
+        <text class="cert-action">查看大图</text>
+      </view>
+      <view class="cert-preview">
+        <text class="cert-preview-text">喜乐瑜伽教师认证证书</text>
+      </view>
+    </view>
+
+    <!-- Verification note -->
+    <view class="verify-note">
+      <text class="verify-icon">&#x1F6E1;</text>
+      <text class="verify-text">该教师资质由喜乐瑜伽教师管理委员会认证维护</text>
     </view>
   </view>
 
@@ -66,5 +77,4 @@
 
   <!-- Error state -->
   <view wx:if="{{error}}" class="error-tip">{{error}}</view>
-<tab-bar />
 </view>

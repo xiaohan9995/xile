@@ -7,14 +7,12 @@ Page({
   data: {
     statusBarHeight: 20,
     keyword: '',
-    activeTier: 'all',
-    tiers: [
-      { label: '全部', value: 'all' },
-      { label: 'L1', value: 'L1' },
-      { label: 'L2', value: 'L2' },
-      { label: 'L3', value: 'L3' },
-      { label: 'L4', value: 'L4' },
-      { label: 'L5', value: 'L5' },
+    activeFilter: 'all',
+    searched: false,
+    filters: [
+      { label: '全部等级', value: 'all' },
+      { label: '全部地区', value: 'region' },
+      { label: '认证状态', value: 'status' },
     ],
     teachers: [],
     loading: false,
@@ -31,11 +29,6 @@ Page({
     this.debounceSearch();
   },
 
-  clearKeyword() {
-    this.setData({ keyword: '' });
-    this.doSearch();
-  },
-
   debounceSearch() {
     if (_searchTimer) clearTimeout(_searchTimer);
     _searchTimer = setTimeout(() => {
@@ -43,22 +36,22 @@ Page({
     }, 400);
   },
 
-  onTierTap(e) {
-    const tier = e.currentTarget.dataset.tier;
-    this.setData({ activeTier: tier });
+  onFilterTap(e) {
+    const filter = e.currentTarget.dataset.filter;
+    this.setData({ activeFilter: filter });
     this.doSearch();
   },
 
   async doSearch() {
     this.setData({ loading: true, error: '' });
     try {
-      const { keyword, activeTier } = this.data;
+      const { keyword, activeFilter } = this.data;
       let url = `/api/mp/teachers/search?q=${encodeURIComponent(keyword)}`;
-      if (activeTier !== 'all') {
-        url += `&tier=${activeTier}`;
+      if (activeFilter === 'status') {
+        url += '&status=valid';
       }
       const payload = await request({ url });
-      this.setData({ teachers: payload.items || [] });
+      this.setData({ teachers: payload.items || [], searched: true });
     } catch (err) {
       this.setData({ error: '查询失败，请稍后重试' });
     } finally {

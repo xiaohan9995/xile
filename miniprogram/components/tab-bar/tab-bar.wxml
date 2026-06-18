@@ -3,12 +3,12 @@
     <view class="tab-icon">⌂</view>
     <text>首页</text>
   </view>
-  <view class="tab-item {{active === 'search' ? 'active' : ''}}" bindtap="goSearch">
-    <view class="tab-icon">⊘</view>
-    <text>查询</text>
-  </view>
   <view class="tab-item {{active === 'studio' ? 'active' : ''}}" bindtap="goStudio">
     <view class="tab-icon">⊞</view>
     <text>工作室</text>
+  </view>
+  <view class="tab-item {{active === 'my' ? 'active' : ''}}" bindtap="goMy">
+    <view class="tab-icon">⊘</view>
+    <text>我的</text>
   </view>
 </view>

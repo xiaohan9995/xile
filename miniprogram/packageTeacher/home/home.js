@@ -32,12 +32,12 @@ Page({
       const t = payload.teacher || {};
       this.setData({
         teacher: {
-          name: t.name || '老师',
-          tier: t.tier || 'L1',
-          tierName: t.tierName || '认证讲师',
+          name: t.name || '张三',
+          tier: t.tier || 'L3',
+          tierName: t.tierName || '认证导师',
           avatarUrl: t.avatarUrl || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=180&q=80',
           validUntil: t.validUntil || '--',
-          daysLeft: t.daysLeft || 0,
+          daysLeft: t.daysLeft || 286,
         },
       });
     } catch (err) {
@@ -49,11 +49,19 @@ Page({
     wx.navigateBack();
   },
 
+  goProfile() {
+    wx.navigateTo({ url: '/packageTeacher/profile/profile' });
+  },
+
   goReviewRecords() {
     wx.navigateTo({ url: '/packageTeacher/review-records/review-records' });
   },
 
   goCertView() {
     wx.navigateTo({ url: '/packageTeacher/profile/profile' });
+  },
+
+  goReviewApply() {
+    wx.navigateTo({ url: '/packageTeacher/review-apply/review-apply' });
   },
 });

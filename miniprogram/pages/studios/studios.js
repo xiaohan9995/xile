@@ -1,7 +1,10 @@
 const { request } = require('../../utils/request');
 
+const app = getApp();
+
 Page({
   data: {
+    statusBarHeight: 20,
     allStudios: [],
     filteredStudios: [],
     keyword: '',
@@ -18,6 +21,7 @@ Page({
   },
 
   onLoad() {
+    this.setData({ statusBarHeight: app.globalData.statusBarHeight });
     this.loadStudios();
   },
 
@@ -27,7 +31,7 @@ Page({
       const payload = await request({ url: '/api/mp/studios' });
       const items = (payload.items || []).map((studio) => ({
         ...studio,
-        coverImage: studio.imageUrl || studio.coverUrl || 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=600&auto=format&fit=crop',
+        coverImage: studio.imageUrl || studio.coverUrl || 'https://images.unsplash.com/photo-1593810450967-f9c42742e326?auto=format&fit=crop&w=400&q=80',
         tags: studio.tags && studio.tags.length ? studio.tags : ['静心冥想', '小班授课'],
       }));
       this.setData({ allStudios: items });
@@ -70,5 +74,9 @@ Page({
   openStudio(e) {
     const id = e.currentTarget.dataset.id;
     wx.navigateTo({ url: `/pages/studio-detail/studio-detail?id=${id}` });
+  },
+
+  goBack() {
+    wx.navigateBack();
   },
 });

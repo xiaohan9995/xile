@@ -5,22 +5,23 @@
 
 page {
   --color-primary: #78887A;
-  --color-primary-dark: #5d6856;
-  --color-bg: #F7F4EE;
-  --color-gold: #B89A63;
-  --color-gold-light: rgba(184, 154, 99, 0.12);
-  --color-text: #1F2521;
-  --color-muted: #8a938b;
+  --color-primary-dark: #5f7365;
+  --color-primary-light: #F0F3F1;
+  --color-bg: #f7f4ee;
+  --color-gold: #b89a63;
+  --color-gold-light: #F7F4EF;
+  --color-text: #1f2521;
+  --color-muted: #7e857e;
   --color-surface: #E8ECE9;
   --color-card: #ffffff;
-  --color-line: rgba(120, 136, 122, 0.10);
+  --color-line: rgba(31, 37, 33, 0.08);
   --color-danger: #c84a4a;
   --radius-sm: 12rpx;
   --radius-md: 24rpx;
-  --radius-lg: 32rpx;
+  --radius-lg: 48rpx;
   --radius-full: 999rpx;
-  --shadow-card: 0 8rpx 40rpx -4rpx rgba(93, 114, 97, 0.10);
-  --shadow-elevated: 0 14rpx 28rpx rgba(93, 114, 97, 0.18);
+  --shadow-card: 0 10px 24px rgba(31, 37, 33, 0.06);
+  --shadow-elevated: 0 14rpx 28rpx rgba(31, 37, 33, 0.14);
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
   background: var(--color-bg);
   color: var(--color-text);
@@ -129,6 +130,13 @@ image {
   box-shadow: var(--shadow-card);
 }
 
+.soft-card {
+  background: var(--color-card);
+  border-radius: var(--radius-lg);
+  border: 1rpx solid var(--color-line);
+  box-shadow: var(--shadow-card);
+}
+
 /* ============================================
    Page header (custom nav)
    ============================================ */
@@ -160,7 +168,7 @@ image {
 }
 
 .page-header__back:active {
-  background: rgba(120, 136, 122, 0.08);
+  background: rgba(31, 37, 33, 0.08);
 }
 
 .page-header__title {
@@ -239,7 +247,7 @@ image {
   border-radius: var(--radius-full);
   background: var(--color-gold-light);
   color: var(--color-gold);
-  border: 1rpx solid rgba(184, 154, 99, 0.2);
+  border: 1rpx solid rgba(187, 161, 120, 0.18);
   font-size: 22rpx;
   font-weight: 700;
 }
@@ -250,9 +258,9 @@ image {
   gap: 6rpx;
   padding: 6rpx 18rpx;
   border-radius: var(--radius-full);
-  background: rgba(120, 136, 122, 0.1);
+  background: var(--color-primary-light);
   color: var(--color-primary);
-  border: 1rpx solid rgba(120, 136, 122, 0.15);
+  border: 1rpx solid rgba(93, 114, 97, 0.12);
   font-size: 22rpx;
   font-weight: 700;
 }

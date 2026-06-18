@@ -6,35 +6,30 @@
     <view class="page-header__right"></view>
   </view>
 
-  <view class="profile-body animate-fade-in">
+  <view class="profile-body">
     <!-- Avatar Section -->
     <view class="avatar-section">
-      <view class="avatar-ring">
+      <view class="avatar-wrap">
         <image class="avatar-img" src="{{teacher.avatarUrl}}" mode="aspectFill" />
-        <view class="avatar-check">✓</view>
+        <view class="avatar-badge">✓</view>
       </view>
-      <text class="profile-name serif">{{teacher.name}}</text>
-      <view class="badge-level">
-        <view class="dot"></view>
-        <text>{{teacher.tier}} {{teacher.tierName}}</text>
+      <text class="profile-name">{{teacher.name}}</text>
+      <view class="level-badge">
+        <view class="level-dot"></view>
+        <text class="level-text">{{teacher.tier}} {{teacher.tierName}}</text>
       </view>
+      <text class="profile-bio" wx:if="{{teacher.bio}}">「{{teacher.bio}}」</text>
     </view>
 
-    <!-- Bio -->
-    <view class="bio-section soft-card" wx:if="{{teacher.bio}}">
-      <text class="bio-text">{{teacher.bio}}</text>
-    </view>
-
-    <!-- Metrics -->
-    <view class="metrics-card soft-card">
-      <view class="metric-item">
-        <text class="metric-label">认证到期</text>
-        <text class="metric-value mono">{{teacher.validUntil}}</text>
+    <!-- Metrics Grid -->
+    <view class="metrics-grid">
+      <view class="metric-card">
+        <text class="metric-label">🗓 认证到期</text>
+        <text class="metric-value">{{teacher.validUntil}}</text>
       </view>
-      <view class="metric-divider"></view>
-      <view class="metric-item">
-        <text class="metric-label">认证天数</text>
-        <text class="metric-value mono">{{teacher.daysLeft}} 天</text>
+      <view class="metric-card">
+        <text class="metric-label">⏱ 认证天数</text>
+        <text class="metric-value">{{teacher.daysLeft}} 天</text>
       </view>
     </view>
 
@@ -47,16 +42,16 @@
         bindtap="onMenuTap"
         data-url="{{item.url}}"
       >
-        <text class="menu-icon">{{item.icon}}</text>
-        <text class="menu-title">{{item.title}}</text>
+        <view class="menu-item-left">
+          <text class="menu-icon">{{item.icon}}</text>
+          <view class="menu-text">
+            <text class="menu-title">{{item.title}}</text>
+            <text class="menu-subtitle">{{item.subtitle}}</text>
+          </view>
+        </view>
         <text class="menu-arrow">›</text>
       </view>
     </view>
-
-    <!-- Back Button -->
-    <view class="back-section">
-      <button class="btn-ghost" bindtap="goBack">返回上一页</button>
-    </view>
   </view>
-<tab-bar />
+<tab-bar active="my" />
 </view>

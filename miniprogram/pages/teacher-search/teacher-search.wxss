@@ -1,198 +1,175 @@
-/* ===== 教师查询页 ===== */
+/* ===== Teacher Search Page — Prototype Match ===== */
 .search-page {
   min-height: 100vh;
-  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--color-bg);
+  padding-bottom: 120rpx;
+  overflow-x: hidden;
 }
 
-/* ===== Search bar ===== */
-.search-bar {
-  padding: 20rpx 32rpx;
+/* ===== Search Section ===== */
+.search-section {
+  padding: 24rpx 32rpx 0;
 }
 
-.search-input-wrap {
-  display: flex;
-  align-items: center;
+.search-box {
+  display: grid;
+  grid-template-columns: 1fr 84rpx;
   height: 84rpx;
-  background: var(--color-card);
-  border-radius: var(--radius-full);
-  border: 2rpx solid var(--color-surface);
-  padding: 0 24rpx;
-  box-shadow: var(--shadow-card);
-}
-
-.search-icon {
-  font-size: 32rpx;
-  color: var(--color-muted);
-  margin-right: 12rpx;
-  flex-shrink: 0;
+  border: 1rpx solid var(--color-line);
+  border-radius: 24rpx;
+  background: #fbfaf7;
+  overflow: hidden;
 }
 
 .search-input {
-  flex: 1;
   height: 84rpx;
-  font-size: 28rpx;
+  padding: 0 24rpx;
+  font-size: 26rpx;
   color: var(--color-text);
+  background: transparent;
 }
 
 .search-placeholder {
   color: var(--color-muted);
+  font-size: 26rpx;
 }
 
-.search-clear {
-  width: 48rpx;
-  height: 48rpx;
+.search-btn {
+  width: 84rpx;
+  height: 84rpx;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: #78887A;
+  color: #fff;
+}
+
+.search-btn-icon {
   font-size: 32rpx;
-  color: var(--color-muted);
-  border-radius: 50%;
-  flex-shrink: 0;
+  color: #FFFFFF;
 }
 
-.search-clear:active {
-  background: var(--color-surface);
-}
-
-/* ===== Filter chips ===== */
-.filter-chips {
+/* ===== Filter Row ===== */
+.filter-row {
   display: flex;
   gap: 16rpx;
-  padding: 0 32rpx 20rpx;
-  overflow-x: auto;
-  white-space: nowrap;
+  margin: 24rpx 0;
 }
 
-.chip {
-  flex-shrink: 0;
-  padding: 12rpx 28rpx;
-  border-radius: var(--radius-full);
-  background: var(--color-card);
-  border: 1rpx solid var(--color-line);
+.filter-pill {
+  flex: 1;
+  height: 60rpx;
+  border-radius: 30rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 24rpx;
   color: var(--color-muted);
-  font-weight: 500;
+  background: transparent;
 }
 
-.chip--active {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: #FFFFFF;
-  font-weight: 700;
+.filter-pill--active {
+  background: rgba(120, 136, 122, 0.12);
+  color: #5f7365;
+  font-weight: 600;
 }
 
-.chip:active {
-  opacity: 0.85;
-}
-
-/* ===== Result count ===== */
-.result-count {
-  padding: 0 32rpx 16rpx;
-  font-size: 24rpx;
-  color: var(--color-muted);
-}
-
-/* ===== Teacher list ===== */
+/* ===== Teacher List ===== */
 .teacher-list {
   padding: 0 32rpx;
-  max-height: calc(100vh - 440rpx);
 }
 
 .teacher-card {
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 116rpx 1fr 48rpx;
+  gap: 22rpx;
+  align-items: start;
   padding: 24rpx;
-  margin-bottom: 16rpx;
-  background: var(--color-card);
-  border-radius: var(--radius-md);
-  border: 1rpx solid var(--color-line);
-  box-shadow: var(--shadow-card);
+  margin-bottom: 20rpx;
+  background: #ffffff;
+  border-radius: 32rpx;
+  border: 1rpx solid rgba(31, 37, 33, 0.08);
+  box-shadow: 0 10px 24px rgba(31, 37, 33, 0.06);
 }
 
 .teacher-card:active {
-  background: var(--color-surface);
+  transform: scale(0.98);
 }
 
 .card-avatar {
+  width: 116rpx;
+  height: 144rpx;
+  border-radius: 24rpx;
   flex-shrink: 0;
-  width: 96rpx;
-  height: 96rpx;
-  margin-right: 20rpx;
-}
-
-.avatar-img {
-  width: 96rpx;
-  height: 96rpx;
-  border-radius: 50%;
-  border: 3rpx solid var(--color-primary);
 }
 
 .card-body {
-  flex: 1;
   min-width: 0;
-}
-
-.card-name-row {
   display: flex;
-  align-items: center;
-  gap: 12rpx;
+  flex-direction: column;
 }
 
 .card-name {
   font-size: 30rpx;
   font-weight: 700;
   color: var(--color-text);
+  margin-bottom: 8rpx;
 }
 
-.card-tier {
-  display: inline-block;
-  padding: 4rpx 14rpx;
-  border-radius: 8rpx;
-  background: var(--color-gold-light);
-  color: var(--color-gold);
-  font-size: 20rpx;
-  font-weight: 700;
-}
-
-.card-status {
-  display: block;
-  margin-top: 8rpx;
+.card-xile {
   font-size: 22rpx;
-  color: var(--color-primary);
+  color: var(--color-muted);
+}
+
+.card-cert-status {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  margin: 14rpx 0 8rpx;
+}
+
+.card-cert-icon {
+  font-size: 22rpx;
+  line-height: 1;
+}
+
+.card-cert-text {
+  font-size: 22rpx;
   font-weight: 600;
+  color: #5f7365;
 }
 
 .card-meta {
   display: block;
-  margin-top: 4rpx;
   font-size: 22rpx;
   color: var(--color-muted);
+  line-height: 1.6;
 }
 
-.card-arrow {
-  flex-shrink: 0;
-  align-self: center;
-  margin-left: 12rpx;
-  font-size: 36rpx;
-  color: var(--color-muted);
-  font-weight: 300;
-}
-
-/* ===== Empty state ===== */
-.empty-state {
-  margin-top: 120rpx;
+.card-level-badge {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  background: #b89a63;
   display: flex;
-  flex-direction: column;
   align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.empty-icon {
-  font-size: 80rpx;
-  color: var(--color-surface);
-  margin-bottom: 16rpx;
+.card-level-text {
+  font-size: 22rpx;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+/* ===== Empty State ===== */
+.empty-state {
+  margin-top: 80rpx;
+  text-align: center;
 }
 
 .empty-text {
-  font-size: 28rpx;
+  font-size: 26rpx;
   color: var(--color-muted);
 }

@@ -31,5 +31,5 @@
       <button class="btn-ghost" bindtap="goMyCert">我的认证</button>
     </view>
   </view>
-<tab-bar />
+<tab-bar active="my" />
 </view>

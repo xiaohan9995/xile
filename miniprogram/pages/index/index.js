@@ -1,7 +1,10 @@
 const { request } = require('../../utils/request');
 
+const app = getApp();
+
 Page({
   data: {
+    statusBarHeight: 20,
     stats: {
       totalTeachers: '--',
       totalStudios: '--',
@@ -9,6 +12,7 @@ Page({
   },
 
   onLoad() {
+    this.setData({ statusBarHeight: app.globalData.statusBarHeight });
     this.loadStats();
   },
 

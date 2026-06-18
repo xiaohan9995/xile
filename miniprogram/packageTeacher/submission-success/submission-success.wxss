@@ -27,7 +27,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--brand-green), var(--brand-green-hover));
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
   color: #fff;
   font-size: 60rpx;
   font-weight: 900;
@@ -39,7 +39,7 @@
   display: block;
   font-size: 40rpx;
   font-weight: 900;
-  color: var(--brand-ink);
+  color: var(--color-text);
 }
 
 .success-desc {
@@ -47,7 +47,7 @@
   margin-top: 16rpx;
   padding: 0 20rpx;
   font-size: 26rpx;
-  color: var(--brand-muted);
+  color: var(--color-muted);
   line-height: 1.7;
 }
 
@@ -63,7 +63,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 16rpx 0;
-  border-bottom: 1rpx solid var(--brand-line);
+  border-bottom: 1rpx solid var(--color-line);
 }
 
 .info-row:last-child {
@@ -72,13 +72,13 @@
 
 .info-label {
   font-size: 24rpx;
-  color: var(--brand-muted);
+  color: var(--color-muted);
 }
 
 .info-value {
   font-size: 26rpx;
   font-weight: 700;
-  color: var(--brand-ink);
+  color: var(--color-text);
 }
 
 /* Actions */

@@ -1,3 +1,6 @@
 {
-  "navigationStyle": "custom"
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "tab-bar": "/components/tab-bar/tab-bar"
+  }
 }

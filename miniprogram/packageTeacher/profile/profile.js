@@ -16,11 +16,11 @@ Page({
       daysLeft: 0,
     },
     menuItems: [
-      { icon: '📁', title: '我的文件', url: '/packageTeacher/review-apply/review-apply' },
-      { icon: '📋', title: '年度记录', url: '/packageTeacher/review-records/review-records' },
-      { icon: '🏅', title: '证书查看', url: '' },
-      { icon: '💬', title: '联系客服', url: '' },
-      { icon: '⚙', title: '个人设置', url: '' },
+      { icon: '📁', title: '我的文件', subtitle: '讲师资格及资质证明材料', url: '/packageTeacher/review-apply/review-apply' },
+      { icon: '📋', title: '年度记录', subtitle: '年度再教育学分审核录', url: '/packageTeacher/review-records/review-records' },
+      { icon: '🏅', title: '证书查看', subtitle: '数字化权威资质证书预览', url: '' },
+      { icon: '💬', title: '联系客服', subtitle: '注册、续签及遗失补办协助', url: '' },
+      { icon: '⚙', title: '个人设置', subtitle: '更新履历、授课地点或档案', url: '' },
     ],
   },
 

@@ -6,53 +6,59 @@
     <view class="page-header__right"></view>
   </view>
 
-  <view class="home-body animate-fade-in">
-    <!-- Greeting -->
-    <view class="greeting-section">
-      <text class="greeting-text">您好，<text class="greeting-name serif">{{teacher.name}}</text>老师</text>
-    </view>
-
-    <!-- Certification Status Card -->
-    <view class="cert-status-card">
-      <view class="cert-card-top">
-        <view class="cert-card-left">
-          <view class="cert-avatar-ring">
-            <image class="cert-avatar" src="{{teacher.avatarUrl}}" mode="aspectFill" />
+  <view class="home-body">
+    <!-- Mine Card -->
+    <view class="mine-card">
+      <image class="mine-card__bg" src="https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=600&auto=format&fit=crop" mode="aspectFill" />
+      <view class="mine-card__overlay"></view>
+      <view class="mine-card__content">
+        <image class="mine-card__avatar" src="{{teacher.avatarUrl}}" mode="aspectFill" />
+        <view class="mine-card__info">
+          <text class="mine-card__greeting">您好，{{teacher.name}}老师</text>
+          <view class="mine-card__tier-row">
+            <view class="mine-card__tier-dot"></view>
+            <text class="mine-card__tier-label">{{teacher.tierName}}</text>
           </view>
-          <view class="cert-info">
-            <text class="cert-name">{{teacher.name}}</text>
-            <view class="cert-tier-badge badge-gold">
-              <text class="cert-tier-dot">●</text>
-              <text>{{teacher.tier}} {{teacher.tierName}}</text>
-            </view>
-          </view>
+          <text class="mine-card__valid">认证有效</text>
         </view>
-        <view class="cert-card-right">
-          <text class="cert-valid-tag">认证有效</text>
-        </view>
-      </view>
-
-      <!-- Days Countdown -->
-      <view class="days-countdown">
-        <view class="days-number mono">{{teacher.daysLeft}}</view>
-        <text class="days-label">天后到期</text>
       </view>
     </view>
 
-    <!-- Quick Menu -->
-    <view class="quick-menu">
-      <text class="menu-section-title">快捷功能</text>
-      <view class="menu-grid">
-        <view class="menu-card soft-card" bindtap="goReviewRecords">
-          <text class="menu-card-icon">📋</text>
-          <text class="menu-card-label">年审记录</text>
-        </view>
-        <view class="menu-card soft-card" bindtap="goCertView">
-          <text class="menu-card-icon">🏅</text>
-          <text class="menu-card-label">证书查看</text>
-        </view>
+    <!-- Metric Row -->
+    <view class="metric-row">
+      <view class="metric-item">
+        <text class="metric-label">认证等级</text>
+        <text class="metric-value">{{teacher.tier}}</text>
+      </view>
+      <view class="metric-item">
+        <text class="metric-label">到期天数</text>
+        <text class="metric-value">{{teacher.daysLeft}}</text>
+      </view>
+    </view>
+
+    <!-- Menu List -->
+    <view class="menu-list">
+      <view class="menu-item" bindtap="goProfile">
+        <view class="menu-item__icon">👤</view>
+        <text class="menu-item__label">个人资料</text>
+        <text class="menu-item__arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="goReviewRecords">
+        <view class="menu-item__icon">📋</view>
+        <text class="menu-item__label">年审记录</text>
+        <text class="menu-item__arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="goCertView">
+        <view class="menu-item__icon">🏅</view>
+        <text class="menu-item__label">证书查看</text>
+        <text class="menu-item__arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="goReviewApply">
+        <view class="menu-item__icon">📝</view>
+        <text class="menu-item__label">提交年审</text>
+        <text class="menu-item__arrow">›</text>
       </view>
     </view>
   </view>
-<tab-bar />
+<tab-bar active="my" />
 </view>

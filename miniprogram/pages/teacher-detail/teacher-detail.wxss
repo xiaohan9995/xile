@@ -1,4 +1,4 @@
-/* ===== 教师详情页 ===== */
+/* ===== Teacher Detail Page ===== */
 .detail-page {
   min-height: 100vh;
 }
@@ -7,131 +7,156 @@
   padding: 24rpx 32rpx 60rpx;
 }
 
-/* ===== Profile hero ===== */
-.profile-hero {
+/* ===== Profile head ===== */
+.profile-head {
+  display: grid;
+  grid-template-columns: 152rpx 1fr;
+  gap: 32rpx;
+  padding: 36rpx 16rpx 28rpx;
+  align-items: center;
+}
+
+.profile-avatar {
+  width: 152rpx;
+  height: 152rpx;
+  border-radius: 50%;
+}
+
+.profile-info {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 48rpx 32rpx 40rpx;
-  background: var(--color-card);
-  border-radius: var(--radius-md);
-  border: 1rpx solid var(--color-line);
-  box-shadow: var(--shadow-card);
-}
-
-.avatar-wrap {
-  position: relative;
-  width: 160rpx;
-  height: 160rpx;
-}
-
-.avatar-img {
-  width: 160rpx;
-  height: 160rpx;
-  border-radius: 50%;
-  border: 6rpx solid var(--color-primary);
-}
-
-.avatar-badge {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 44rpx;
-  height: 44rpx;
-  line-height: 44rpx;
-  text-align: center;
-  border-radius: 50%;
-  border: 4rpx solid var(--color-card);
-  background: var(--color-gold);
-  color: #FFFFFF;
-  font-size: 22rpx;
-  font-weight: 700;
 }
 
 .profile-name {
-  margin-top: 24rpx;
-  font-size: 40rpx;
+  font-size: 48rpx;
   font-weight: 800;
   color: var(--color-text);
+  line-height: 1.2;
 }
 
 .profile-tier {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 8rpx;
-  margin-top: 12rpx;
-  padding: 8rpx 24rpx;
-  border-radius: var(--radius-full);
-  background: var(--color-gold-light);
+  gap: 10rpx;
+  margin-top: 10rpx;
   color: var(--color-gold);
-  font-size: 24rpx;
+  font-size: 26rpx;
   font-weight: 700;
 }
 
-.tier-dot {
-  width: 10rpx;
-  height: 10rpx;
+.level-badge {
+  width: 48rpx;
+  height: 48rpx;
   border-radius: 50%;
   background: var(--color-gold);
+  color: #fff;
+  font-size: 22rpx;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tier-label {
+  color: var(--color-gold);
 }
 
 .profile-status {
-  margin-top: 12rpx;
-  font-size: 24rpx;
-  color: var(--color-primary);
-  font-weight: 600;
+  margin-top: 8rpx;
+  font-size: 26rpx;
+  font-weight: 700;
+  color: var(--color-primary-dark);
 }
 
 /* ===== Info card ===== */
 .info-card {
   margin-top: 24rpx;
-  padding: 28rpx 32rpx;
+  padding: 28rpx;
   background: var(--color-card);
-  border-radius: var(--radius-md);
+  border-radius: 32rpx;
   border: 1rpx solid var(--color-line);
-  box-shadow: var(--shadow-card);
 }
 
 .info-row {
+  display: grid;
+  grid-template-columns: 144rpx 1fr;
+  gap: 20rpx;
+  padding: 14rpx 0;
+}
+
+.info-dt {
+  font-size: 24rpx;
+  color: var(--color-muted);
+  line-height: 1.55;
+}
+
+.info-dd {
+  font-size: 24rpx;
+  color: var(--color-text);
+  line-height: 1.55;
+}
+
+/* ===== Certificate card ===== */
+.cert-card {
+  margin-top: 24rpx;
+  padding: 28rpx;
+  background: var(--color-card);
+  border-radius: 32rpx;
+  border: 1rpx solid var(--color-line);
+}
+
+.cert-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 18rpx 0;
-  border-bottom: 1rpx solid var(--color-line);
+  margin-bottom: 20rpx;
 }
 
-.info-row:last-child {
-  border-bottom: none;
-}
-
-.info-label {
-  color: var(--color-muted);
-  font-size: 26rpx;
-  flex-shrink: 0;
-}
-
-.info-value {
+.cert-title {
+  font-size: 28rpx;
+  font-weight: 700;
   color: var(--color-text);
+}
+
+.cert-action {
+  font-size: 24rpx;
+  color: var(--color-primary);
+}
+
+.cert-preview {
+  height: 152rpx;
+  border-radius: 24rpx;
+  background: linear-gradient(135deg, #f7efe2, #fff);
+  border: 1rpx solid rgba(184, 154, 99, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cert-preview-text {
   font-size: 26rpx;
+  color: var(--color-gold);
   font-weight: 600;
-  text-align: right;
-  flex: 1;
-  margin-left: 24rpx;
 }
 
-/* ===== Certification note ===== */
-.cert-note {
-  margin-top: 32rpx;
-  padding: 24rpx 28rpx;
-  background: var(--color-surface);
-  border-radius: var(--radius-md);
-  text-align: center;
+/* ===== Verification note ===== */
+.verify-note {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-top: 28rpx;
+  padding: 0 8rpx;
 }
 
-.cert-note-text {
-  font-size: 22rpx;
+.verify-icon {
+  font-size: 28rpx;
+  line-height: 1;
+}
+
+.verify-text {
+  font-size: 24rpx;
   color: var(--color-muted);
-  line-height: 1.7;
+  line-height: 1.5;
 }
 
 /* ===== Loading ===== */

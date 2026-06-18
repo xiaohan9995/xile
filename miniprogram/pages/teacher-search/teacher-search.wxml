@@ -2,47 +2,41 @@
   <!-- Header -->
   <view class="page-header" style="padding-top:{{statusBarHeight}}px;">
     <view class="page-header__back" bindtap="goBack">‹</view>
-    <text class="page-header__title">名师资质校验</text>
+    <text class="page-header__title">教师查询</text>
     <view class="page-header__right"></view>
   </view>
 
-  <!-- Search input -->
-  <view class="search-bar">
-    <view class="search-input-wrap">
-      <text class="search-icon">⌕</text>
+  <!-- Search box -->
+  <view class="search-section">
+    <view class="search-box">
       <input
         class="search-input"
         value="{{keyword}}"
-        placeholder="输入导师姓名或证书编号"
+        placeholder="请输入姓名 / 喜乐名 / 编号"
         placeholder-class="search-placeholder"
         confirm-type="search"
         bindinput="onInput"
         bindconfirm="doSearch"
       />
-      <view wx:if="{{keyword}}" class="search-clear" bindtap="clearKeyword">×</view>
+      <view class="search-btn" bindtap="doSearch">
+        <text class="search-btn-icon">🔍</text>
+      </view>
+    </view>
+
+    <!-- Filter row -->
+    <view class="filter-row">
+      <view
+        wx:for="{{filters}}"
+        wx:key="value"
+        class="filter-pill {{activeFilter === item.value ? 'filter-pill--active' : ''}}"
+        bindtap="onFilterTap"
+        data-filter="{{item.value}}"
+      >{{item.label}}</view>
     </view>
   </view>
 
-  <!-- Level filter chips -->
-  <view class="filter-chips">
-    <view
-      wx:for="{{tiers}}"
-      wx:key="value"
-      class="chip {{activeTier === item.value ? 'chip--active' : ''}}"
-      bindtap="onTierTap"
-      data-tier="{{item.value}}"
-    >
-      <text>{{item.label}}</text>
-    </view>
-  </view>
-
-  <!-- Results count -->
-  <view class="result-count" wx:if="{{!loading}}">
-    <text>共 {{teachers.length}} 位导师</text>
-  </view>
-
-  <!-- Teacher list -->
-  <scroll-view scroll-y class="teacher-list" enhanced show-scrollbar="{{false}}">
+  <!-- Teacher cards -->
+  <view class="teacher-list">
     <view
       wx:for="{{teachers}}"
       wx:key="id"
@@ -50,29 +44,35 @@
       bindtap="openTeacher"
       data-id="{{item.id}}"
     >
-      <view class="card-avatar">
-        <image class="avatar-img" src="{{item.avatarUrl}}" mode="aspectFill" />
-      </view>
+      <image class="card-avatar" src="{{item.avatarUrl}}" mode="aspectFill" />
       <view class="card-body">
-        <view class="card-name-row">
-          <text class="card-name">{{item.name}}</text>
-          <text class="card-tier">{{item.tierName}}</text>
+        <text class="card-name">{{item.name}}</text>
+        <text class="card-xile">喜乐名：{{item.xileName}}</text>
+        <view class="card-cert-status">
+          <text class="card-cert-icon">🛡</text>
+          <text class="card-cert-text">{{item.statusText || '认证有效'}}</text>
         </view>
-        <text class="card-status">{{item.certificationStatus}}</text>
-        <text class="card-meta">编号 {{item.teacherNo}}</text>
+        <text class="card-meta">认证编号 {{item.teacherNo}}</text>
         <text class="card-meta">有效期至 {{item.validUntil}}</text>
       </view>
-      <text class="card-arrow">›</text>
+      <view class="card-level-badge">
+        <text class="card-level-text">{{item.tier}}</text>
+      </view>
     </view>
-  </scroll-view>
+  </view>
 
   <!-- Empty state -->
-  <view wx:if="{{!loading && teachers.length === 0}}" class="empty-state">
-    <text class="empty-icon">⌕</text>
-    <text class="empty-text">暂无匹配导师</text>
+  <view wx:if="{{!loading && searched && teachers.length === 0}}" class="empty-state">
+    <text class="empty-text">未找到匹配教师</text>
+  </view>
+
+  <!-- Hint -->
+  <view wx:if="{{!loading && !searched && teachers.length === 0}}" class="empty-state">
+    <text class="empty-text">没有更多数据了</text>
   </view>
 
   <!-- Error -->
   <view wx:if="{{error}}" class="error-tip">{{error}}</view>
-<tab-bar active="search" />
+
+  <tab-bar active="" />
 </view>

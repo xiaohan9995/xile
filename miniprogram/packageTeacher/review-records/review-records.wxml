@@ -6,50 +6,41 @@
     <view class="page-header__right"></view>
   </view>
 
-  <view class="records-body animate-fade-in">
-    <!-- Current Level Card -->
-    <view class="level-card">
-      <view class="level-card-top">
-        <text class="level-en mono">CURRENT CERTIFICATION</text>
-        <text class="level-sub">当前认证等级</text>
+  <view class="records-body">
+    <!-- Current level section -->
+    <view class="current-level">
+      <text class="current-label">当前认证等级</text>
+      <view class="current-main">
+        <text class="current-tier">{{current.tier}}</text>
+        <text class="current-name">{{current.tierName}}</text>
       </view>
-      <view class="level-card-main">
-        <text class="level-code serif">{{current.tier}}</text>
-        <text class="level-name">{{current.tierName}}</text>
-      </view>
-      <text class="level-expiry">有效期至：{{current.validUntil}}</text>
+      <text class="current-expiry">有效期至：{{current.validUntil}}</text>
     </view>
 
-    <!-- Timeline -->
-    <view class="timeline-section">
-      <text class="timeline-title">年审历史</text>
+    <!-- Record tabs -->
+    <view class="record-tabs">
+      <view class="record-tab {{activeTab === 'all' ? 'record-tab--active' : ''}}" bindtap="switchTab" data-tab="all">全部记录</view>
+      <view class="record-tab {{activeTab === 'passed' ? 'record-tab--active' : ''}}" bindtap="switchTab" data-tab="passed">已通过</view>
+    </view>
 
-      <view wx:if="{{records.length === 0}}" class="empty-records">
-        <text class="empty-text">暂无年审记录</text>
-      </view>
+    <!-- Timeline list -->
+    <view wx:if="{{records.length === 0}}" class="empty-records">
+      <text class="empty-text">暂无年审记录</text>
+    </view>
 
-      <view class="timeline-list">
-        <view
-          wx:for="{{records}}"
-          wx:key="year"
-          class="timeline-item animate-fade-in-up"
-          style="animation-delay: {{index * 100}}ms"
-        >
-          <view class="timeline-dot"></view>
-          <view class="timeline-line" wx:if="{{index < records.length - 1}}"></view>
-          <view class="timeline-content soft-card">
-            <view class="timeline-header">
-              <text class="timeline-year">{{item.year}}</text>
-              <view class="timeline-status {{item.statusClass}}">{{item.statusText}}</view>
-            </view>
-            <view class="timeline-meta">
-              <text>{{item.date}}</text>
-              <text wx:if="{{item.reviewer}}"> · 审核人：{{item.reviewer}}</text>
-            </view>
-          </view>
+    <view class="timeline-list">
+      <view
+        wx:for="{{records}}"
+        wx:key="year"
+        class="timeline-item"
+      >
+        <text class="timeline-title">{{item.year}}</text>
+        <text class="timeline-status {{item.statusClass}}">{{item.statusText}}</text>
+        <view class="timeline-meta">
+          <text>{{item.date}}</text>
+          <text wx:if="{{item.reviewer}}"> · 审核人：{{item.reviewer}}</text>
         </view>
       </view>
     </view>
   </view>
-<tab-bar />
 </view>

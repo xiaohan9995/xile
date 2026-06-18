@@ -82,5 +82,5 @@
   <view class="action-section">
     <button class="btn-primary" bindtap="goNext">下一步</button>
   </view>
-<tab-bar />
+<tab-bar active="my" />
 </view>

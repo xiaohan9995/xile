@@ -1,71 +1,75 @@
 <view class="page-shell studios-page">
-  <!-- Hero Banner -->
-  <view class="hero-banner">
-    <image class="hero-img" src="https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=750&auto=format&fit=crop" mode="aspectFill" />
-    <view class="hero-overlay">
-      <text class="hero-title serif">探索瑜伽空间</text>
-      <text class="hero-sub">寻找属于你的练习场所</text>
+  <!-- Header -->
+  <view class="page-header" style="padding-top:{{statusBarHeight}}px;">
+    <view class="page-header__back" bindtap="goBack">‹</view>
+    <text class="page-header__title">瑜伽工作室</text>
+    <view class="page-header__right"></view>
+  </view>
+
+  <!-- Studio Hero Section -->
+  <view class="studio-hero">
+    <image class="studio-hero__bg" src="https://images.unsplash.com/photo-1593810450967-f9c42742e326?auto=format&fit=crop&w=760&q=84" mode="aspectFill" />
+    <view class="studio-hero__overlay"></view>
+    <view class="studio-hero__content">
+      <text class="studio-hero__eyebrow">认证场馆</text>
+      <text class="studio-hero__heading">找一处安静练习的空间</text>
+      <view class="studio-hero__badge">
+        <text class="studio-hero__badge-text">已收录 {{filteredStudios.length || 36}} 家喜乐瑜伽认证工作室</text>
+      </view>
     </view>
   </view>
 
-  <!-- Search -->
-  <view class="search-wrap">
-    <view class="search-bar">
-      <text class="search-icon">⌕</text>
+  <!-- Search Box -->
+  <view class="search-box">
+    <view class="search-box__inner">
       <input
-        class="search-input"
+        class="search-box__input"
         value="{{keyword}}"
-        placeholder="搜索瑜伽工作室"
-        placeholder-class="search-placeholder"
+        placeholder="搜索工作室名称或地区"
+        placeholder-class="search-box__placeholder"
         bindinput="onKeywordInput"
         confirm-type="search"
         bindconfirm="applyFilters"
       />
+      <view class="search-box__btn" bindtap="applyFilters">
+        <text class="search-box__btn-icon">⌕</text>
+      </view>
     </view>
   </view>
 
-  <!-- City Filter Pills -->
-  <scroll-view scroll-x class="city-pills" enhanced show-scrollbar="{{false}}">
+  <!-- Filter Row -->
+  <scroll-view scroll-x class="filter-row" enhanced show-scrollbar="{{false}}">
     <view
       wx:for="{{cityOptions}}"
       wx:key="value"
-      class="city-pill {{activeCity === item.value ? 'city-pill--active' : ''}}"
+      class="filter-pill {{activeCity === item.value ? 'filter-pill--active' : ''}}"
       data-city="{{item.value}}"
       bindtap="changeCity"
     >{{item.label}}</view>
   </scroll-view>
-
-  <!-- Result count -->
-  <view class="result-bar">
-    <text class="result-count">共 {{filteredStudios.length}} 个工作室</text>
-  </view>
 
   <!-- Studio Cards -->
   <view class="studio-list">
     <view
       wx:for="{{filteredStudios}}"
       wx:key="id"
-      class="studio-card soft-card animate-fade-in-up"
-      style="animation-delay: {{index * 80}}ms"
+      class="studio-card"
       bindtap="openStudio"
       data-id="{{item.id}}"
     >
-      <image class="studio-thumb" src="{{item.coverImage}}" mode="aspectFill" />
-      <view class="studio-body">
-        <text class="studio-name">{{item.name}}</text>
-        <text class="studio-location">{{item.city}} · {{item.district}}</text>
-        <view class="studio-tags">
-          <text wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this" class="studio-tag">{{tag}}</text>
-        </view>
-        <view class="studio-footer">
-          <view class="studio-cta">查看详情</view>
+      <image class="studio-card__img" src="{{item.coverImage}}" mode="aspectFill" />
+      <view class="studio-card__body">
+        <text class="studio-card__name">{{item.name}}</text>
+        <text class="studio-card__location">{{item.city}} · {{item.district}}</text>
+        <view class="studio-card__tags">
+          <text wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this" class="studio-card__tag">{{tag}}</text>
         </view>
       </view>
     </view>
   </view>
 
   <!-- Empty State -->
-  <view wx:if="{{!loading && filteredStudios.length === 0}}" class="empty-state">
+  <view wx:if="{{!loading && filteredStudios.length === 0}}" class="empty-card">
     <text class="empty-icon">🧘</text>
     <text class="empty-title">未找到匹配的工作室</text>
     <text class="empty-desc">试试切换城市或修改搜索关键词</text>
@@ -74,7 +78,7 @@
 
   <!-- Loading -->
   <view wx:if="{{loading}}" class="loading-wrap">
-    <text class="loading-text animate-pulse">加载中...</text>
+    <text class="loading-text">加载中...</text>
   </view>
 <tab-bar active="studio" />
 </view>

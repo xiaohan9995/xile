@@ -18,7 +18,7 @@
 
 .upload-tile:active {
   background: rgba(240, 243, 241, 0.8);
-  border-color: var(--brand-green);
+  border-color: var(--color-primary);
 }
 
 .upload-tile--done {
