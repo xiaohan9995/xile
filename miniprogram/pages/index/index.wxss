@@ -1,0 +1,218 @@
+/* ===== 首页 - 严格对照设计稿 ===== */
+.home-page {
+  min-height: 100vh;
+  padding-bottom: 130rpx;
+  background: #F5F5F0;
+}
+
+/* ===== Hero 区域（绿色背景 + 左文 + 右图） ===== */
+.hero-section {
+  position: relative;
+  height: 360rpx;
+  display: flex;
+  background: linear-gradient(135deg, #5D7261 0%, #4B5C4E 50%, #7B9E7A 100%);
+  overflow: hidden;
+}
+
+.hero-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 40rpx;
+  z-index: 2;
+}
+
+.hero-brand {
+  color: rgba(255, 248, 231, 0.9);
+  font-size: 26rpx;
+  font-weight: 600;
+  letter-spacing: 4rpx;
+}
+
+.hero-title {
+  margin-top: 8rpx;
+  color: #FFFFFF;
+  font-size: 52rpx;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.hero-slogan {
+  margin-top: 10rpx;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 22rpx;
+  letter-spacing: 3rpx;
+}
+
+.hero-right {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 320rpx;
+  z-index: 1;
+}
+
+.hero-img {
+  width: 100%;
+  height: 100%;
+  opacity: 0.75;
+}
+
+/* ===== 快捷按钮（紧贴 hero 底部） ===== */
+.quick-buttons {
+  display: flex;
+  gap: 16rpx;
+  margin: -40rpx 28rpx 0;
+  position: relative;
+  z-index: 3;
+}
+
+.qbtn {
+  flex: 1;
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10rpx;
+  background: #7B9E7A;
+  color: #FFFFFF;
+  font-size: 26rpx;
+  font-weight: 700;
+  border-radius: 40rpx;
+}
+
+.qbtn--ghost {
+  background: #FFFFFF;
+  color: #7B9E7A;
+  border: 1rpx solid rgba(123, 158, 122, 0.3);
+}
+
+.qbtn-icon {
+  font-size: 28rpx;
+}
+
+/* ===== 入口列表 ===== */
+.entry-list {
+  margin: 24rpx 28rpx 0;
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  border: 1rpx solid rgba(123, 158, 122, 0.10);
+  overflow: hidden;
+}
+
+.entry-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28rpx 24rpx;
+  border-bottom: 1rpx solid rgba(123, 158, 122, 0.08);
+}
+
+.entry-item:last-child {
+  border-bottom: none;
+}
+
+.entry-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.entry-title {
+  color: #333333;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.entry-sub {
+  margin-top: 6rpx;
+  color: #7E857E;
+  font-size: 22rpx;
+}
+
+.entry-arrow {
+  color: #CCCCCC;
+  font-size: 40rpx;
+  font-weight: 300;
+  margin-left: 12rpx;
+}
+
+/* ===== 数据统计 ===== */
+.stats-card {
+  display: flex;
+  gap: 14rpx;
+  margin: 24rpx 28rpx 0;
+  padding: 0;
+}
+
+.stat-block {
+  flex: 1;
+  text-align: center;
+  padding: 28rpx 12rpx;
+  background: rgba(123, 158, 122, 0.10);
+  border-radius: 20rpx;
+}
+
+.stat-block--gold {
+  background: rgba(180, 150, 88, 0.10);
+}
+
+.stat-num {
+  display: block;
+  font-size: 44rpx;
+  font-weight: 800;
+  font-family: "STSong", "Noto Serif SC", serif;
+  color: #333333;
+  line-height: 1.2;
+}
+
+.stat-label {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: #7E857E;
+}
+
+/* ===== 底部TabBar ===== */
+.tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 99;
+  display: flex;
+  height: 110rpx;
+  background: rgba(255, 255, 255, 0.96);
+  border-top: 1rpx solid rgba(123, 158, 122, 0.10);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.tab-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4rpx;
+}
+
+.tab-icon {
+  font-size: 32rpx;
+  color: #999999;
+}
+
+.tab-label {
+  font-size: 20rpx;
+  color: #999999;
+}
+
+.tab-icon.tab-icon--active {
+  color: #7B9E7A;
+}
+
+.tab-label.tab-label--active {
+  color: #7B9E7A;
+  font-weight: 700;
+}

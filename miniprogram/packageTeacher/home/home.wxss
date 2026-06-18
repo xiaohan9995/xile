@@ -1,0 +1,202 @@
+/* ===== 我的认证页 - 严格对照设计稿 ===== */
+.my-cert-page {
+  min-height: 100vh;
+  padding-bottom: 130rpx;
+  background: #F5F5F0;
+}
+
+.my-cert-body {
+  padding: 0 28rpx;
+}
+
+/* 绿色头部信息卡 */
+.cert-header-card {
+  margin-top: 28rpx;
+  padding: 28rpx 24rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #7B9E7A;
+  border-radius: 24rpx;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.header-avatar {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  border: 3rpx solid rgba(255, 255, 255, 0.4);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.avatar-img {
+  width: 96rpx;
+  height: 96rpx;
+}
+
+.header-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-name {
+  color: #FFFFFF;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.header-level-row {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  margin-top: 8rpx;
+}
+
+.level-icon {
+  font-size: 22rpx;
+}
+
+.level-text {
+  color: rgba(255, 248, 231, 0.85);
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
+.header-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.valid-badge {
+  display: inline-block;
+  padding: 6rpx 18rpx;
+  background: rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
+  font-size: 22rpx;
+  font-weight: 700;
+  border-radius: 999rpx;
+}
+
+.valid-sub {
+  display: block;
+  margin-top: 6rpx;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 18rpx;
+}
+
+/* 有效期+天数数据卡 */
+.expiry-card {
+  margin-top: 20rpx;
+  padding: 28rpx;
+  display: flex;
+  align-items: center;
+  background: #FFFFFF;
+  border-radius: 24rpx;
+}
+
+.expiry-item {
+  flex: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.expiry-label {
+  font-size: 22rpx;
+  color: #999999;
+}
+
+.expiry-value {
+  margin-top: 8rpx;
+  font-size: 36rpx;
+  font-weight: 800;
+  font-family: "STSong", "Noto Serif SC", serif;
+  color: #333333;
+}
+
+.expiry-divider {
+  width: 1rpx;
+  height: 56rpx;
+  background: rgba(123, 158, 122, 0.15);
+  margin: 0 16rpx;
+}
+
+/* 菜单列表 */
+.menu-list {
+  margin-top: 20rpx;
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  overflow: hidden;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28rpx 24rpx;
+  border-bottom: 1rpx solid rgba(123, 158, 122, 0.08);
+}
+
+.menu-item:last-child {
+  border-bottom: none;
+}
+
+.menu-title {
+  color: #333333;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.menu-arrow {
+  color: #CCCCCC;
+  font-size: 36rpx;
+  font-weight: 300;
+}
+
+/* ===== 底部TabBar ===== */
+.tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 99;
+  display: flex;
+  height: 110rpx;
+  background: rgba(255, 255, 255, 0.96);
+  border-top: 1rpx solid rgba(123, 158, 122, 0.10);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.tab-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4rpx;
+}
+
+.tab-icon {
+  font-size: 32rpx;
+  color: #999999;
+}
+
+.tab-label {
+  font-size: 20rpx;
+  color: #999999;
+}
+
+.tab-icon.tab-icon--active {
+  color: #7B9E7A;
+}
+
+.tab-label.tab-label--active {
+  color: #7B9E7A;
+  font-weight: 700;
+}

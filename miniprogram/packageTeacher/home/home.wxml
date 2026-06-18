@@ -1,0 +1,67 @@
+<view class="my-cert-page">
+  <view class="page-header">
+    <view class="page-header__back" bindtap="goBack">‹</view>
+    <text class="page-header__title">我的认证</text>
+    <view class="page-header__right"></view>
+  </view>
+
+  <view class="my-cert-body">
+    <!-- 绿色头部信息卡 -->
+    <view class="cert-header-card">
+      <view class="header-left">
+        <view class="header-avatar">
+          <image class="avatar-img" src="{{teacher.avatarUrl}}" mode="aspectFill" />
+        </view>
+        <view class="header-info">
+          <text class="header-name">{{teacher.name}}</text>
+          <view class="header-level-row">
+            <text class="level-icon">🏅</text>
+            <text class="level-text">{{teacher.tier}} {{teacher.tierName}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="header-right">
+        <text class="valid-badge">认证有效</text>
+        <text class="valid-sub">已审核通过</text>
+      </view>
+    </view>
+
+    <!-- 有效期+天数数据卡 -->
+    <view class="expiry-card">
+      <view class="expiry-item">
+        <text class="expiry-label">认证到期</text>
+        <text class="expiry-value">{{teacher.validUntil}}</text>
+      </view>
+      <view class="expiry-divider"></view>
+      <view class="expiry-item">
+        <text class="expiry-label">认证天数</text>
+        <text class="expiry-value">{{teacher.daysLeft}} 天</text>
+      </view>
+    </view>
+
+    <!-- 菜单列表（6项，无图标） -->
+    <view class="menu-list">
+      <view class="menu-item" wx:for="{{menus}}" wx:key="title" bindtap="onMenuTap" data-url="{{item.url}}">
+        <text class="menu-title">{{item.title}}</text>
+        <text class="menu-arrow">›</text>
+      </view>
+    </view>
+    <button class="logout-btn" bindtap="logout">退出当前微信号</button>
+  </view>
+
+  <!-- 底部TabBar -->
+  <view class="tabbar">
+    <view class="tab-item" bindtap="goHome">
+      <text class="tab-icon">⌂</text>
+      <text class="tab-label">首页</text>
+    </view>
+    <view class="tab-item" bindtap="goSearch">
+      <text class="tab-icon">⌕</text>
+      <text class="tab-label">查询</text>
+    </view>
+    <view class="tab-item tab-item--active">
+      <text class="tab-icon tab-icon--active">◉</text>
+      <text class="tab-label tab-label--active">我的</text>
+    </view>
+  </view>
+</view>

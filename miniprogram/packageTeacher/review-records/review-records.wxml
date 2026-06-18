@@ -1,0 +1,38 @@
+<view class="records-page">
+  <view class="page-header">
+    <view class="page-header__back" bindtap="goBack">‹</view>
+    <text class="page-header__title">审核记录</text>
+    <view class="page-header__right"></view>
+  </view>
+
+  <view class="records-body">
+    <!-- 当前认证信息卡（绿色） -->
+    <view class="cert-info-card">
+      <text class="cert-en">CURRENT CERTIFICATION</text>
+      <text class="cert-tag">当前认证等级</text>
+      <view class="cert-level-row">
+        <text class="cert-level-code">{{current.tier}}</text>
+        <text class="cert-level-name">{{current.tierName}}</text>
+      </view>
+      <text class="cert-expiry">有效期至：{{current.validUntil}}</text>
+    </view>
+
+    <!-- 切换Tab -->
+    <view class="tab-switch">
+      <button class="tab-btn tab-btn--active">年度记录 · 年审记录</button>
+      <button class="tab-btn" bindtap="onShowAll">全部记录</button>
+    </view>
+
+    <!-- 时间线列表 -->
+    <scroll-view scroll-y class="timeline-list" enhanced show-scrollbar="{{false}}">
+      <view wx:for="{{records}}" wx:key="year" class="record-item">
+        <view class="record-dot"></view>
+        <view class="record-body">
+          <text class="record-title">{{item.year}}</text>
+          <text class="record-meta">{{item.date}} · 审核人：{{item.reviewer}}</text>
+        </view>
+        <view class="record-status record-status--passed">{{item.statusText}}</view>
+      </view>
+    </scroll-view>
+  </view>
+</view>

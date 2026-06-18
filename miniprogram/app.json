@@ -1,0 +1,30 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/teacher-search/teacher-search",
+    "pages/teacher-detail/teacher-detail",
+    "pages/studios/studios",
+    "pages/studio-detail/studio-detail"
+  ],
+  "subPackages": [
+    {
+      "root": "packageTeacher",
+      "pages": [
+        "home/home",
+        "profile/profile",
+        "cert-step1/cert-step1",
+        "review-apply/review-apply",
+        "review-records/review-records",
+        "submission-success/submission-success"
+      ]
+    }
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTitleText": "喜乐瑜伽",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f5f5f5"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

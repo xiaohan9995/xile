@@ -1,0 +1,72 @@
+<view class="home-page">
+  <!-- Hero 区域：左文 + 右图（瑜伽人物剪影） -->
+  <view class="hero-section">
+    <view class="hero-left">
+      <text class="hero-brand">喜乐瑜伽</text>
+      <text class="hero-title">瑜伽导师认证中心</text>
+      <text class="hero-slogan">微信小程序 · 诚信 · 专业 · 传承</text>
+    </view>
+    <view class="hero-right">
+      <image class="hero-img" src="https://images.unsplash.com/photo-1599447421416-3414500d18a5?w=400&q=80" mode="aspectFill" />
+    </view>
+  </view>
+
+  <!-- 快捷入口按钮（紧贴 hero 下沿） -->
+  <view class="quick-buttons">
+    <button class="qbtn" bindtap="goSearch">
+      <text class="qbtn-icon">⌕</text>
+      <text>导师查询</text>
+    </button>
+    <button class="qbtn qbtn--ghost" bindtap="goStudios">
+      <text class="qbtn-icon">⌂</text>
+      <text>瑜伽工作室</text>
+    </button>
+  </view>
+
+  <!-- 入口列表 -->
+  <view class="entry-list">
+    <view class="entry-item" bindtap="goMyCert">
+      <view class="entry-info">
+        <text class="entry-title">我的认证</text>
+        <text class="entry-sub">查看个人认证信息</text>
+      </view>
+      <text class="entry-arrow">›</text>
+    </view>
+    <view class="entry-item" bindtap="goStudios">
+      <view class="entry-info">
+        <text class="entry-title">瑜伽工作室</text>
+        <text class="entry-sub">学习练习空间 / 课程预约</text>
+      </view>
+      <text class="entry-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 数据统计 -->
+  <view class="stats-card">
+    <view class="stat-heading">系统数据统计</view>
+    <view class="stat-block">
+      <text class="stat-num">1,286</text>
+      <text class="stat-label">认证教师人数</text>
+    </view>
+    <view class="stat-block stat-block--gold">
+      <text class="stat-num">326</text>
+      <text class="stat-label">有教学堂数量</text>
+    </view>
+  </view>
+
+  <!-- 底部TabBar -->
+  <view class="tabbar">
+    <view class="tab-item tab-item--active">
+      <text class="tab-icon tab-icon--active">⌂</text>
+      <text class="tab-label tab-label--active">首页</text>
+    </view>
+    <view class="tab-item" bindtap="goSearch">
+      <text class="tab-icon">⌕</text>
+      <text class="tab-label">查询</text>
+    </view>
+    <view class="tab-item" bindtap="goMyCert">
+      <text class="tab-icon">◉</text>
+      <text class="tab-label">我的</text>
+    </view>
+  </view>
+</view>

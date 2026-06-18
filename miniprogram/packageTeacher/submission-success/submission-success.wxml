@@ -1,0 +1,21 @@
+<view class="success-page">
+  <view class="success-card">
+    <view class="success-icon animate-pulse">✓</view>
+    <text class="success-title">申请已成功提交</text>
+    <text class="success-desc">教师管理委员会将在 3-5 个工作日内完成资料核验。当前状态为待人工审核，审核通过后，电子认证证书会自动回传到你的微信端。</text>
+
+    <view class="success-meta">
+      <view>
+        <text>预计审核时间</text>
+        <text>3-5 个工作日</text>
+      </view>
+      <view>
+        <text>客服电话</text>
+        <text>400-820-8820</text>
+      </view>
+    </view>
+
+    <button class="primary" bindtap="goMine">查看我的认证</button>
+    <button class="ghost" bindtap="goHome">返回首页</button>
+  </view>
+</view>

@@ -1,0 +1,3 @@
+.cert-badge {
+  display: inline-flex;
+}

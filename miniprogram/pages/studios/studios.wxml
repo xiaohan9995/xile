@@ -1,0 +1,82 @@
+<view class="studios-page">
+  <view class="page-header">
+    <view class="page-header__back" bindtap="goBack">‹</view>
+    <text class="page-header__title">瑜伽工作室</text>
+    <view class="page-header__right">⋮</view>
+  </view>
+
+  <!-- 搜索栏 -->
+  <view class="search-bar">
+    <input
+      value="{{keyword}}"
+      placeholder="搜索瑜伽工作室 / 输入特色关键词"
+      bindinput="onKeywordInput"
+      confirm-type="search"
+      bindconfirm="applyFilters"
+    />
+    <button class="search-btn" bindtap="applyFilters">⌕</button>
+  </view>
+
+  <!-- 城市筛选 -->
+  <scroll-view scroll-x class="city-scroll" enhanced show-scrollbar="{{false}}">
+    <button
+      wx:for="{{cityOptions}}"
+      wx:key="value"
+      class="city-chip {{activeCity == item.value ? 'active' : ''}}"
+      data-city="{{item.value}}"
+      bindtap="changeCity"
+    >{{item.label}}</button>
+  </scroll-view>
+
+  <!-- 元信息 -->
+  <view class="list-meta">
+    <text>精选练习空间 · 精选高层空灵馆舍</text>
+    <text>共 {{studios.length}} 个空间</text>
+  </view>
+
+  <!-- 工作室列表 -->
+  <scroll-view scroll-y class="studio-list" enhanced show-scrollbar="{{false}}">
+    <view
+      wx:for="{{studios}}"
+      wx:key="id"
+      class="studio-card"
+      bindtap="openStudio"
+      data-id="{{item.id}}"
+    >
+      <image class="studio-cover" src="{{item.coverImage}}" mode="aspectFill" />
+      <view class="studio-info">
+        <view class="studio-top">
+          <text class="studio-name">{{item.name}}</text>
+          <text class="studio-rating">★ {{item.rating || '4.9'}}</text>
+        </view>
+        <text class="studio-addr">{{item.city}} · {{item.district}} · {{item.address}}</text>
+        <text class="studio-intro">{{item.intro}}</text>
+        <view class="studio-tags">
+          <text wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this" class="tag">{{tag}}</text>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{!loading && studios.length === 0}}" class="empty-box">
+    <text class="empty-text">暂无公开工作室</text>
+    <view class="empty-btn" bindtap="resetFilters">返回全部城市</view>
+  </view>
+
+  <!-- 底部TabBar -->
+  <view class="tabbar">
+    <view class="tab-item" bindtap="goHome">
+      <text class="tab-icon">⌂</text>
+      <text class="tab-label">首页</text>
+    </view>
+    <view class="tab-item" bindtap="goSearch">
+      <text class="tab-icon">⌕</text>
+      <text class="tab-label">查询</text>
+    </view>
+    <view class="tab-item" bindtap="goMine">
+      <text class="tab-icon">◉</text>
+      <text class="tab-label">我的</text>
+    </view>
+  </view>
+</view>

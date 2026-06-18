@@ -1,0 +1,236 @@
+/* ===== 教师查询页 - 严格对照设计稿 ===== */
+.query-page {
+  min-height: 100vh;
+  padding-bottom: 130rpx;
+  background: #F5F5F0;
+}
+
+/* 搜索框 */
+.searchbar {
+  display: flex;
+  align-items: center;
+  margin: 24rpx 28rpx 20rpx;
+  height: 80rpx;
+  background: #FFFFFF;
+  border-radius: 40rpx;
+  border: 1rpx solid rgba(123, 158, 122, 0.12);
+  padding: 0 6rpx;
+}
+
+.searchbar input {
+  flex: 1;
+  min-width: 0;
+  height: 80rpx;
+  padding: 0 24rpx;
+  font-size: 26rpx;
+  color: #333;
+}
+
+.searchbtn {
+  width: 68rpx;
+  height: 68rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #7B9E7A;
+  color: #FFFFFF;
+  font-size: 30rpx;
+  border-radius: 50%;
+  border: none;
+}
+
+/* 筛选下拉行 */
+.filter-bar {
+  display: flex;
+  gap: 0;
+  margin: 0 28rpx 20rpx;
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  overflow: hidden;
+  border: 1rpx solid rgba(123, 158, 122, 0.10);
+}
+
+.filter-item {
+  flex: 1;
+  height: 76rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6rpx;
+  font-size: 24rpx;
+  color: #333333;
+  border-right: 1rpx solid rgba(123, 158, 122, 0.10);
+}
+
+.filter-item:last-child {
+  border-right: none;
+}
+
+.caret {
+  font-size: 18rpx;
+  color: #7E857E;
+}
+
+/* 结果元信息 */
+.result-meta {
+  display: flex;
+  justify-content: space-between;
+  padding: 16rpx 28rpx 12rpx;
+  font-size: 22rpx;
+  color: #999999;
+}
+
+/* 教师列表 */
+.teacher-list {
+  padding: 0 28rpx;
+  max-height: calc(100vh - 540rpx);
+}
+
+.teacher-card {
+  display: flex;
+  align-items: flex-start;
+  padding: 24rpx;
+  margin-bottom: 18rpx;
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  border: 1rpx solid rgba(123, 158, 122, 0.08);
+}
+
+.teacher-card:active {
+  opacity: 0.85;
+}
+
+.card-avatar {
+  flex-shrink: 0;
+  width: 96rpx;
+  height: 96rpx;
+  margin-right: 20rpx;
+}
+
+.avatar-img {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  border: 2rpx solid rgba(180, 150, 88, 0.2);
+}
+
+.card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-name-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.card-name {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #333333;
+}
+
+.card-level {
+  display: inline-block;
+  padding: 4rpx 14rpx;
+  border-radius: 8rpx;
+  background: #F7F4EF;
+  color: #B49658;
+  font-size: 20rpx;
+  font-weight: 600;
+}
+
+.card-status {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: #7B9E7A;
+  font-weight: 600;
+}
+
+.card-no {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: #999999;
+}
+
+.card-date {
+  display: block;
+  margin-top: 4rpx;
+  font-size: 22rpx;
+  color: #999999;
+}
+
+.card-arrow {
+  flex-shrink: 0;
+  align-self: center;
+  margin-left: 12rpx;
+  font-size: 36rpx;
+  color: #CCCCCC;
+  font-weight: 300;
+}
+
+/* 空状态 */
+.empty-state {
+  margin-top: 60rpx;
+  text-align: center;
+}
+
+.empty-text {
+  font-size: 26rpx;
+  color: #999999;
+}
+
+.error-tip {
+  margin: 24rpx 28rpx 0;
+  padding: 20rpx;
+  text-align: center;
+  font-size: 24rpx;
+  color: #C84A4A;
+  background: #FEF2F2;
+  border-radius: 16rpx;
+}
+
+/* ===== 底部TabBar ===== */
+.tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 99;
+  display: flex;
+  height: 110rpx;
+  background: rgba(255, 255, 255, 0.96);
+  border-top: 1rpx solid rgba(123, 158, 122, 0.10);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.tab-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4rpx;
+}
+
+.tab-icon {
+  font-size: 32rpx;
+  color: #999999;
+}
+
+.tab-label {
+  font-size: 20rpx;
+  color: #999999;
+}
+
+.tab-icon.tab-icon--active {
+  color: #7B9E7A;
+}
+
+.tab-label.tab-label--active {
+  color: #7B9E7A;
+  font-weight: 700;
+}

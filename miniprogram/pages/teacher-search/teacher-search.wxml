@@ -1,0 +1,88 @@
+<view class="query-page">
+  <view class="page-header">
+    <view class="page-header__back" bindtap="goBack">‹</view>
+    <text class="page-header__title">教师查询</text>
+    <view class="page-header__right">⋯</view>
+  </view>
+
+  <!-- 搜索框 -->
+  <view class="searchbar">
+    <input
+      value="{{keyword}}"
+      placeholder="请输入姓名 / 证书编号 / 等"
+      confirm-type="search"
+      bindinput="onKeywordInput"
+      bindconfirm="searchTeachers"
+    />
+    <button class="searchbtn" bindtap="searchTeachers">⌕</button>
+  </view>
+
+  <!-- 筛选下拉行 -->
+  <view class="filter-bar">
+    <view class="filter-item" bindtap="onLevelPick">
+      <text>{{levelLabel}}</text>
+      <text class="caret">▾</text>
+    </view>
+    <view class="filter-item" bindtap="onRegionPick">
+      <text>{{regionLabel}}</text>
+      <text class="caret">▾</text>
+    </view>
+    <view class="filter-item" bindtap="onStatusPick">
+      <text>{{statusLabel}}</text>
+      <text class="caret">▾</text>
+    </view>
+  </view>
+
+  <!-- 结果元信息 -->
+  <view class="result-meta">
+    <text>系统库已备案及认证导师名单</text>
+    <text>共 {{teachers.length}} 位</text>
+  </view>
+
+  <view wx:if="{{error}}" class="error-tip">{{error}}</view>
+
+  <!-- 教师列表 -->
+  <scroll-view scroll-y class="teacher-list" enhanced show-scrollbar="{{false}}">
+    <view
+      wx:for="{{teachers}}"
+      wx:key="id"
+      class="teacher-card"
+      bindtap="openTeacher"
+      data-id="{{item.id}}"
+    >
+      <view class="card-avatar">
+        <image class="avatar-img" src="{{item.avatarUrl}}" mode="aspectFill" />
+      </view>
+      <view class="card-info">
+        <view class="card-name-row">
+          <text class="card-name">{{item.name}}</text>
+          <text class="card-level">{{item.tierName}}</text>
+        </view>
+        <text class="card-status">{{item.certificationStatus}}</text>
+        <text class="card-no">认证编号: {{item.teacherNo}}</text>
+        <text class="card-date">有效期至 {{item.validUntil}}</text>
+      </view>
+      <text class="card-arrow">›</text>
+    </view>
+  </scroll-view>
+
+  <view wx:if="{{!loading && teachers.length === 0}}" class="empty-state">
+    <text class="empty-text">暂无匹配教师</text>
+  </view>
+
+  <!-- 底部TabBar -->
+  <view class="tabbar">
+    <view class="tab-item" bindtap="goHome">
+      <text class="tab-icon">⌂</text>
+      <text class="tab-label">首页</text>
+    </view>
+    <view class="tab-item tab-item--active">
+      <text class="tab-icon tab-icon--active">⌕</text>
+      <text class="tab-label tab-label--active">查询</text>
+    </view>
+    <view class="tab-item" bindtap="goMine">
+      <text class="tab-icon">◉</text>
+      <text class="tab-label">我的</text>
+    </view>
+  </view>
+</view>

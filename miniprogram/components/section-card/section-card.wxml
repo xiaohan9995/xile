@@ -1,0 +1,10 @@
+<view class="section-card soft-card">
+  <view class="section-card__header" wx:if="{{title}}">
+    <text class="title-accent"></text>
+    <text class="section-card__title">{{title}}</text>
+    <view class="section-card__extra" wx:if="{{extra}}" bindtap="onExtraTap">{{extra}}</view>
+  </view>
+  <view class="section-card__body">
+    <slot></slot>
+  </view>
+</view>

@@ -1,0 +1,4 @@
+<view class="cert-badge badge-level">
+  <text class="dot"></text>
+  <text>{{tier}} · {{status}}</text>
+</view>

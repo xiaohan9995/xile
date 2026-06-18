@@ -1,0 +1,56 @@
+<view class="studio-detail-page">
+  <view class="page-header">
+    <view class="page-header__back" bindtap="goBack">‹</view>
+    <text class="page-header__title">工作室详情</text>
+    <view class="page-header__right"></view>
+  </view>
+
+  <view wx:if="{{studio}}" class="detail-body">
+    <!-- 封面图 -->
+    <view class="cover-box">
+      <image class="cover-img" src="{{studio.coverImage}}" mode="aspectFill" />
+      <view class="cover-overlay">
+        <text class="cover-badge">认证工作室</text>
+        <text class="cover-name">{{studio.name}}</text>
+      </view>
+    </view>
+
+    <!-- 信息卡 -->
+    <view class="info-card">
+      <view class="info-top">
+        <text class="info-city">{{studio.city}} · {{studio.district}}</text>
+        <text class="info-status">开放中</text>
+      </view>
+      <text class="info-name">{{studio.name}}</text>
+      <text class="info-intro">{{studio.intro}}</text>
+      <text class="info-owner">主理教师：{{studio.ownerTeacherName}}</text>
+      <view class="info-tags">
+        <text wx:for="{{studio.tags}}" wx:key="*this" class="tag">{{item}}</text>
+      </view>
+    </view>
+
+    <!-- 详情行 -->
+    <view class="detail-rows">
+      <view class="detail-row">
+        <text class="row-icon">📍</text>
+        <text class="row-label">地址</text>
+        <text class="row-value">{{studio.address}}</text>
+      </view>
+      <view class="detail-row">
+        <text class="row-icon">🕐</text>
+        <text class="row-label">开放时间</text>
+        <text class="row-value">{{studio.openingHours}}</text>
+      </view>
+      <view class="detail-row">
+        <text class="row-icon">📞</text>
+        <text class="row-label">预约方式</text>
+        <text class="row-value">{{studio.contactText || '微信/电话预约'}}</text>
+      </view>
+    </view>
+
+    <!-- CTA按钮 -->
+    <button class="cta-btn" bindtap="bookStudio">通过有赞学堂预约</button>
+  </view>
+
+  <view wx:if="{{error}}" class="error-tip">{{error}}</view>
+</view>

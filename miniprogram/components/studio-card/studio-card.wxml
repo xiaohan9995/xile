@@ -1,0 +1,22 @@
+<view class="studio-card" bindtap="onTap">
+  <image class="studio-card__cover" src="{{studio.coverImage}}" mode="aspectFill" />
+  <view class="studio-card__body">
+    <view class="studio-card__head">
+      <text class="studio-card__name">{{studio.name}}</text>
+      <view class="studio-card__rating" wx:if="{{studio.rating}}">
+        <text class="studio-card__star">★</text>
+        <text>{{studio.rating}}</text>
+      </view>
+    </view>
+    <view class="studio-card__loc">
+      <text class="studio-card__pin">⌖</text>
+      <text class="studio-card__addr">{{studio.city}} · {{studio.district}}</text>
+    </view>
+    <view class="studio-card__tags" wx:if="{{studio.tags.length}}">
+      <text wx:for="{{studio.tags}}" wx:for-item="tag" wx:key="*this" class="studio-card__tag">{{tag}}</text>
+    </view>
+  </view>
+  <view class="studio-card__cta">
+    <text>查看详情</text>
+  </view>
+</view>

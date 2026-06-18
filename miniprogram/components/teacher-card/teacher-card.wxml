@@ -1,0 +1,20 @@
+<view class="teacher-card" bindtap="onTap">
+  <view class="teacher-card__avatar-wrap">
+    <image class="teacher-card__avatar" src="{{teacher.avatarUrl}}" mode="aspectFill" />
+    <view class="teacher-card__online"></view>
+  </view>
+  <view class="teacher-card__body">
+    <view class="teacher-card__title-row">
+      <text class="teacher-card__name">{{teacher.name}}</text>
+      <view class="teacher-card__level" wx:if="{{teacher.tierName}}">
+        <text class="teacher-card__check">✓</text>
+        <text>{{teacher.tier}} {{teacher.tierName}}</text>
+      </view>
+    </view>
+    <text class="teacher-card__cert-no mono" wx:if="{{teacher.teacherNo}}">认证编号: {{teacher.teacherNo}}</text>
+    <text class="teacher-card__validity mono" wx:if="{{teacher.validUntil}}">有效期至: {{teacher.validUntil}}</text>
+  </view>
+  <view class="teacher-card__arrow">
+    <text>›</text>
+  </view>
+</view>

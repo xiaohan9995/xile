@@ -1,0 +1,6 @@
+{
+  "name": "喜乐瑜伽",
+  "description": "提供专业的瑜伽导师资质认证、真伪查询、证书颁发以及精品瑜伽工作室推荐服务。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

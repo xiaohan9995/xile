@@ -1,0 +1,68 @@
+<view class="detail-page">
+  <view class="page-header">
+    <view class="page-header__back" bindtap="goBack">‹</view>
+    <text class="page-header__title">教师详情</text>
+    <view class="page-header__right"></view>
+  </view>
+
+  <view wx:if="{{teacher}}" class="detail-body">
+    <!-- 头像区 -->
+    <view class="avatar-section">
+      <view class="avatar-box">
+        <image class="avatar-img" src="{{teacher.avatarUrl}}" mode="aspectFill" />
+        <view class="check-icon">✓</view>
+      </view>
+      <text class="teacher-name">{{teacher.name}}</text>
+      <view class="level-badge">
+        <text class="level-dot"></text>
+        <text>{{teacher.tier}} {{teacher.tierName}}</text>
+      </view>
+        <text class="section-label">讲师简介</text>
+        <text class="teacher-bio">"{{teacher.teachingSummary}}"</text>
+    </view>
+
+    <!-- 信息列表（无分隔线，干净排版） -->
+    <view class="info-list">
+      <view class="info-row">
+        <text class="info-label">喜乐名</text>
+        <text class="info-value">{{teacher.xileName}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">教师编号</text>
+        <text class="info-value">{{teacher.teacherNo}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">{{teacher.tier}}认证等级</text>
+        <text class="info-value">{{teacher.tierName}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">认证时间</text>
+        <text class="info-value">{{teacher.certifiedAt}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">认证状态</text>
+        <text class="info-value">{{teacher.certificationStatus}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">所属地区</text>
+        <text class="info-value">{{teacher.city}} {{teacher.district}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">擅长方向</text>
+        <text class="info-value">{{specialtiesText}}</text>
+      </view>
+    </view>
+
+    <!-- 证书展示 -->
+    <view class="cert-card">
+      <text class="cert-title">证书展示</text>
+      <view class="cert-image">
+        <image src="https://images.unsplash.com/photo-1606326608690-4e0281b1e588?w=600&q=80" mode="aspectFit" />
+      </view>
+      <button class="cert-btn" bindtap="openCertificate">查看大图</button>
+      <text class="cert-service">如需核验证书信息，请联系客服</text>
+    </view>
+  </view>
+
+  <view wx:if="{{error}}" class="error-tip">{{error}}</view>
+</view>

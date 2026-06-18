@@ -1,0 +1,41 @@
+<view class="certificate-page">
+  <view class="cert-header">
+    <button bindtap="goBack">‹</button>
+    <text>数字证书预览</text>
+    <text></text>
+  </view>
+
+  <view class="certificate-card">
+    <view class="inner-border"></view>
+    <view class="seal">
+      <view>
+        <text>ASSOCIATION</text>
+        <text class="seal-word">YOGA</text>
+        <text>喜乐认证</text>
+      </view>
+    </view>
+    <text class="issuer">瑜伽导师资质协会</text>
+
+    <image class="cert-avatar" src="{{teacher.avatarUrl}}" mode="aspectFill" />
+    <text class="cert-name">{{teacher.name}}</text>
+    <text class="cert-label">认证等级</text>
+    <text class="cert-level">{{teacher.tierName}}</text>
+    <text class="cert-desc">本证书特此证明该导师已通过本协会专业导师资格审查评估，获批瑜伽教练资质，真伪信息扫码一致。</text>
+
+    <view class="cert-footer">
+      <view class="qr">▦</view>
+      <view class="footer-info">
+        <text>印备颁发单位：</text>
+        <text class="footer-strong">喜乐瑜伽教师认证中心</text>
+        <text>核准登记日：{{teacher.firstCertifiedOn}}</text>
+        <view class="red-seal">SEAL印章</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="cert-actions">
+    <button class="download" bindtap="downloadCert">下载证书图片</button>
+    <button class="share" bindtap="shareCert">分享到朋友圈</button>
+  </view>
+  <button class="paper" bindtap="orderPaperCert">申请纸质版实物证书</button>
+</view>

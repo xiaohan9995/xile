@@ -1,0 +1,232 @@
+.certificate-page {
+  min-height: 100vh;
+  padding: 0 28rpx 80rpx;
+  background: #5d7261;
+  color: #fff;
+}
+
+.cert-header {
+  height: 96rpx;
+  display: grid;
+  grid-template-columns: 64rpx 1fr 64rpx;
+  align-items: center;
+  border-bottom: 1rpx solid rgba(255,255,255,0.1);
+}
+
+.cert-header button {
+  color: #fff;
+  font-size: 42rpx;
+}
+
+.cert-header text:nth-child(2) {
+  text-align: center;
+  color: #fff8e7;
+  font-size: 30rpx;
+  font-weight: 900;
+  letter-spacing: 2rpx;
+}
+
+.certificate-card {
+  position: relative;
+  min-height: 840rpx;
+  margin-top: 34rpx;
+  padding: 46rpx 40rpx;
+  border: 12rpx solid #eedeb9;
+  border-radius: 42rpx;
+  background: radial-gradient(ellipse at center, rgba(238,222,185,0.08), rgba(250,247,242,1));
+  color: #1f2937;
+  box-shadow: 0 34rpx 80rpx rgba(0, 0, 0, 0.22);
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.inner-border {
+  position: absolute;
+  inset: 12rpx;
+  border: 1rpx solid rgba(223, 206, 155, 0.6);
+  border-radius: 30rpx;
+}
+
+.seal {
+  position: relative;
+  z-index: 1;
+  width: 116rpx;
+  height: 116rpx;
+  margin: 0 auto;
+  padding: 6rpx;
+  border: 4rpx solid #fff;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f5e5c0, #cba551);
+  box-shadow: 0 8rpx 20rpx rgba(31, 37, 33, 0.14);
+}
+
+.seal view {
+  width: 100%;
+  height: 100%;
+  border: 1rpx dashed rgba(250,247,242,0.8);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.seal text {
+  font-size: 14rpx;
+  font-weight: 900;
+}
+
+.seal-word {
+  font-size: 18rpx;
+}
+
+.issuer {
+  display: block;
+  margin-top: 14rpx;
+  color: #a68f5e;
+  font-size: 20rpx;
+  font-weight: 900;
+  letter-spacing: 3rpx;
+}
+
+.cert-avatar {
+  position: relative;
+  z-index: 1;
+  width: 150rpx;
+  height: 180rpx;
+  margin: 42rpx auto 0;
+  border: 4rpx solid #dcd0ac;
+  border-radius: 18rpx;
+}
+
+.cert-name {
+  display: block;
+  margin-top: 24rpx;
+  font-family: "STSong", serif;
+  font-size: 42rpx;
+  font-weight: 900;
+}
+
+.cert-label {
+  display: block;
+  margin-top: 14rpx;
+  color: #8a7142;
+  font-size: 22rpx;
+  font-weight: 800;
+}
+
+.cert-level {
+  display: block;
+  margin-top: 4rpx;
+  color: #5d7261;
+  font-family: "STSong", serif;
+  font-size: 30rpx;
+  font-weight: 900;
+}
+
+.cert-desc {
+  display: block;
+  margin: 32rpx auto 0;
+  padding-top: 28rpx;
+  border-top: 1rpx solid rgba(148, 163, 184, 0.28);
+  color: #86837c;
+  font-size: 20rpx;
+  line-height: 1.7;
+}
+
+.cert-footer {
+  display: grid;
+  grid-template-columns: 110rpx 1fr;
+  gap: 26rpx;
+  align-items: end;
+  margin-top: 42rpx;
+  padding-top: 26rpx;
+  border-top: 1rpx solid rgba(232, 223, 194, 0.85);
+  text-align: left;
+}
+
+.qr {
+  width: 100rpx;
+  height: 100rpx;
+  border: 1rpx solid #e5e7eb;
+  border-radius: 10rpx;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  font-size: 56rpx;
+}
+
+.cert-footer text {
+  display: block;
+  color: #6b7280;
+  font-size: 18rpx;
+}
+
+.footer-strong {
+  margin: 4rpx 0 14rpx;
+  color: #1f2937;
+}
+
+.footer-info {
+  position: relative;
+  flex: 1;
+}
+
+.red-seal {
+  position: absolute;
+  right: 0;
+  bottom: -20rpx;
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  border: 4rpx solid rgba(239, 68, 68, 0.5);
+  background: rgba(239, 68, 68, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(12deg);
+  color: #ef4444;
+  font-size: 14rpx;
+  font-weight: 900;
+  font-family: "JetBrains Mono", monospace;
+  letter-spacing: 2rpx;
+}
+
+.cert-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18rpx;
+  margin-top: 32rpx;
+}
+
+.cert-actions button,
+.paper {
+  height: 86rpx;
+  border-radius: 999rpx;
+  color: #fff;
+  font-size: 24rpx;
+  font-weight: 900;
+  transition: all 0.2s ease;
+}
+
+.cert-actions button:active,
+.paper:active {
+  transform: scale(0.95);
+}
+
+.download {
+  background: #f59e0b;
+}
+
+.share {
+  border: 1rpx solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.1);
+}
+
+.paper {
+  width: 100%;
+  margin-top: 18rpx;
+  background: #eedeb9;
+  color: #4b5c4e;
+}
