@@ -29,6 +29,7 @@ Thumbs.db
 
 # Miniprogram
 miniprogram/miniprogram_npm/
+project.private.config.json
 
 # Database
 *.db
