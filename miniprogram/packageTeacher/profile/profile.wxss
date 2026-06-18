@@ -1,0 +1,153 @@
+/* ===== Profile Page (讲师简介) ===== */
+.profile-page {
+  padding-top: 0;
+}
+
+.profile-body {
+  padding: 0 28rpx;
+}
+
+/* Avatar Section */
+.avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40rpx 0 24rpx;
+}
+
+.avatar-ring {
+  position: relative;
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 50%;
+  border: 4rpx solid var(--brand-green);
+  overflow: visible;
+}
+
+.avatar-img {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 50%;
+}
+
+.avatar-check {
+  position: absolute;
+  right: -4rpx;
+  bottom: -4rpx;
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  background: var(--brand-gold);
+  color: #fff;
+  font-size: 22rpx;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3rpx solid #fff;
+  box-shadow: 0 4rpx 8rpx rgba(180, 150, 88, 0.3);
+}
+
+.profile-name {
+  display: block;
+  margin-top: 20rpx;
+  font-size: 38rpx;
+  font-weight: 900;
+  color: var(--brand-ink);
+}
+
+/* Bio */
+.bio-section {
+  margin-top: 24rpx;
+  padding: 24rpx;
+}
+
+.bio-text {
+  font-size: 26rpx;
+  color: var(--brand-ink-soft);
+  line-height: 1.8;
+}
+
+/* Metrics */
+.metrics-card {
+  margin-top: 20rpx;
+  padding: 28rpx;
+  display: flex;
+  align-items: center;
+}
+
+.metric-item {
+  flex: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.metric-label {
+  font-size: 22rpx;
+  color: var(--brand-muted);
+}
+
+.metric-value {
+  font-size: 34rpx;
+  font-weight: 800;
+  color: var(--brand-ink);
+}
+
+.metric-divider {
+  width: 1rpx;
+  height: 56rpx;
+  background: var(--brand-line);
+  margin: 0 16rpx;
+}
+
+/* Menu List */
+.menu-list {
+  margin-top: 24rpx;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 250, 242, 0.82));
+  border: 1rpx solid var(--brand-line);
+  border-radius: 28rpx;
+  overflow: hidden;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  padding: 28rpx 24rpx;
+  border-bottom: 1rpx solid var(--brand-line);
+  transition: background 0.15s;
+}
+
+.menu-item:last-child {
+  border-bottom: none;
+}
+
+.menu-item:active {
+  background: rgba(123, 158, 122, 0.04);
+}
+
+.menu-icon {
+  font-size: 28rpx;
+  margin-right: 16rpx;
+  flex-shrink: 0;
+}
+
+.menu-title {
+  flex: 1;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--brand-ink);
+}
+
+.menu-arrow {
+  color: #ccc;
+  font-size: 36rpx;
+  font-weight: 300;
+}
+
+/* Back Section */
+.back-section {
+  margin-top: 36rpx;
+  padding-bottom: 40rpx;
+}

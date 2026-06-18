@@ -1,0 +1,58 @@
+<view class="page-shell teacher-home-page">
+  <!-- Header -->
+  <view class="page-header" style="padding-top:{{statusBarHeight}}px;">
+    <view class="page-header__back" bindtap="goBack">‹</view>
+    <text class="page-header__title">我的认证</text>
+    <view class="page-header__right"></view>
+  </view>
+
+  <view class="home-body animate-fade-in">
+    <!-- Greeting -->
+    <view class="greeting-section">
+      <text class="greeting-text">您好，<text class="greeting-name serif">{{teacher.name}}</text>老师</text>
+    </view>
+
+    <!-- Certification Status Card -->
+    <view class="cert-status-card">
+      <view class="cert-card-top">
+        <view class="cert-card-left">
+          <view class="cert-avatar-ring">
+            <image class="cert-avatar" src="{{teacher.avatarUrl}}" mode="aspectFill" />
+          </view>
+          <view class="cert-info">
+            <text class="cert-name">{{teacher.name}}</text>
+            <view class="cert-tier-badge badge-gold">
+              <text class="cert-tier-dot">●</text>
+              <text>{{teacher.tier}} {{teacher.tierName}}</text>
+            </view>
+          </view>
+        </view>
+        <view class="cert-card-right">
+          <text class="cert-valid-tag">认证有效</text>
+        </view>
+      </view>
+
+      <!-- Days Countdown -->
+      <view class="days-countdown">
+        <view class="days-number mono">{{teacher.daysLeft}}</view>
+        <text class="days-label">天后到期</text>
+      </view>
+    </view>
+
+    <!-- Quick Menu -->
+    <view class="quick-menu">
+      <text class="menu-section-title">快捷功能</text>
+      <view class="menu-grid">
+        <view class="menu-card soft-card" bindtap="goReviewRecords">
+          <text class="menu-card-icon">📋</text>
+          <text class="menu-card-label">年审记录</text>
+        </view>
+        <view class="menu-card soft-card" bindtap="goCertView">
+          <text class="menu-card-icon">🏅</text>
+          <text class="menu-card-label">证书查看</text>
+        </view>
+      </view>
+    </view>
+  </view>
+<tab-bar />
+</view>

@@ -1,0 +1,28 @@
+<view class="studio-card" bindtap="onTap">
+  <image
+    class="studio-card__cover"
+    src="{{studio.coverUrl || '/assets/default-studio.png'}}"
+    mode="aspectFill"
+  />
+
+  <view class="studio-card__body">
+    <text class="studio-card__name">{{studio.name}}</text>
+
+    <view class="studio-card__location">
+      <text class="studio-card__pin-icon">&#x1F4CD;</text>
+      <text class="studio-card__address">{{studio.city}} {{studio.district}}</text>
+    </view>
+
+    <view class="studio-card__tags" wx:if="{{displayTags.length}}">
+      <text
+        wx:for="{{displayTags}}"
+        wx:key="*this"
+        class="studio-card__tag"
+      >{{item}}</text>
+    </view>
+
+    <view class="studio-card__action">
+      <text class="studio-card__action-text">查看详情</text>
+    </view>
+  </view>
+</view>

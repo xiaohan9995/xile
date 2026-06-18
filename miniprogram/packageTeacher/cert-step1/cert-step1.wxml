@@ -1,0 +1,86 @@
+<view class="page-shell cert-step-page">
+  <!-- Header -->
+  <view class="page-header" style="padding-top:{{statusBarHeight}}px;">
+    <view class="page-header__back" bindtap="goBack">‹</view>
+    <text class="page-header__title">认证申请</text>
+    <view class="page-header__right"></view>
+  </view>
+
+  <!-- Progress Bar -->
+  <view class="progress-strip">
+    <view class="step-item step-item--active">
+      <view class="step-dot">1</view>
+      <text class="step-label">个人信息</text>
+    </view>
+    <view class="step-line"></view>
+    <view class="step-item">
+      <view class="step-dot">2</view>
+      <text class="step-label">资料上传</text>
+    </view>
+    <view class="step-line"></view>
+    <view class="step-item">
+      <view class="step-dot">3</view>
+      <text class="step-label">审核中</text>
+    </view>
+  </view>
+
+  <!-- Form -->
+  <view class="form-card soft-card animate-fade-in-up">
+    <view class="form-header">
+      <text class="form-title">导师认证基础资料</text>
+      <text class="form-subtitle">请保持与证件及培训证明一致</text>
+    </view>
+
+    <!-- Name -->
+    <view class="form-field">
+      <text class="field-label">姓名 <text class="field-required">*</text></text>
+      <input
+        class="field-input"
+        value="{{form.name}}"
+        data-field="name"
+        bindinput="onFieldInput"
+        placeholder="请输入真实姓名"
+      />
+    </view>
+
+    <!-- ID Number -->
+    <view class="form-field">
+      <text class="field-label">身份证号 <text class="field-required">*</text></text>
+      <input
+        class="field-input"
+        value="{{form.idNumber}}"
+        data-field="idNumber"
+        bindinput="onFieldInput"
+        placeholder="请输入18位身份证号"
+        maxlength="18"
+      />
+    </view>
+
+    <!-- Specialization Picker -->
+    <view class="form-field">
+      <text class="field-label">瑜伽专业流派 <text class="field-required">*</text></text>
+      <picker
+        mode="selector"
+        range="{{specializations}}"
+        value="{{specializationIndex}}"
+        bindchange="onSpecChange"
+      >
+        <view class="field-picker {{form.specialization ? '' : 'field-picker--placeholder'}}">
+          {{form.specialization || '请选择瑜伽专业流派'}}
+          <text class="picker-arrow">▾</text>
+        </view>
+      </picker>
+    </view>
+
+    <!-- Error -->
+    <view wx:if="{{error}}" class="form-error">
+      <text>{{error}}</text>
+    </view>
+  </view>
+
+  <!-- Action -->
+  <view class="action-section">
+    <button class="btn-primary" bindtap="goNext">下一步</button>
+  </view>
+<tab-bar />
+</view>

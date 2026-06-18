@@ -1,0 +1,83 @@
+<view class="page-shell studio-detail-page">
+  <!-- Header -->
+  <view class="page-header" style="padding-top:{{statusBarHeight}}px;">
+    <view class="page-header__back" bindtap="goBack">‹</view>
+    <text class="page-header__title">工作室详情</text>
+    <view class="page-header__right"></view>
+  </view>
+
+  <view wx:if="{{studio}}" class="detail-content animate-fade-in">
+    <!-- Cover Image -->
+    <view class="cover-section">
+      <image class="cover-image" src="{{studio.coverImage}}" mode="aspectFill" />
+      <view class="cover-gradient">
+        <view class="cover-badge-row">
+          <text class="cover-status badge-green">{{studio.status || '开放中'}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- Studio Info Card -->
+    <view class="info-card soft-card">
+      <text class="info-name serif">{{studio.name}}</text>
+      <text class="info-location">{{studio.city}} · {{studio.district}}</text>
+
+      <!-- Lead Teacher -->
+      <view class="lead-teacher" wx:if="{{studio.ownerTeacherName}}">
+        <view class="lead-avatar-wrap">
+          <text class="lead-icon">👤</text>
+        </view>
+        <view class="lead-info">
+          <text class="lead-label">主理教师</text>
+          <text class="lead-name">{{studio.ownerTeacherName}}</text>
+        </view>
+      </view>
+
+      <!-- Tags -->
+      <view class="info-tags" wx:if="{{studio.tags.length}}">
+        <text wx:for="{{studio.tags}}" wx:key="*this" class="info-tag">{{item}}</text>
+      </view>
+    </view>
+
+    <!-- Info Grid -->
+    <view class="info-grid">
+      <view class="grid-item soft-card">
+        <text class="grid-icon">📍</text>
+        <view class="grid-text">
+          <text class="grid-label">地址</text>
+          <text class="grid-value">{{studio.address || '暂无地址信息'}}</text>
+        </view>
+      </view>
+      <view class="grid-item soft-card">
+        <text class="grid-icon">🕐</text>
+        <view class="grid-text">
+          <text class="grid-label">开放时间</text>
+          <text class="grid-value">{{studio.openingHours || '10:00 - 21:00'}}</text>
+        </view>
+      </view>
+      <view class="grid-item soft-card">
+        <text class="grid-icon">📞</text>
+        <view class="grid-text">
+          <text class="grid-label">联系方式</text>
+          <text class="grid-value">{{studio.contactText || '微信/电话预约'}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- CTA -->
+    <view class="cta-section">
+      <button class="btn-primary" bindtap="contactStudio">联系工作室</button>
+    </view>
+  </view>
+
+  <!-- Loading -->
+  <view wx:if="{{loading}}" class="loading-wrap">
+    <text class="loading-text animate-pulse">加载中...</text>
+  </view>
+
+  <!-- Error -->
+  <view wx:if="{{error}}" class="error-wrap">
+    <text class="error-text">{{error}}</text>
+  </view>
+<tab-bar />
+</view>

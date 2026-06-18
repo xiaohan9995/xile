@@ -1,0 +1,117 @@
+.teacher-card {
+  display: flex;
+  align-items: center;
+  padding: 28rpx 24rpx;
+  background: var(--color-card);
+  border: 1rpx solid var(--color-line);
+  border-radius: 24rpx;
+  box-shadow: 0 4rpx 24rpx rgba(31, 37, 33, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.teacher-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 2rpx 12rpx rgba(31, 37, 33, 0.06);
+}
+
+/* Avatar */
+.teacher-card__avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 96rpx;
+  height: 96rpx;
+  margin-right: 24rpx;
+}
+
+.teacher-card__avatar {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  border: 2rpx solid var(--color-surface);
+}
+
+.teacher-card__online {
+  position: absolute;
+  right: 2rpx;
+  bottom: 2rpx;
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  background: #10b981;
+  border: 3rpx solid var(--color-card);
+  box-shadow: 0 0 0 2rpx rgba(16, 185, 129, 0.2);
+}
+
+/* Body */
+.teacher-card__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.teacher-card__title-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  flex-wrap: wrap;
+}
+
+.teacher-card__name {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.teacher-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4rpx;
+  padding: 4rpx 14rpx;
+  border-radius: 8rpx;
+  background: var(--color-gold-light);
+  white-space: nowrap;
+}
+
+.teacher-card__badge-icon {
+  font-size: 18rpx;
+  color: var(--color-gold);
+  font-weight: 700;
+}
+
+.teacher-card__badge-text {
+  font-size: 20rpx;
+  font-weight: 600;
+  color: var(--color-gold);
+}
+
+.teacher-card__cert-no,
+.teacher-card__valid {
+  font-size: 22rpx;
+  color: var(--color-muted);
+  font-family: "Menlo", "SF Mono", monospace;
+}
+
+/* Arrow */
+.teacher-card__arrow {
+  flex-shrink: 0;
+  margin-left: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.teacher-card__arrow-icon {
+  font-size: 40rpx;
+  color: var(--color-muted);
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.teacher-card:active .teacher-card__arrow-icon {
+  color: var(--color-primary);
+  transform: translateX(4rpx);
+}

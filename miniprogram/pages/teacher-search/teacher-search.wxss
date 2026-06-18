@@ -1,0 +1,198 @@
+/* ===== 教师查询页 ===== */
+.search-page {
+  min-height: 100vh;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ===== Search bar ===== */
+.search-bar {
+  padding: 20rpx 32rpx;
+}
+
+.search-input-wrap {
+  display: flex;
+  align-items: center;
+  height: 84rpx;
+  background: var(--color-card);
+  border-radius: var(--radius-full);
+  border: 2rpx solid var(--color-surface);
+  padding: 0 24rpx;
+  box-shadow: var(--shadow-card);
+}
+
+.search-icon {
+  font-size: 32rpx;
+  color: var(--color-muted);
+  margin-right: 12rpx;
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  height: 84rpx;
+  font-size: 28rpx;
+  color: var(--color-text);
+}
+
+.search-placeholder {
+  color: var(--color-muted);
+}
+
+.search-clear {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  color: var(--color-muted);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.search-clear:active {
+  background: var(--color-surface);
+}
+
+/* ===== Filter chips ===== */
+.filter-chips {
+  display: flex;
+  gap: 16rpx;
+  padding: 0 32rpx 20rpx;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.chip {
+  flex-shrink: 0;
+  padding: 12rpx 28rpx;
+  border-radius: var(--radius-full);
+  background: var(--color-card);
+  border: 1rpx solid var(--color-line);
+  font-size: 24rpx;
+  color: var(--color-muted);
+  font-weight: 500;
+}
+
+.chip--active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+.chip:active {
+  opacity: 0.85;
+}
+
+/* ===== Result count ===== */
+.result-count {
+  padding: 0 32rpx 16rpx;
+  font-size: 24rpx;
+  color: var(--color-muted);
+}
+
+/* ===== Teacher list ===== */
+.teacher-list {
+  padding: 0 32rpx;
+  max-height: calc(100vh - 440rpx);
+}
+
+.teacher-card {
+  display: flex;
+  align-items: center;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+  background: var(--color-card);
+  border-radius: var(--radius-md);
+  border: 1rpx solid var(--color-line);
+  box-shadow: var(--shadow-card);
+}
+
+.teacher-card:active {
+  background: var(--color-surface);
+}
+
+.card-avatar {
+  flex-shrink: 0;
+  width: 96rpx;
+  height: 96rpx;
+  margin-right: 20rpx;
+}
+
+.avatar-img {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  border: 3rpx solid var(--color-primary);
+}
+
+.card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-name-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.card-name {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.card-tier {
+  display: inline-block;
+  padding: 4rpx 14rpx;
+  border-radius: 8rpx;
+  background: var(--color-gold-light);
+  color: var(--color-gold);
+  font-size: 20rpx;
+  font-weight: 700;
+}
+
+.card-status {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.card-meta {
+  display: block;
+  margin-top: 4rpx;
+  font-size: 22rpx;
+  color: var(--color-muted);
+}
+
+.card-arrow {
+  flex-shrink: 0;
+  align-self: center;
+  margin-left: 12rpx;
+  font-size: 36rpx;
+  color: var(--color-muted);
+  font-weight: 300;
+}
+
+/* ===== Empty state ===== */
+.empty-state {
+  margin-top: 120rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.empty-icon {
+  font-size: 80rpx;
+  color: var(--color-surface);
+  margin-bottom: 16rpx;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: var(--color-muted);
+}

@@ -1,0 +1,78 @@
+<view class="search-page">
+  <!-- Header -->
+  <view class="page-header" style="padding-top:{{statusBarHeight}}px;">
+    <view class="page-header__back" bindtap="goBack">‹</view>
+    <text class="page-header__title">名师资质校验</text>
+    <view class="page-header__right"></view>
+  </view>
+
+  <!-- Search input -->
+  <view class="search-bar">
+    <view class="search-input-wrap">
+      <text class="search-icon">⌕</text>
+      <input
+        class="search-input"
+        value="{{keyword}}"
+        placeholder="输入导师姓名或证书编号"
+        placeholder-class="search-placeholder"
+        confirm-type="search"
+        bindinput="onInput"
+        bindconfirm="doSearch"
+      />
+      <view wx:if="{{keyword}}" class="search-clear" bindtap="clearKeyword">×</view>
+    </view>
+  </view>
+
+  <!-- Level filter chips -->
+  <view class="filter-chips">
+    <view
+      wx:for="{{tiers}}"
+      wx:key="value"
+      class="chip {{activeTier === item.value ? 'chip--active' : ''}}"
+      bindtap="onTierTap"
+      data-tier="{{item.value}}"
+    >
+      <text>{{item.label}}</text>
+    </view>
+  </view>
+
+  <!-- Results count -->
+  <view class="result-count" wx:if="{{!loading}}">
+    <text>共 {{teachers.length}} 位导师</text>
+  </view>
+
+  <!-- Teacher list -->
+  <scroll-view scroll-y class="teacher-list" enhanced show-scrollbar="{{false}}">
+    <view
+      wx:for="{{teachers}}"
+      wx:key="id"
+      class="teacher-card"
+      bindtap="openTeacher"
+      data-id="{{item.id}}"
+    >
+      <view class="card-avatar">
+        <image class="avatar-img" src="{{item.avatarUrl}}" mode="aspectFill" />
+      </view>
+      <view class="card-body">
+        <view class="card-name-row">
+          <text class="card-name">{{item.name}}</text>
+          <text class="card-tier">{{item.tierName}}</text>
+        </view>
+        <text class="card-status">{{item.certificationStatus}}</text>
+        <text class="card-meta">编号 {{item.teacherNo}}</text>
+        <text class="card-meta">有效期至 {{item.validUntil}}</text>
+      </view>
+      <text class="card-arrow">›</text>
+    </view>
+  </scroll-view>
+
+  <!-- Empty state -->
+  <view wx:if="{{!loading && teachers.length === 0}}" class="empty-state">
+    <text class="empty-icon">⌕</text>
+    <text class="empty-text">暂无匹配导师</text>
+  </view>
+
+  <!-- Error -->
+  <view wx:if="{{error}}" class="error-tip">{{error}}</view>
+<tab-bar active="search" />
+</view>

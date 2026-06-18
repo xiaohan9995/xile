@@ -1,0 +1,18 @@
+<view class="upload-list">
+  <view
+    wx:for="{{files}}"
+    wx:key="title"
+    class="upload-tile {{item.done ? 'upload-tile--done' : ''}}"
+    bindtap="onChoose"
+    data-index="{{index}}"
+  >
+    <view class="upload-tile__icon">
+      <text wx:if="{{item.done}}" class="upload-tile__check">✓</text>
+      <text wx:else class="upload-tile__upload">⇧</text>
+    </view>
+    <view class="upload-tile__body">
+      <text class="upload-tile__title">{{item.title}}</text>
+      <text class="upload-tile__desc">{{item.fileName || item.desc}}</text>
+    </view>
+  </view>
+</view>

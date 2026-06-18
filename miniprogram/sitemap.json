@@ -1,0 +1,15 @@
+{
+  "rules": [
+    { "action": "allow", "page": "pages/index/index" },
+    { "action": "allow", "page": "pages/teacher-search/teacher-search" },
+    { "action": "allow", "page": "pages/teacher-detail/teacher-detail" },
+    { "action": "allow", "page": "pages/studios/studios" },
+    { "action": "allow", "page": "pages/studio-detail/studio-detail" },
+    { "action": "allow", "page": "packageTeacher/home/home" },
+    { "action": "allow", "page": "packageTeacher/profile/profile" },
+    { "action": "allow", "page": "packageTeacher/cert-step1/cert-step1" },
+    { "action": "allow", "page": "packageTeacher/review-apply/review-apply" },
+    { "action": "allow", "page": "packageTeacher/review-records/review-records" },
+    { "action": "allow", "page": "packageTeacher/submission-success/submission-success" }
+  ]
+}

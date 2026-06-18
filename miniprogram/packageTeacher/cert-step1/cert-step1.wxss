@@ -1,0 +1,159 @@
+/* ===== Cert Step 1 (认证申请 Step1) ===== */
+.cert-step-page {
+  padding-top: 0;
+}
+
+/* Progress Strip */
+.progress-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28rpx 40rpx;
+  background: var(--brand-gold-light);
+  border-bottom: 1rpx solid rgba(180, 150, 88, 0.12);
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.step-dot {
+  width: 40rpx;
+  height: 40rpx;
+  line-height: 40rpx;
+  border-radius: 50%;
+  text-align: center;
+  background: #e5e7eb;
+  color: #fff;
+  font-size: 22rpx;
+  font-weight: 800;
+}
+
+.step-label {
+  font-size: 22rpx;
+  font-weight: 700;
+  color: var(--brand-muted);
+}
+
+.step-item--active .step-dot {
+  background: var(--brand-green);
+  box-shadow: 0 0 0 6rpx rgba(123, 158, 122, 0.2);
+}
+
+.step-item--active .step-label {
+  color: var(--brand-green);
+}
+
+.step-item--done .step-dot {
+  background: var(--brand-gold);
+}
+
+.step-item--done .step-label {
+  color: var(--brand-gold);
+}
+
+.step-line {
+  width: 60rpx;
+  height: 2rpx;
+  margin: 0 14rpx;
+  background: #e5e7eb;
+}
+
+/* Form Card */
+.form-card {
+  margin: 28rpx;
+  padding: 32rpx;
+}
+
+.form-header {
+  margin-bottom: 28rpx;
+}
+
+.form-title {
+  display: block;
+  font-size: 34rpx;
+  font-weight: 900;
+  color: var(--brand-ink);
+}
+
+.form-subtitle {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: var(--brand-muted);
+}
+
+/* Fields */
+.form-field {
+  margin-top: 28rpx;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 12rpx;
+  font-size: 24rpx;
+  font-weight: 800;
+  color: var(--brand-ink);
+}
+
+.field-required {
+  color: #ef4444;
+  font-family: "JetBrains Mono", monospace;
+}
+
+.field-input {
+  height: 80rpx;
+  padding: 0 4rpx;
+  border: 0;
+  border-bottom: 2rpx solid var(--brand-green-lighter);
+  background: transparent;
+  color: var(--brand-ink);
+  font-size: 28rpx;
+  transition: border-color 0.2s ease;
+}
+
+.field-input:focus {
+  border-bottom-color: var(--brand-green);
+}
+
+/* Picker */
+.field-picker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 80rpx;
+  padding: 0 4rpx;
+  border-bottom: 2rpx solid var(--brand-green-lighter);
+  font-size: 28rpx;
+  color: var(--brand-ink);
+}
+
+.field-picker--placeholder {
+  color: #b0b8b1;
+}
+
+.picker-arrow {
+  font-size: 24rpx;
+  color: var(--brand-muted);
+}
+
+/* Error */
+.form-error {
+  margin-top: 20rpx;
+  padding: 14rpx 18rpx;
+  background: #fef2f2;
+  border-radius: 12rpx;
+  border: 1rpx solid #fecaca;
+}
+
+.form-error text {
+  font-size: 24rpx;
+  color: #c84a4a;
+}
+
+/* Action */
+.action-section {
+  padding: 16rpx 28rpx;
+}

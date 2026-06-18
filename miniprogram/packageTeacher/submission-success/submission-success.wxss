@@ -1,0 +1,91 @@
+/* ===== Submission Success Page ===== */
+.success-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 40rpx 36rpx;
+}
+
+.success-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* Checkmark Icon */
+.success-icon-wrap {
+  margin-bottom: 32rpx;
+}
+
+.success-icon {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--brand-green), var(--brand-green-hover));
+  color: #fff;
+  font-size: 60rpx;
+  font-weight: 900;
+  box-shadow: 0 12rpx 32rpx rgba(93, 114, 97, 0.3);
+}
+
+/* Text */
+.success-heading {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 900;
+  color: var(--brand-ink);
+}
+
+.success-desc {
+  display: block;
+  margin-top: 16rpx;
+  padding: 0 20rpx;
+  font-size: 26rpx;
+  color: var(--brand-muted);
+  line-height: 1.7;
+}
+
+/* Info Card */
+.success-info-card {
+  width: 100%;
+  margin-top: 40rpx;
+  padding: 28rpx;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid var(--brand-line);
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-size: 24rpx;
+  color: var(--brand-muted);
+}
+
+.info-value {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: var(--brand-ink);
+}
+
+/* Actions */
+.success-actions {
+  width: 100%;
+  margin-top: 40rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}

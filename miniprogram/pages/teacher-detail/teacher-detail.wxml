@@ -1,0 +1,70 @@
+<view class="detail-page">
+  <!-- Header -->
+  <view class="page-header" style="padding-top:{{statusBarHeight}}px;">
+    <view class="page-header__back" bindtap="goBack">‹</view>
+    <text class="page-header__title">教师详情</text>
+    <view class="page-header__right"></view>
+  </view>
+
+  <view wx:if="{{teacher}}" class="detail-body">
+    <!-- Avatar section -->
+    <view class="profile-hero">
+      <view class="avatar-wrap">
+        <image class="avatar-img" src="{{teacher.avatarUrl}}" mode="aspectFill" />
+        <view class="avatar-badge">✓</view>
+      </view>
+      <text class="profile-name">{{teacher.name}}</text>
+      <view class="profile-tier">
+        <text class="tier-dot"></text>
+        <text>{{teacher.tierName}}</text>
+      </view>
+      <text class="profile-status">{{teacher.certificationStatus}}</text>
+    </view>
+
+    <!-- Info definition list -->
+    <view class="info-card">
+      <view class="info-row">
+        <text class="info-label">喜乐名</text>
+        <text class="info-value">{{teacher.xileName}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">教师编号</text>
+        <text class="info-value">{{teacher.teacherNo}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">认证等级</text>
+        <text class="info-value">{{teacher.tierName}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">认证时间</text>
+        <text class="info-value">{{teacher.certifiedAt}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">有效期至</text>
+        <text class="info-value">{{teacher.validUntil}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">所属地区</text>
+        <text class="info-value">{{teacher.city}} {{teacher.district}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">擅长方向</text>
+        <text class="info-value">{{specialtiesText}}</text>
+      </view>
+    </view>
+
+    <!-- Certification note -->
+    <view class="cert-note">
+      <text class="cert-note-text">本信息由喜乐瑜伽认证系统提供，如需核验证书详情请联系管理员。</text>
+    </view>
+  </view>
+
+  <!-- Loading state -->
+  <view wx:if="{{loading && !teacher}}" class="loading-state">
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- Error state -->
+  <view wx:if="{{error}}" class="error-tip">{{error}}</view>
+<tab-bar />
+</view>
