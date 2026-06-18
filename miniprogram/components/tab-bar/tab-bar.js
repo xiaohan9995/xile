@@ -8,15 +8,15 @@ Component({
   methods: {
     goHome() {
       if (this.data.active === 'home') return;
-      wx.navigateTo({ url: '/pages/index/index' });
-    },
-    goSearch() {
-      if (this.data.active === 'search') return;
-      wx.navigateTo({ url: '/pages/teacher-search/teacher-search' });
+      wx.reLaunch({ url: '/pages/index/index' });
     },
     goStudio() {
       if (this.data.active === 'studio') return;
-      wx.navigateTo({ url: '/pages/studios/studios' });
+      wx.reLaunch({ url: '/pages/studios/studios' });
+    },
+    goMy() {
+      if (this.data.active === 'my') return;
+      wx.reLaunch({ url: '/packageTeacher/home/home' });
     },
   },
 });

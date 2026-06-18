@@ -14,12 +14,14 @@ const STATUS_MAP = {
 Page({
   data: {
     statusBarHeight: 20,
+    activeTab: 'all',
     current: {
       tier: '--',
       tierName: '',
       validUntil: '--',
     },
     records: [],
+    allRecords: [],
   },
 
   onLoad() {
@@ -56,6 +58,7 @@ Page({
           validUntil: teacher.validUntil || '--',
         },
         records,
+        allRecords: records,
       });
     } catch (err) {
       wx.showToast({ title: '加载失败', icon: 'none' });
@@ -64,5 +67,14 @@ Page({
 
   goBack() {
     wx.navigateBack();
+  },
+
+  switchTab(e) {
+    const tab = e.currentTarget.dataset.tab;
+    const allRecords = this.data.allRecords;
+    const filtered = tab === 'passed'
+      ? allRecords.filter((r) => r.statusClass === 'status-approved')
+      : allRecords;
+    this.setData({ activeTab: tab, records: filtered });
   },
 });

@@ -79,5 +79,4 @@
   <view wx:if="{{error}}" class="error-wrap">
     <text class="error-text">{{error}}</text>
   </view>
-<tab-bar />
 </view>

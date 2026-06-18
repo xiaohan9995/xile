@@ -55,5 +55,5 @@
     <button class="btn-ghost" bindtap="goBack">上一步</button>
     <button class="btn-primary" bindtap="submitReview" loading="{{submitting}}" disabled="{{submitting}}">提交审核</button>
   </view>
-<tab-bar />
+<tab-bar active="my" />
 </view>

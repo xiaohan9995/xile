@@ -1,155 +1,147 @@
-/* ===== Review Records Page (年审记录) ===== */
+/* ===== Review Records Page ===== */
 .records-page {
   padding-top: 0;
 }
 
 .records-body {
-  padding: 0 28rpx;
+  padding: 0 32rpx 60rpx;
 }
 
-/* Level Card */
-.level-card {
+/* ===== Current level section ===== */
+.current-level {
   margin-top: 24rpx;
-  padding: 28rpx;
-  background: var(--brand-green);
-  border-radius: 28rpx;
-  box-shadow: 0 12rpx 36rpx rgba(93, 114, 97, 0.25);
+  padding: 36rpx;
+  background: var(--color-card);
+  border-radius: 32rpx;
+  border: 1rpx solid var(--color-line);
 }
 
-.level-card-top {
-  display: flex;
-  flex-direction: column;
-  gap: 4rpx;
+.current-label {
+  display: block;
+  font-size: 24rpx;
+  color: var(--color-muted);
 }
 
-.level-en {
-  font-size: 18rpx;
-  color: rgba(255, 255, 255, 0.5);
-  letter-spacing: 2rpx;
-}
-
-.level-sub {
-  font-size: 22rpx;
-  color: rgba(255, 248, 231, 0.85);
-  font-weight: 700;
-}
-
-.level-card-main {
+.current-main {
   display: flex;
   align-items: baseline;
-  gap: 14rpx;
-  margin-top: 14rpx;
+  gap: 12rpx;
+  margin-top: 8rpx;
 }
 
-.level-code {
-  font-size: 56rpx;
+.current-tier {
+  font-size: 64rpx;
   font-weight: 900;
-  color: #fff;
-  line-height: 1;
+  color: var(--color-gold);
+  font-style: normal;
+  line-height: 1.1;
 }
 
-.level-name {
-  font-size: 30rpx;
+.current-name {
+  font-size: 36rpx;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text);
 }
 
-.level-expiry {
+.current-expiry {
   display: block;
-  margin-top: 12rpx;
-  font-size: 22rpx;
-  color: rgba(255, 255, 255, 0.7);
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: var(--color-muted);
 }
 
-/* Timeline */
-.timeline-section {
-  margin-top: 32rpx;
-  padding-bottom: 40rpx;
+/* ===== Record tabs ===== */
+.record-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16rpx;
+  margin: 28rpx 0;
+}
+
+.record-tab {
+  height: 68rpx;
+  border-radius: 34rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--color-muted);
+  background: var(--color-card);
+  border: 1rpx solid var(--color-line);
+}
+
+.record-tab--active {
+  color: var(--color-primary-dark);
+  border-bottom: 4rpx solid var(--color-primary);
+  border-radius: 0;
+  background: transparent;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
+
+/* ===== Timeline list ===== */
+.timeline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.timeline-item {
+  position: relative;
+  padding: 28rpx 28rpx 28rpx 48rpx;
+  background: var(--color-card);
+  border-radius: 32rpx;
+  border: 1rpx solid var(--color-line);
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: 20rpx;
+  top: 40rpx;
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  background: var(--color-primary);
 }
 
 .timeline-title {
   display: block;
   font-size: 28rpx;
-  font-weight: 800;
-  color: var(--brand-ink);
-  margin-bottom: 20rpx;
-}
-
-.empty-records {
-  padding: 40rpx;
-  text-align: center;
-}
-
-.timeline-list {
-  position: relative;
-}
-
-.timeline-item {
-  position: relative;
-  padding-left: 36rpx;
-  margin-bottom: 20rpx;
-}
-
-.timeline-dot {
-  position: absolute;
-  left: 0;
-  top: 28rpx;
-  width: 14rpx;
-  height: 14rpx;
-  border-radius: 50%;
-  background: var(--brand-green);
-  box-shadow: 0 0 0 4rpx rgba(123, 158, 122, 0.2);
-}
-
-.timeline-line {
-  position: absolute;
-  left: 6rpx;
-  top: 46rpx;
-  bottom: -20rpx;
-  width: 2rpx;
-  background: var(--brand-line);
-}
-
-.timeline-content {
-  padding: 20rpx 24rpx;
-}
-
-.timeline-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.timeline-year {
-  font-size: 28rpx;
   font-weight: 700;
-  color: var(--brand-ink);
+  color: var(--color-text);
 }
 
 .timeline-status {
-  padding: 6rpx 16rpx;
-  border-radius: 999rpx;
-  font-size: 20rpx;
-  font-weight: 700;
+  position: absolute;
+  right: 28rpx;
+  top: 28rpx;
+  font-size: 24rpx;
+  font-weight: 600;
 }
 
 .timeline-status.status-approved {
-  background: rgba(123, 158, 122, 0.12);
-  color: var(--brand-green);
+  color: var(--color-primary-dark);
 }
 
 .timeline-status.status-submitted {
-  background: rgba(180, 150, 88, 0.12);
-  color: var(--brand-gold);
+  color: var(--color-gold);
 }
 
 .timeline-status.status-rejected {
-  background: rgba(239, 68, 68, 0.08);
-  color: #c84a4a;
+  color: var(--color-danger);
 }
 
 .timeline-meta {
   margin-top: 8rpx;
   font-size: 22rpx;
-  color: var(--brand-muted);
+  color: var(--color-muted);
+}
+
+/* ===== Empty state ===== */
+.empty-records {
+  padding: 60rpx;
+  text-align: center;
 }
