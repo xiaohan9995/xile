@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>喜乐瑜伽教师认证中心 - 产品原型</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="design-board">
+      <section class="hero">
+        <p class="eyebrow">Product Design V1.0</p>
+        <h1>喜乐瑜伽教师认证中心</h1>
+        <p>小程序 + 管理后台高保真原型</p>
+        <div class="lotus-rule"><span></span><i class="ri-flower-line"></i><span></span></div>
+      </section>
+
+      <section class="mobile-strip" aria-label="小程序端设计">
+        <article class="phone" data-screen="home">
+          <div class="statusbar"><span>9:41</span><span><i class="ri-signal-wifi-line"></i><i class="ri-battery-2-charge-line"></i></span></div>
+          <section class="home-visual">
+            <div class="wechat-actions"><i class="ri-more-fill"></i><i class="ri-record-circle-line"></i></div>
+            <h2>喜乐瑜伽<br />教师认证中心</h2>
+            <p>成长 · 修习 · 传承</p>
+          </section>
+          <div class="mobile-body home-body">
+            <button class="hero-action" data-jump="search"><i class="ri-id-card-line"></i><span><strong>教师查询</strong><small>查认证教师信息</small></span></button>
+            <div class="quick-grid">
+              <button data-jump="mine"><strong>我的认证</strong><small>查看个人认证信息</small></button>
+              <button data-jump="studios"><strong>瑜伽工作室</strong><small>查看附近认证场馆</small></button>
+            </div>
+            <div class="stats-card">
+              <div class="card-title"><span>数据统计</span><small>查看更多</small></div>
+              <div class="stat-pair">
+                <div><strong>1,286</strong><span>认证教师总数</span></div>
+                <div><strong>326</strong><span>本年度完成年审</span></div>
+              </div>
+            </div>
+          </div>
+          <nav class="tabbar">
+            <span class="active"><i class="ri-home-5-fill"></i>首页</span>
+            <span data-jump="search"><i class="ri-search-line"></i>查询</span>
+            <span data-jump="mine"><i class="ri-user-3-line"></i>我的</span>
+          </nav>
+          <p class="screen-label">首页</p>
+        </article>
+
+        <article class="phone" data-screen="search">
+          <div class="statusbar"><span>9:41</span><span><i class="ri-signal-wifi-line"></i><i class="ri-battery-2-charge-line"></i></span></div>
+          <header class="phone-header"><span></span><strong>教师查询</strong><span><i class="ri-more-fill"></i><i class="ri-record-circle-line"></i></span></header>
+          <div class="mobile-body">
+            <label class="searchbox">
+              <input id="teacherSearch" placeholder="请输入姓名 / 喜乐名 / 编号" />
+              <button id="searchButton" aria-label="搜索"><i class="ri-search-line"></i></button>
+            </label>
+            <div class="filter-row">
+              <button class="filter active" data-filter="all">全部等级</button>
+              <button class="filter" data-filter="上海市">全部地区</button>
+              <button class="filter" data-filter="认证有效">认证状态</button>
+            </div>
+            <div class="teacher-list" id="teacherList"></div>
+            <p class="empty-tip" id="emptyTip">没有更多数据了</p>
+          </div>
+          <nav class="tabbar">
+            <span data-jump="home"><i class="ri-home-5-line"></i>首页</span>
+            <span class="active"><i class="ri-search-fill"></i>查询</span>
+            <span data-jump="mine"><i class="ri-user-3-line"></i>我的</span>
+          </nav>
+          <p class="screen-label">教师查询</p>
+        </article>
+
+        <article class="phone" data-screen="detail">
+          <div class="statusbar"><span>9:41</span><span><i class="ri-signal-wifi-line"></i><i class="ri-battery-2-charge-line"></i></span></div>
+          <header class="phone-header"><button data-jump="search"><i class="ri-arrow-left-s-line"></i></button><strong>教师详情</strong><span><i class="ri-more-fill"></i><i class="ri-record-circle-line"></i></span></header>
+          <div class="mobile-body">
+            <section class="profile-head">
+              <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=220&q=80" alt="张三头像" />
+              <div>
+                <h3>张三</h3>
+                <p><span class="level-badge">L3</span> 认证导师</p>
+                <strong>认证有效</strong>
+              </div>
+            </section>
+            <section class="info-card">
+              <dl>
+                <div><dt>喜乐名</dt><dd>喜悦</dd></div>
+                <div><dt>教师编号</dt><dd>JY20230001</dd></div>
+                <div><dt>认证等级</dt><dd>L3 认证导师</dd></div>
+                <div><dt>认证时间</dt><dd>2023.01.01</dd></div>
+                <div><dt>有效期至</dt><dd>2028.12.31</dd></div>
+                <div><dt>所属地区</dt><dd>上海市</dd></div>
+                <div><dt>擅长方向</dt><dd>哈他瑜伽、流瑜伽、孕产瑜伽</dd></div>
+              </dl>
+            </section>
+            <section class="certificate-card">
+              <div class="card-title"><span>证书展示</span><small>查看大图</small></div>
+              <div class="certificate"><i class="ri-award-line"></i><span>喜乐瑜伽教师认证证书</span></div>
+            </section>
+            <section class="verification-note">
+              <i class="ri-shield-check-line"></i>
+              <span>该教师资质由喜乐瑜伽教师管理委员会认证维护</span>
+            </section>
+          </div>
+          <p class="screen-label">教师详情</p>
+        </article>
+
+        <article class="phone" data-screen="mine">
+          <div class="statusbar"><span>9:41</span><span><i class="ri-signal-wifi-line"></i><i class="ri-battery-2-charge-line"></i></span></div>
+          <header class="phone-header"><button data-jump="home"><i class="ri-arrow-left-s-line"></i></button><strong>我的认证</strong><span><i class="ri-more-fill"></i><i class="ri-record-circle-line"></i></span></header>
+          <div class="mobile-body">
+            <section class="mine-card">
+              <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=180&q=80" alt="教师头像" />
+              <div>
+                <p>您好，张三老师</p>
+                <h3><span class="level-badge">L3</span> 认证导师</h3>
+                <small>认证有效</small>
+              </div>
+            </section>
+            <div class="metric-row">
+              <div><span>有效期至</span><strong>2028.12.31</strong></div>
+              <div><span>距到期</span><strong>1095 天</strong></div>
+            </div>
+            <div class="menu-list">
+              <button><i class="ri-archive-line"></i>我的档案<i class="ri-arrow-right-s-line"></i></button>
+              <button data-jump="records"><i class="ri-calendar-check-line"></i>年审记录<i class="ri-arrow-right-s-line"></i></button>
+              <button><i class="ri-award-line"></i>证书查看<i class="ri-arrow-right-s-line"></i></button>
+              <button><i class="ri-customer-service-2-line"></i>联系客服<i class="ri-arrow-right-s-line"></i></button>
+              <button><i class="ri-settings-3-line"></i>设置<i class="ri-arrow-right-s-line"></i></button>
+            </div>
+          </div>
+          <nav class="tabbar">
+            <span data-jump="home"><i class="ri-home-5-line"></i>首页</span>
+            <span data-jump="search"><i class="ri-search-line"></i>查询</span>
+            <span class="active"><i class="ri-user-3-fill"></i>我的</span>
+          </nav>
+          <p class="screen-label">我的认证</p>
+        </article>
+
+        <article class="phone" data-screen="records">
+          <div class="statusbar"><span>9:41</span><span><i class="ri-signal-wifi-line"></i><i class="ri-battery-2-charge-line"></i></span></div>
+          <header class="phone-header"><button data-jump="mine"><i class="ri-arrow-left-s-line"></i></button><strong>年审记录</strong><span><i class="ri-more-fill"></i><i class="ri-record-circle-line"></i></span></header>
+          <div class="mobile-body">
+            <section class="current-level">
+              <span>当前认证等级</span>
+              <strong><em>L3</em> 认证导师</strong>
+              <small>有效期至：2028.12.31</small>
+            </section>
+            <div class="record-tabs"><button class="active">年审记录</button><button>全部记录</button></div>
+            <ol class="timeline">
+              <li><strong>2024年度年审</strong><span>已通过</span><small>2024.06.20 · 审核人：管理员</small></li>
+              <li><strong>2022年度年审</strong><span>已通过</span><small>2022.06.18 · 审核人：管理员</small></li>
+              <li><strong>2020年度年审</strong><span>已通过</span><small>2020.06.15 · 审核人：管理员</small></li>
+            </ol>
+          </div>
+          <p class="screen-label">年审记录</p>
+        </article>
+
+        <article class="phone" data-screen="studios">
+          <div class="statusbar"><span>9:41</span><span><i class="ri-signal-wifi-line"></i><i class="ri-battery-2-charge-line"></i></span></div>
+          <header class="phone-header"><button data-jump="home"><i class="ri-arrow-left-s-line"></i></button><strong>瑜伽工作室</strong><span><i class="ri-more-fill"></i><i class="ri-record-circle-line"></i></span></header>
+          <div class="mobile-body studio-body">
+            <section class="studio-hero">
+              <p>认证场馆</p>
+              <h3>找一处安静练习的空间</h3>
+              <span>已收录 36 家喜乐瑜伽认证工作室</span>
+            </section>
+            <label class="searchbox studio-search">
+              <input id="studioSearch" placeholder="搜索城市 / 工作室名称" />
+              <button id="studioSearchButton" aria-label="搜索工作室"><i class="ri-search-line"></i></button>
+            </label>
+            <div class="filter-row">
+              <button class="studio-filter active" data-studio-filter="all">全部</button>
+              <button class="studio-filter" data-studio-filter="上海">上海</button>
+              <button class="studio-filter" data-studio-filter="北京">北京</button>
+              <button class="studio-filter" data-studio-filter="开放中">开放中</button>
+            </div>
+            <div class="studio-list" id="studioList"></div>
+          </div>
+          <nav class="tabbar">
+            <span data-jump="home"><i class="ri-home-5-line"></i>首页</span>
+            <span data-jump="search"><i class="ri-search-line"></i>查询</span>
+            <span data-jump="mine"><i class="ri-user-3-line"></i>我的</span>
+          </nav>
+          <p class="screen-label">工作室列表</p>
+        </article>
+
+        <article class="phone" data-screen="studio-detail">
+          <div class="statusbar"><span>9:41</span><span><i class="ri-signal-wifi-line"></i><i class="ri-battery-2-charge-line"></i></span></div>
+          <header class="phone-header"><button data-jump="studios"><i class="ri-arrow-left-s-line"></i></button><strong>工作室详情</strong><span><i class="ri-more-fill"></i><i class="ri-record-circle-line"></i></span></header>
+          <div class="mobile-body studio-detail-body">
+            <section class="studio-cover">
+              <img src="https://images.unsplash.com/photo-1593810450967-f9c42742e326?auto=format&fit=crop&w=720&q=86" alt="静心瑜伽空间" />
+              <span>认证工作室</span>
+            </section>
+            <section class="studio-detail-card">
+              <div>
+                <h3>静心瑜伽空间</h3>
+                <small>上海市 · 徐汇区</small>
+              </div>
+              <span class="studio-status">开放中</span>
+              <p>主理教师：张三 · L3 认证导师</p>
+              <p>适合哈他瑜伽、流瑜伽、女性身心疗愈等日常练习。</p>
+            </section>
+            <section class="studio-info-grid">
+              <div><i class="ri-map-pin-2-line"></i><strong>地址</strong><span>上海市徐汇区衡山路 88 号</span></div>
+              <div><i class="ri-time-line"></i><strong>开放时间</strong><span>周一至周日 09:00-20:30</span></div>
+              <div><i class="ri-phone-line"></i><strong>联系方式</strong><span>由客服统一对接</span></div>
+            </section>
+            <button class="primary-wide">联系工作室</button>
+          </div>
+          <p class="screen-label">工作室详情</p>
+        </article>
+      </section>
+
+      <section class="tokens-panel">
+        <div>
+          <h2>色彩规范</h2>
+          <div class="swatches">
+            <span style="--c:#78887A">#78887A</span>
+            <span style="--c:#F7F4EE">#F7F4EE</span>
+            <span style="--c:#B89A63">#B89A63</span>
+            <span style="--c:#1F2521">#1F2521</span>
+            <span style="--c:#E8ECE9">#E8ECE9</span>
+          </div>
+        </div>
+        <div>
+          <h2>图标规范</h2>
+          <div class="icon-row">
+            <i class="ri-shield-check-line"></i>
+            <i class="ri-id-card-line"></i>
+            <i class="ri-graduation-cap-line"></i>
+            <i class="ri-customer-service-2-line"></i>
+            <i class="ri-settings-3-line"></i>
+            <i class="ri-search-line"></i>
+          </div>
+        </div>
+      </section>
+
+      <section class="admin-section" aria-label="管理后台设计">
+        <h2>管理端设计</h2>
+        <div class="admin-tabs">
+          <button class="active" data-admin-tab="dashboard">数据看板</button>
+          <button data-admin-tab="teachers">教师管理</button>
+          <button data-admin-tab="reviews">年审管理</button>
+          <button data-admin-tab="studios">工作室管理</button>
+          <button data-admin-tab="review-detail">审核详情</button>
+        </div>
+
+        <article class="admin-shell" data-admin-panel="dashboard">
+          <aside class="sidebar">
+            <div class="brand"><i class="ri-flower-line"></i><span>喜乐瑜伽教师认证中心</span></div>
+            <nav>
+              <button class="active"><i class="ri-home-5-line"></i>首页</button>
+              <button><i class="ri-user-star-line"></i>教师管理</button>
+              <button><i class="ri-calendar-check-line"></i>年审管理</button>
+              <button><i class="ri-community-line"></i>工作室管理</button>
+              <button><i class="ri-bar-chart-box-line"></i>数据统计</button>
+              <button><i class="ri-shield-user-line"></i>权限管理</button>
+              <button><i class="ri-settings-3-line"></i>设置</button>
+            </nav>
+          </aside>
+          <section class="admin-main">
+            <header class="admin-top"><h3>数据看板</h3><div><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&q=80" alt="管理员头像" />管理员 <i class="ri-arrow-down-s-line"></i></div></header>
+            <div class="kpi-grid">
+              <div><span>教师总数</span><strong>1,286</strong><small>+36 较上月</small></div>
+              <div><span>待审核人数</span><strong>128</strong><small>+12 较上月</small></div>
+              <div><span>即将到期</span><strong>72</strong><small>-8 较上月</small></div>
+              <div><span>已完成年审</span><strong>326</strong><small>+28 较上月</small></div>
+            </div>
+            <div class="dashboard-grid">
+              <section class="chart-card"><div class="card-title"><span>年审趋势统计</span><small><i class="ri-checkbox-blank-circle-fill"></i> 已完成 <i class="gold-dot ri-checkbox-blank-circle-fill"></i> 待完成</small></div><canvas id="trendChart" width="680" height="210"></canvas></section>
+              <section class="todo-card">
+                <div class="card-title"><span>待处理事项</span><small>查看全部</small></div>
+                <p><i class="ri-error-warning-line"></i> 有 10 位教师年审待审核 <button data-admin-tab="reviews">去处理</button></p>
+                <p><i class="ri-time-line"></i> 有 7 位教师即将到期 <button>查看</button></p>
+              </section>
+              <section class="latest-card">
+                <div class="card-title"><span>最新认证教师</span><small>查看更多</small></div>
+                <ul><li><span>L3</span> 刘一 <em>2024.05.20</em></li><li><span>L2</span> 周周 <em>2024.05.18</em></li><li><span>L1</span> 赵六 <em>2024.05.15</em></li></ul>
+              </section>
+            </div>
+          </section>
+        </article>
+
+        <article class="admin-shell hidden" data-admin-panel="teachers">
+          <aside class="sidebar compact">
+            <div class="brand"><i class="ri-flower-line"></i><span>喜乐瑜伽教师认证中心</span></div>
+            <nav><button><i class="ri-home-5-line"></i>首页</button><button class="active"><i class="ri-user-star-line"></i>教师管理</button><button><i class="ri-calendar-check-line"></i>年审管理</button><button><i class="ri-community-line"></i>工作室管理</button><button><i class="ri-upload-cloud-line"></i>批量导入</button></nav>
+          </aside>
+          <section class="admin-main">
+            <header class="admin-top"><h3>教师管理</h3><div><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&q=80" alt="管理员头像" />管理员 <i class="ri-arrow-down-s-line"></i></div></header>
+            <div class="toolbar">
+              <input placeholder="请输入姓名 / 喜乐名 / 编号" />
+              <select><option>全部等级</option><option>L3</option><option>L2</option></select>
+              <select><option>全部地区</option><option>上海市</option><option>北京市</option></select>
+              <select><option>全部状态</option><option>认证有效</option><option>即将到期</option></select>
+              <button>导出</button><button class="solid"><i class="ri-add-line"></i> 新增教师</button>
+            </div>
+            <table class="data-table">
+              <thead><tr><th>教师编号</th><th>姓名</th><th>喜乐名</th><th>等级</th><th>地区</th><th>状态</th><th>有效期至</th><th>操作</th></tr></thead>
+              <tbody id="teacherRows"></tbody>
+            </table>
+            <footer class="pagination">共 1286 条 <span>1</span><button>2</button><button>3</button><button>4</button><button>下一页</button></footer>
+          </section>
+        </article>
+
+        <article class="admin-shell hidden" data-admin-panel="reviews">
+          <aside class="sidebar compact">
+            <div class="brand"><i class="ri-flower-line"></i><span>喜乐瑜伽教师认证中心</span></div>
+            <nav><button><i class="ri-home-5-line"></i>首页</button><button><i class="ri-user-star-line"></i>教师管理</button><button class="active"><i class="ri-calendar-check-line"></i>年审管理</button><button><i class="ri-community-line"></i>工作室管理</button><button>待审核</button><button>已通过</button><button>已驳回</button></nav>
+          </aside>
+          <section class="admin-main">
+            <header class="admin-top"><h3>年审管理 / 待审核</h3><div><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&q=80" alt="管理员头像" />管理员 <i class="ri-arrow-down-s-line"></i></div></header>
+            <div class="review-tabs"><button class="active">待审核 (16)</button><button>已通过 (256)</button><button>已驳回 (12)</button></div>
+            <div class="toolbar">
+              <input placeholder="请输入姓名 / 编号" />
+              <select><option>全部等级</option></select>
+              <select><option>全部地区</option></select>
+              <button class="solid"><i class="ri-filter-3-line"></i> 筛选</button>
+            </div>
+            <table class="data-table">
+              <thead><tr><th><input type="checkbox" /></th><th>教师信息</th><th>等级</th><th>到期时间</th><th>提交时间</th><th>操作</th></tr></thead>
+              <tbody>
+                <tr><td><input type="checkbox" /></td><td><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=80&q=80" alt="" /> 陈晶<br /><small>喜乐名：清宁</small></td><td>L2</td><td>2024.06.30</td><td>2024.05.20</td><td><button data-admin-tab="review-detail">查看</button><button data-open-review>审核</button></td></tr>
+                <tr><td><input type="checkbox" /></td><td><img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=80&q=80" alt="" /> 周周<br /><small>喜乐名：喜乐</small></td><td>L1</td><td>2024.06.30</td><td>2024.05.18</td><td><button>查看</button><button data-open-review>审核</button></td></tr>
+                <tr><td><input type="checkbox" /></td><td><img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=80&q=80" alt="" /> 吴悦<br /><small>喜乐名：自在</small></td><td>L2</td><td>2024.06.30</td><td>2024.05.18</td><td><button>查看</button><button data-open-review>审核</button></td></tr>
+              </tbody>
+            </table>
+            <div class="bulk-actions"><button>批量通过</button><button>批量驳回</button></div>
+          </section>
+        </article>
+
+        <article class="admin-shell hidden" data-admin-panel="review-detail">
+          <aside class="sidebar compact">
+            <div class="brand"><i class="ri-flower-line"></i><span>喜乐瑜伽教师认证中心</span></div>
+            <nav><button><i class="ri-home-5-line"></i>首页</button><button><i class="ri-user-star-line"></i>教师管理</button><button class="active"><i class="ri-calendar-check-line"></i>年审管理</button><button>待审核</button><button>已通过</button><button>已驳回</button></nav>
+          </aside>
+          <section class="admin-main">
+            <header class="admin-top"><h3>年审管理 / 待审核 / 详情</h3><div><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&q=80" alt="管理员头像" />管理员 <i class="ri-arrow-down-s-line"></i></div></header>
+            <div class="detail-layout">
+              <section class="teacher-side">
+                <h4>教师信息</h4>
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" alt="陈晶头像" />
+                <p><strong>陈晶</strong><br />教师编号：JY20230001<br />喜乐名：清宁<br />等级：L2<br />所属地区：上海市<br />有效期至：2026.12.31</p>
+              </section>
+              <section class="review-side">
+                <h4>年审信息</h4>
+                <div class="review-meta"><span>提交时间：2024.05.20 14:30</span><span>年审年度：2024年度</span><span>年审状态：待审核</span></div>
+                <div class="files">
+                  <div><i class="ri-file-pdf-2-line"></i><span>教学证明.pdf</span></div>
+                  <div><i class="ri-file-pdf-2-line"></i><span>培训证书.pdf</span></div>
+                  <div><i class="ri-file-pdf-2-line"></i><span>继续教育.pdf</span></div>
+                  <div><strong>+2</strong></div>
+                </div>
+                <div class="decision-box">
+                  <label><input type="radio" name="decision" checked /> 通过</label>
+                  <label><input type="radio" name="decision" /> 驳回</label>
+                  <textarea placeholder="请输入审核意见（选填）" maxlength="300"></textarea>
+                </div>
+                <footer class="form-actions"><button>取消</button><button>保存</button><button class="solid" data-open-review>确认审核</button></footer>
+              </section>
+            </div>
+          </section>
+        </article>
+
+        <article class="admin-shell hidden" data-admin-panel="studios">
+          <aside class="sidebar compact">
+            <div class="brand"><i class="ri-flower-line"></i><span>喜乐瑜伽教师认证中心</span></div>
+            <nav><button><i class="ri-home-5-line"></i>首页</button><button><i class="ri-user-star-line"></i>教师管理</button><button><i class="ri-calendar-check-line"></i>年审管理</button><button class="active"><i class="ri-community-line"></i>工作室管理</button><button><i class="ri-upload-cloud-line"></i>批量导入</button></nav>
+          </aside>
+          <section class="admin-main">
+            <header class="admin-top"><h3>工作室管理</h3><div><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&q=80" alt="管理员头像" />管理员 <i class="ri-arrow-down-s-line"></i></div></header>
+            <div class="studio-admin-summary">
+              <div><span>认证工作室</span><strong>36</strong><small>覆盖 12 个城市</small></div>
+              <div><span>开放中</span><strong>32</strong><small>可对外展示</small></div>
+              <div><span>待完善资料</span><strong>4</strong><small>缺少图片或地址</small></div>
+            </div>
+            <div class="toolbar">
+              <input placeholder="请输入工作室名称 / 城市 / 主理教师" />
+              <select><option>全部城市</option><option>上海市</option><option>北京市</option></select>
+              <select><option>全部状态</option><option>开放中</option><option>暂停展示</option></select>
+              <button>导出</button><button class="solid"><i class="ri-add-line"></i> 新增工作室</button>
+            </div>
+            <table class="data-table">
+              <thead><tr><th>工作室名称</th><th>城市</th><th>主理教师</th><th>认证状态</th><th>展示状态</th><th>更新时间</th><th>操作</th></tr></thead>
+              <tbody id="studioRows"></tbody>
+            </table>
+            <footer class="pagination">共 36 家 <span>1</span><button>2</button><button>下一页</button></footer>
+          </section>
+        </article>
+      </section>
+    </main>
+
+    <div class="modal hidden" id="reviewModal" role="dialog" aria-modal="true" aria-labelledby="reviewTitle">
+      <div class="modal-card">
+        <button class="close-modal" aria-label="关闭"><i class="ri-close-line"></i></button>
+        <i class="ri-shield-check-line"></i>
+        <h3 id="reviewTitle">确认通过本次年审？</h3>
+        <p>通过后系统会按当前档位周期更新教师有效期，并记录审核人和审核时间。</p>
+        <div><button class="close-modal">取消</button><button class="solid close-modal">确认通过</button></div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

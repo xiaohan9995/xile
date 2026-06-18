@@ -1,0 +1,26 @@
+<view class="teacher-card" bindtap="onTap">
+  <view class="teacher-card__avatar-wrap">
+    <image
+      class="teacher-card__avatar"
+      src="{{teacher.avatarUrl || '/assets/default-avatar.png'}}"
+      mode="aspectFill"
+    />
+    <view class="teacher-card__online" wx:if="{{teacher.certificationStatus === 'active'}}"></view>
+  </view>
+
+  <view class="teacher-card__body">
+    <view class="teacher-card__title-row">
+      <text class="teacher-card__name">{{teacher.xileName || teacher.name}}</text>
+      <view class="teacher-card__badge" wx:if="{{teacher.tierName}}">
+        <text class="teacher-card__badge-icon">&#x2713;</text>
+        <text class="teacher-card__badge-text">{{teacher.tier}} {{teacher.tierName}}</text>
+      </view>
+    </view>
+    <text class="teacher-card__cert-no" wx:if="{{teacher.teacherNo}}">认证编号: {{teacher.teacherNo}}</text>
+    <text class="teacher-card__valid" wx:if="{{teacher.validUntil}}">有效期至: {{teacher.validUntil}}</text>
+  </view>
+
+  <view class="teacher-card__arrow">
+    <text class="teacher-card__arrow-icon">&#x203A;</text>
+  </view>
+</view>

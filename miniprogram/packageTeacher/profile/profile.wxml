@@ -1,0 +1,62 @@
+<view class="page-shell profile-page">
+  <!-- Header -->
+  <view class="page-header" style="padding-top:{{statusBarHeight}}px;">
+    <view class="page-header__back" bindtap="goBack">‹</view>
+    <text class="page-header__title">讲师简介</text>
+    <view class="page-header__right"></view>
+  </view>
+
+  <view class="profile-body animate-fade-in">
+    <!-- Avatar Section -->
+    <view class="avatar-section">
+      <view class="avatar-ring">
+        <image class="avatar-img" src="{{teacher.avatarUrl}}" mode="aspectFill" />
+        <view class="avatar-check">✓</view>
+      </view>
+      <text class="profile-name serif">{{teacher.name}}</text>
+      <view class="badge-level">
+        <view class="dot"></view>
+        <text>{{teacher.tier}} {{teacher.tierName}}</text>
+      </view>
+    </view>
+
+    <!-- Bio -->
+    <view class="bio-section soft-card" wx:if="{{teacher.bio}}">
+      <text class="bio-text">{{teacher.bio}}</text>
+    </view>
+
+    <!-- Metrics -->
+    <view class="metrics-card soft-card">
+      <view class="metric-item">
+        <text class="metric-label">认证到期</text>
+        <text class="metric-value mono">{{teacher.validUntil}}</text>
+      </view>
+      <view class="metric-divider"></view>
+      <view class="metric-item">
+        <text class="metric-label">认证天数</text>
+        <text class="metric-value mono">{{teacher.daysLeft}} 天</text>
+      </view>
+    </view>
+
+    <!-- Menu List -->
+    <view class="menu-list">
+      <view
+        wx:for="{{menuItems}}"
+        wx:key="title"
+        class="menu-item"
+        bindtap="onMenuTap"
+        data-url="{{item.url}}"
+      >
+        <text class="menu-icon">{{item.icon}}</text>
+        <text class="menu-title">{{item.title}}</text>
+        <text class="menu-arrow">›</text>
+      </view>
+    </view>
+
+    <!-- Back Button -->
+    <view class="back-section">
+      <button class="btn-ghost" bindtap="goBack">返回上一页</button>
+    </view>
+  </view>
+<tab-bar />
+</view>

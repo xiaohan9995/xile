@@ -1,0 +1,160 @@
+/* ===== Teacher Home (我的认证首屏) ===== */
+.teacher-home-page {
+  padding-top: 0;
+}
+
+.home-body {
+  padding: 0 28rpx;
+}
+
+/* Greeting */
+.greeting-section {
+  padding: 32rpx 0 16rpx;
+}
+
+.greeting-text {
+  font-size: 30rpx;
+  color: var(--brand-ink-soft);
+}
+
+.greeting-name {
+  font-size: 34rpx;
+  font-weight: 900;
+  color: var(--brand-ink);
+}
+
+/* Certification Status Card */
+.cert-status-card {
+  margin-top: 16rpx;
+  padding: 28rpx;
+  background: var(--brand-green);
+  border-radius: 28rpx;
+  box-shadow: 0 12rpx 36rpx rgba(93, 114, 97, 0.25);
+}
+
+.cert-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cert-card-left {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+}
+
+.cert-avatar-ring {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  border: 3rpx solid rgba(255, 255, 255, 0.5);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.cert-avatar {
+  width: 88rpx;
+  height: 88rpx;
+}
+
+.cert-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.cert-name {
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 800;
+}
+
+.cert-tier-badge {
+  background: rgba(255, 248, 231, 0.2);
+  border-color: rgba(255, 248, 231, 0.3);
+  color: #FFF8E7;
+}
+
+.cert-tier-dot {
+  font-size: 14rpx;
+}
+
+.cert-card-right {
+  flex-shrink: 0;
+}
+
+.cert-valid-tag {
+  padding: 8rpx 20rpx;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 22rpx;
+  font-weight: 700;
+  border-radius: 999rpx;
+}
+
+/* Days Countdown */
+.days-countdown {
+  display: flex;
+  align-items: baseline;
+  gap: 8rpx;
+  margin-top: 24rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx solid rgba(255, 255, 255, 0.15);
+}
+
+.days-number {
+  font-size: 56rpx;
+  font-weight: 900;
+  color: #FFF8E7;
+  line-height: 1;
+}
+
+.days-label {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* Quick Menu */
+.quick-menu {
+  margin-top: 36rpx;
+}
+
+.menu-section-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 800;
+  color: var(--brand-ink);
+  margin-bottom: 18rpx;
+}
+
+.menu-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18rpx;
+}
+
+.menu-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 36rpx 20rpx;
+  gap: 14rpx;
+  transition: all 0.2s ease;
+}
+
+.menu-card:active {
+  transform: scale(0.97);
+  box-shadow: 0 4rpx 16rpx rgba(93, 114, 97, 0.12);
+}
+
+.menu-card-icon {
+  font-size: 44rpx;
+}
+
+.menu-card-label {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: var(--brand-ink);
+}

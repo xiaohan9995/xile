@@ -1,0 +1,59 @@
+<view class="page-shell apply-page">
+  <!-- Header -->
+  <view class="page-header" style="padding-top:{{statusBarHeight}}px;">
+    <view class="page-header__back" bindtap="goBack">‹</view>
+    <text class="page-header__title">材料上传</text>
+    <view class="page-header__right"></view>
+  </view>
+
+  <!-- Progress Bar -->
+  <view class="progress-strip">
+    <view class="step-item step-item--done">
+      <view class="step-dot">✓</view>
+      <text class="step-label">个人信息</text>
+    </view>
+    <view class="step-line step-line--done"></view>
+    <view class="step-item step-item--active">
+      <view class="step-dot">2</view>
+      <text class="step-label">资料上传</text>
+    </view>
+    <view class="step-line"></view>
+    <view class="step-item">
+      <view class="step-dot">3</view>
+      <text class="step-label">审核中</text>
+    </view>
+  </view>
+
+  <!-- Upload Tiles -->
+  <view class="upload-section animate-fade-in-up">
+    <view class="upload-title-row">
+      <text class="upload-section-title">上传认证材料</text>
+      <text class="upload-section-sub">请上传清晰的证明文件</text>
+    </view>
+
+    <view class="upload-grid">
+      <view
+        wx:for="{{files}}"
+        wx:key="title"
+        class="upload-tile soft-card {{item.done ? 'upload-tile--done' : ''}}"
+        bindtap="chooseFile"
+        data-index="{{index}}"
+      >
+        <view class="upload-icon-wrap">
+          <text class="upload-icon">{{item.done ? '✓' : item.icon}}</text>
+        </view>
+        <view class="upload-text">
+          <text class="upload-name">{{item.title}}</text>
+          <text class="upload-desc">{{item.fileName || item.desc}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Actions -->
+  <view class="action-row">
+    <button class="btn-ghost" bindtap="goBack">上一步</button>
+    <button class="btn-primary" bindtap="submitReview" loading="{{submitting}}" disabled="{{submitting}}">提交审核</button>
+  </view>
+<tab-bar />
+</view>

@@ -1,0 +1,69 @@
+const { request } = require('../../utils/request');
+const auth = require('../../utils/auth');
+
+const app = getApp();
+
+Page({
+  data: {
+    statusBarHeight: 20,
+    teacher: {
+      name: '',
+      tier: '',
+      tierName: '',
+      avatarUrl: '',
+      bio: '',
+      validUntil: '',
+      daysLeft: 0,
+    },
+    menuItems: [
+      { icon: '📁', title: '我的文件', url: '/packageTeacher/review-apply/review-apply' },
+      { icon: '📋', title: '年度记录', url: '/packageTeacher/review-records/review-records' },
+      { icon: '🏅', title: '证书查看', url: '' },
+      { icon: '💬', title: '联系客服', url: '' },
+      { icon: '⚙', title: '个人设置', url: '' },
+    ],
+  },
+
+  onLoad() {
+    this.setData({ statusBarHeight: app.globalData.statusBarHeight });
+    this.loadProfile();
+  },
+
+  async loadProfile() {
+    const teacherId = auth.getTeacherId();
+    if (!teacherId) {
+      wx.showToast({ title: '请先登录', icon: 'none' });
+      return;
+    }
+    try {
+      const payload = await request({ url: `/api/mp/teachers/${teacherId}/certification` });
+      const t = payload.teacher || {};
+      this.setData({
+        teacher: {
+          name: t.name || '老师',
+          tier: t.tier || 'L1',
+          tierName: t.tierName || '认证讲师',
+          avatarUrl: t.avatarUrl || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=180&q=80',
+          bio: t.bio || '',
+          validUntil: t.validUntil || '--',
+          daysLeft: t.daysLeft || 0,
+        },
+      });
+    } catch (err) {
+      wx.showToast({ title: '加载失败', icon: 'none' });
+    }
+  },
+
+  onMenuTap(e) {
+    const url = e.currentTarget.dataset.url;
+    if (!url) {
+      wx.showToast({ title: '该功能即将开放', icon: 'none' });
+      return;
+    }
+    wx.navigateTo({ url });
+  },
+
+  goBack() {
+    wx.navigateBack();
+  },
+});

@@ -1,0 +1,50 @@
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 60rpx;
+  text-align: center;
+}
+
+.empty-state__icon-wrap {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  background: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 32rpx;
+}
+
+.empty-state__icon {
+  font-size: 56rpx;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.empty-state__message {
+  font-size: 28rpx;
+  color: var(--color-muted);
+  line-height: 1.6;
+  max-width: 480rpx;
+}
+
+.empty-state__btn {
+  margin-top: 36rpx;
+  padding: 16rpx 48rpx;
+  border-radius: 999rpx;
+  background: var(--color-primary);
+  transition: opacity 0.2s ease;
+}
+
+.empty-state__btn--hover {
+  opacity: 0.85;
+}
+
+.empty-state__btn-text {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #ffffff;
+}

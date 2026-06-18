@@ -1,0 +1,155 @@
+/* ===== Review Records Page (年审记录) ===== */
+.records-page {
+  padding-top: 0;
+}
+
+.records-body {
+  padding: 0 28rpx;
+}
+
+/* Level Card */
+.level-card {
+  margin-top: 24rpx;
+  padding: 28rpx;
+  background: var(--brand-green);
+  border-radius: 28rpx;
+  box-shadow: 0 12rpx 36rpx rgba(93, 114, 97, 0.25);
+}
+
+.level-card-top {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.level-en {
+  font-size: 18rpx;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 2rpx;
+}
+
+.level-sub {
+  font-size: 22rpx;
+  color: rgba(255, 248, 231, 0.85);
+  font-weight: 700;
+}
+
+.level-card-main {
+  display: flex;
+  align-items: baseline;
+  gap: 14rpx;
+  margin-top: 14rpx;
+}
+
+.level-code {
+  font-size: 56rpx;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+}
+
+.level-name {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #fff;
+}
+
+.level-expiry {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Timeline */
+.timeline-section {
+  margin-top: 32rpx;
+  padding-bottom: 40rpx;
+}
+
+.timeline-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 800;
+  color: var(--brand-ink);
+  margin-bottom: 20rpx;
+}
+
+.empty-records {
+  padding: 40rpx;
+  text-align: center;
+}
+
+.timeline-list {
+  position: relative;
+}
+
+.timeline-item {
+  position: relative;
+  padding-left: 36rpx;
+  margin-bottom: 20rpx;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: 0;
+  top: 28rpx;
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  background: var(--brand-green);
+  box-shadow: 0 0 0 4rpx rgba(123, 158, 122, 0.2);
+}
+
+.timeline-line {
+  position: absolute;
+  left: 6rpx;
+  top: 46rpx;
+  bottom: -20rpx;
+  width: 2rpx;
+  background: var(--brand-line);
+}
+
+.timeline-content {
+  padding: 20rpx 24rpx;
+}
+
+.timeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.timeline-year {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: var(--brand-ink);
+}
+
+.timeline-status {
+  padding: 6rpx 16rpx;
+  border-radius: 999rpx;
+  font-size: 20rpx;
+  font-weight: 700;
+}
+
+.timeline-status.status-approved {
+  background: rgba(123, 158, 122, 0.12);
+  color: var(--brand-green);
+}
+
+.timeline-status.status-submitted {
+  background: rgba(180, 150, 88, 0.12);
+  color: var(--brand-gold);
+}
+
+.timeline-status.status-rejected {
+  background: rgba(239, 68, 68, 0.08);
+  color: #c84a4a;
+}
+
+.timeline-meta {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: var(--brand-muted);
+}

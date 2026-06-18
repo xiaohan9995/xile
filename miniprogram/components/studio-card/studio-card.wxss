@@ -1,0 +1,97 @@
+.studio-card {
+  display: flex;
+  padding: 24rpx;
+  background: var(--color-card);
+  border: 1rpx solid var(--color-line);
+  border-radius: 24rpx;
+  box-shadow: 0 4rpx 24rpx rgba(31, 37, 33, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.studio-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 2rpx 12rpx rgba(31, 37, 33, 0.06);
+}
+
+/* Cover image */
+.studio-card__cover {
+  flex-shrink: 0;
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 18rpx;
+  margin-right: 24rpx;
+  border: 1rpx solid var(--color-line);
+}
+
+/* Body */
+.studio-card__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.studio-card__name {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Location */
+.studio-card__location {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  margin-top: 10rpx;
+}
+
+.studio-card__pin-icon {
+  font-size: 22rpx;
+}
+
+.studio-card__address {
+  font-size: 24rpx;
+  color: var(--color-muted);
+}
+
+/* Tags */
+.studio-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-top: 14rpx;
+}
+
+.studio-card__tag {
+  display: inline-block;
+  padding: 4rpx 16rpx;
+  border-radius: 999rpx;
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font-size: 20rpx;
+  font-weight: 500;
+}
+
+/* Action */
+.studio-card__action {
+  margin-top: 16rpx;
+  align-self: flex-end;
+}
+
+.studio-card__action-text {
+  font-size: 22rpx;
+  font-weight: 600;
+  color: var(--color-primary);
+  padding: 8rpx 20rpx;
+  border-radius: 12rpx;
+  background: var(--color-surface);
+  transition: background 0.2s ease;
+}
+
+.studio-card:active .studio-card__action-text {
+  background: rgba(120, 136, 122, 0.18);
+}

@@ -1,0 +1,82 @@
+export const teachers = [
+  {
+    id: '1',
+    name: '张三',
+    level: 'L2认证导师',
+    certNo: 'JY20230001',
+    expiryDate: '2028.12.31',
+    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200&auto=format&fit=crop',
+    phone: '138-8888-0001',
+    bio: '专注于哈他瑜伽与呼吸法，十年来帮助上千名学员找到内心的宁静与力量感。',
+  },
+  {
+    id: '2',
+    name: '李四',
+    level: 'L2认证导师',
+    certNo: 'JY20230002',
+    expiryDate: '2028.12.31',
+    avatar: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?q=80&w=200&auto=format&fit=crop',
+    phone: '139-9999-0002',
+    bio: '流瑜伽资深教练，注重体式流动的呼吸配合以及能量唤醒。',
+  },
+  {
+    id: '3',
+    name: '张五',
+    level: 'L2认证导师',
+    certNo: 'JY20230003',
+    expiryDate: '2028.12.31',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop',
+    phone: '136-6666-0003',
+    bio: '理疗瑜伽导师，擅长通过瑜伽体式舒缓都市人群的压力。',
+  },
+  {
+    id: '4',
+    name: '海六',
+    level: 'L3认证导师',
+    certNo: 'JY20230004',
+    expiryDate: '2028.12.31',
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop',
+    phone: '135-5555-0004',
+    bio: '阴瑜伽及冥想导师，深度融合骨骼生理解剖学。',
+  },
+]
+
+export const studios = [
+  {
+    id: 's1',
+    name: '静心瑜伽空间',
+    city: '上海市',
+    district: '徐汇区',
+    address: '上海市徐汇区复兴中路1199号A栋302室',
+    image: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=600&auto=format&fit=crop',
+    contact: '021-64332211',
+    tags: ['静心冥想', '小班授课'],
+  },
+  {
+    id: 's2',
+    name: '清悦身心练习室',
+    city: '北京市',
+    district: '朝阳区',
+    address: '北京市朝阳区建国路88号SOHO现代城5号楼',
+    image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=600&auto=format&fit=crop',
+    contact: '010-85889900',
+    tags: ['露台瑜伽', '空中瑜伽'],
+  },
+  {
+    id: 's3',
+    name: '自在瑜伽小院',
+    city: '杭州市',
+    district: '西湖区',
+    address: '杭州市西湖区满觉陇路下满觉陇88号',
+    image: 'https://images.unsplash.com/photo-1599447421416-3414500d18a5?q=80&w=600&auto=format&fit=crop',
+    contact: '0571-88997766',
+    tags: ['中式庭院', '茶道瑜伽'],
+  },
+]
+
+export const pendingApplication = {
+  name: '张伟',
+  specialization: '流瑜伽',
+  phone: '136-0000-6688',
+  submittedAt: '2026.06.16 21:40',
+}

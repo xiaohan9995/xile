@@ -1,0 +1,35 @@
+<view class="page-shell success-page">
+  <view class="success-content animate-scale-up">
+    <!-- Checkmark -->
+    <view class="success-icon-wrap">
+      <view class="success-icon animate-bounce">✓</view>
+    </view>
+
+    <!-- Heading -->
+    <text class="success-heading serif">申请已成功提交</text>
+    <text class="success-desc">教师管理委员会将对您的材料进行审核，审核通过后电子认证证书将自动发送至您的微信端。</text>
+
+    <!-- Info Card -->
+    <view class="success-info-card soft-card">
+      <view class="info-row">
+        <text class="info-label">预计审核时间</text>
+        <text class="info-value">3-5 个工作日</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">当前状态</text>
+        <text class="info-value">待审核</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">客服电话</text>
+        <text class="info-value">400-820-8820</text>
+      </view>
+    </view>
+
+    <!-- Buttons -->
+    <view class="success-actions">
+      <button class="btn-primary" bindtap="goHome">返回首页</button>
+      <button class="btn-ghost" bindtap="goMyCert">我的认证</button>
+    </view>
+  </view>
+<tab-bar />
+</view>

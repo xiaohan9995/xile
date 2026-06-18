@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans CJK SC", sans-serif;
+  --font-serif: "Noto Serif SC", Georgia, "Times New Roman", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-calligraphy: "Ma Shan Zheng", cursive;
+
+  --color-brand-green: #5D7261;
+  --color-brand-green-hover: #4B5C4E;
+  --color-brand-green-light: #F0F3F1;
+  --color-brand-gold: #BBA178;
+  --color-brand-gold-light: #F7F4EF;
+  --color-brand-bg: #FAF8F5;
+}
+
+/* Custom scrollbar to keep it looking polished and mock-app style */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Elegant shadow for mobile cards */
+.yoga-card-shadow {
+  box-shadow: 0 4px 20px -2px rgba(93, 114, 97, 0.08);
+}

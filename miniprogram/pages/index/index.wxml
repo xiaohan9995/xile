@@ -1,0 +1,49 @@
+<view class="home-page">
+  <!-- Hero banner -->
+  <view class="hero">
+    <view class="hero-overlay"></view>
+    <view class="hero-content">
+      <text class="hero-brand">喜乐瑜伽</text>
+      <text class="hero-title">瑜伽导师认证中心</text>
+      <text class="hero-subtitle">诚信 · 专业 · 传承</text>
+    </view>
+  </view>
+
+  <!-- CTA button -->
+  <view class="cta-wrap">
+    <button class="cta-btn" bindtap="goSearch">
+      <text class="cta-icon">⌕</text>
+      <text class="cta-text">导师查询</text>
+    </button>
+  </view>
+
+  <!-- Quick grid -->
+  <view class="quick-grid">
+    <view class="quick-card" bindtap="goMyCert">
+      <text class="quick-card-icon">◎</text>
+      <text class="quick-card-title">我的认证</text>
+      <text class="quick-card-desc">查看个人认证信息</text>
+    </view>
+    <view class="quick-card" bindtap="goStudios">
+      <text class="quick-card-icon">⌂</text>
+      <text class="quick-card-title">瑜伽工作室</text>
+      <text class="quick-card-desc">发现附近的练习空间</text>
+    </view>
+  </view>
+
+  <!-- Stats card -->
+  <view class="stats-section">
+    <view class="stats-card">
+      <view class="stat-item">
+        <text class="stat-num">{{stats.totalTeachers}}</text>
+        <text class="stat-label">累计认证导师</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-num stat-num--gold">{{stats.totalStudios}}</text>
+        <text class="stat-label">开放工作室</text>
+      </view>
+    </view>
+  </view>
+<tab-bar active="home" />
+</view>
