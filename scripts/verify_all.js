@@ -3,29 +3,33 @@ const path = require('path');
 
 const root = path.resolve(__dirname, '..');
 
+const isWin = process.platform === 'win32';
+const npm = isWin ? 'npm.cmd' : 'npm';
+const shell = isWin ? { command: process.env.ComSpec || 'cmd.exe', wrap: (cmd) => ['/d', '/s', '/c', cmd] } : null;
+
 const steps = [
   {
     name: 'project static verification',
     command: 'node',
-    args: ['scripts\\verify_project_static.js'],
+    args: ['scripts/verify_project_static.js'],
     cwd: root,
   },
   {
     name: 'miniprogram static verification',
     command: 'node',
-    args: ['scripts\\verify_miniprogram_static.js'],
+    args: ['scripts/verify_miniprogram_static.js'],
     cwd: root,
   },
   {
     name: 'prototype contract verification',
     command: 'node',
-    args: ['scripts\\verify_prototype_contract.js'],
+    args: ['scripts/verify_prototype_contract.js'],
     cwd: root,
   },
   {
     name: 'miniprogram runtime smoke verification',
     command: 'node',
-    args: ['scripts\\verify_miniprogram_runtime.js'],
+    args: ['scripts/verify_miniprogram_runtime.js'],
     cwd: root,
   },
   {
@@ -37,25 +41,25 @@ const steps = [
   {
     name: 'backend HTTP smoke verification',
     command: 'python',
-    args: ['scripts\\verify_backend_http.py'],
+    args: ['scripts/verify_backend_http.py'],
     cwd: root,
   },
   {
     name: 'admin tests and static contract',
-    command: process.env.ComSpec || 'cmd.exe',
-    args: ['/d', '/s', '/c', 'npm.cmd test'],
+    command: npm,
+    args: ['test'],
     cwd: path.join(root, 'admin-src'),
   },
   {
     name: 'admin production build',
-    command: process.env.ComSpec || 'cmd.exe',
-    args: ['/d', '/s', '/c', 'npm.cmd run build'],
+    command: npm,
+    args: ['run', 'build'],
     cwd: path.join(root, 'admin-src'),
   },
   {
     name: 'admin preview smoke verification',
     command: 'node',
-    args: ['scripts\\verify_admin_preview.js'],
+    args: ['scripts/verify_admin_preview.js'],
     cwd: root,
   },
 ];

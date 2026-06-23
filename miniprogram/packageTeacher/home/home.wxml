@@ -58,6 +58,11 @@
         <text class="menu-item__label">提交年审</text>
         <text class="menu-item__arrow">›</text>
       </view>
+      <view class="menu-item menu-item--logout" bindtap="onLogout">
+        <view class="menu-item__icon">🚪</view>
+        <text class="menu-item__label">退出登录</text>
+        <text class="menu-item__arrow">›</text>
+      </view>
     </view>
   </view>
 <tab-bar active="my" />

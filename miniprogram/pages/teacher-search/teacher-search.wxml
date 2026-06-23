@@ -23,52 +23,48 @@
       </view>
     </view>
 
-    <!-- Filter row -->
+    <!-- Filter row with real pickers -->
     <view class="filter-row">
-      <view
-        wx:for="{{filters}}"
-        wx:key="value"
-        class="filter-pill {{activeFilter === item.value ? 'filter-pill--active' : ''}}"
-        bindtap="onFilterTap"
-        data-filter="{{item.value}}"
-      >{{item.label}}</view>
+      <picker mode="selector" range="{{tierOptions}}" value="{{tierIndex}}" bindchange="onTierChange">
+        <view class="filter-pill {{tierIndex > 0 ? 'filter-pill--active' : ''}}">
+          {{tierIndex > 0 ? tierOptions[tierIndex] : '全部等级'}}
+        </view>
+      </picker>
+      <picker mode="selector" range="{{cityOptions}}" value="{{cityIndex}}" bindchange="onCityChange">
+        <view class="filter-pill {{cityIndex > 0 ? 'filter-pill--active' : ''}}">
+          {{cityIndex > 0 ? cityOptions[cityIndex] : '全部地区'}}
+        </view>
+      </picker>
+      <view class="filter-pill" wx:if="{{tierIndex > 0 || cityIndex > 0}}" bindtap="resetFilters">
+        重置
+      </view>
     </view>
   </view>
 
+  <!-- Skeleton loading -->
+  <skeleton wx:if="{{loading && teachers.length === 0}}" type="teacher-list" count="{{4}}" />
+
   <!-- Teacher cards -->
-  <view class="teacher-list">
-    <view
+  <view class="teacher-list" wx:if="{{!loading || teachers.length > 0}}">
+    <teacher-card
       wx:for="{{teachers}}"
       wx:key="id"
-      class="teacher-card"
-      bindtap="openTeacher"
-      data-id="{{item.id}}"
-    >
-      <image class="card-avatar" src="{{item.avatarUrl}}" mode="aspectFill" />
-      <view class="card-body">
-        <text class="card-name">{{item.name}}</text>
-        <text class="card-xile">喜乐名：{{item.xileName}}</text>
-        <view class="card-cert-status">
-          <text class="card-cert-icon">🛡</text>
-          <text class="card-cert-text">{{item.statusText || '认证有效'}}</text>
-        </view>
-        <text class="card-meta">认证编号 {{item.teacherNo}}</text>
-        <text class="card-meta">有效期至 {{item.validUntil}}</text>
-      </view>
-      <view class="card-level-badge">
-        <text class="card-level-text">{{item.tier}}</text>
-      </view>
-    </view>
+      teacher="{{item}}"
+    />
   </view>
 
   <!-- Empty state -->
   <view wx:if="{{!loading && searched && teachers.length === 0}}" class="empty-state">
     <text class="empty-text">未找到匹配教师</text>
+    <text class="empty-hint">请尝试更换关键词或调整筛选条件</text>
   </view>
 
-  <!-- Hint -->
-  <view wx:if="{{!loading && !searched && teachers.length === 0}}" class="empty-state">
-    <text class="empty-text">没有更多数据了</text>
+  <!-- Load more -->
+  <view wx:if="{{loadingMore}}" class="load-more">
+    <text class="load-more-text">加载中...</text>
+  </view>
+  <view wx:elif="{{!hasMore && teachers.length > 0}}" class="load-more">
+    <text class="load-more-text">没有更多数据了</text>
   </view>
 
   <!-- Error -->

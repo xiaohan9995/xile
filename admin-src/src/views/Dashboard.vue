@@ -105,8 +105,9 @@ const latestTeachers = ref([])
 const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
 
 const chartPoints = computed(() => {
-  const trend = analytics.value?.monthlyTrend || []
-  if (trend.length === 0) return []
+  const raw = analytics.value?.monthlyTrend || []
+  if (raw.length === 0) return []
+  const trend = raw.map((item) => (typeof item === 'object' ? item.count || 0 : item))
   const max = Math.max(...trend, 1)
   const width = 440
   const height = 200
@@ -133,7 +134,9 @@ const areaPoints = computed(() => {
 
 onMounted(async () => {
   try {
-    cards.value = await fetchDashboardCards()
+    const cardsData = await fetchDashboardCards()
+    cards.value = cardsData
+    pendingReviews.value = parseInt(cardsData[1]?.value) || 0
   } catch (err) {
     console.warn('Dashboard cards fetch failed, using defaults', err)
   }
@@ -141,7 +144,6 @@ onMounted(async () => {
   try {
     const data = await fetchAnalytics()
     analytics.value = data
-    pendingReviews.value = data.pendingReviewCount || 0
     latestTeachers.value = (data.latestTeachers || []).map((t) => ({
       name: t.name,
       date: t.certifiedAt || t.date || '',

@@ -8,7 +8,7 @@
 /* ===== Hero Visual ===== */
 .home-visual {
   position: relative;
-  height: 258px;
+  height: 516rpx;
   overflow: hidden;
 }
 
@@ -31,7 +31,7 @@
 
 .home-visual__text {
   position: absolute;
-  left: 32px;
+  left: 64rpx;
   top: 50%;
   transform: translateY(-50%);
   z-index: 2;
@@ -39,7 +39,7 @@
 
 .home-visual__title {
   display: block;
-  font-size: 24px;
+  font-size: 48rpx;
   font-weight: 700;
   color: var(--color-text);
   line-height: 1.4;
@@ -49,10 +49,10 @@
 
 .home-visual__tagline {
   display: block;
-  margin-top: 8px;
-  font-size: 13px;
+  margin-top: 16rpx;
+  font-size: 26rpx;
   color: var(--color-muted);
-  letter-spacing: 2px;
+  letter-spacing: 4rpx;
 }
 
 /* ===== Body (overlaps hero) ===== */
@@ -67,13 +67,13 @@
 /* ===== CTA Button ===== */
 .cta-btn {
   width: 100%;
-  height: 72px;
+  height: 144rpx;
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 0 18px;
-  background: linear-gradient(135deg, #5f7365, #849481);
-  border-radius: 16px;
+  gap: 28rpx;
+  padding: 0 36rpx;
+  background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary));
+  border-radius: 32rpx;
   box-sizing: border-box;
 }
 
@@ -83,9 +83,9 @@
 }
 
 .cta-icon-box {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
+  width: 68rpx;
+  height: 68rpx;
+  border-radius: 20rpx;
   background: rgba(255, 255, 255, 0.18);
   display: flex;
   align-items: center;
@@ -94,7 +94,7 @@
 }
 
 .cta-icon {
-  font-size: 16px;
+  font-size: 32rpx;
   color: #FFFFFF;
 }
 
@@ -105,14 +105,14 @@
 }
 
 .cta-title {
-  font-size: 16px;
+  font-size: 32rpx;
   font-weight: 700;
   color: #FFFFFF;
 }
 
 .cta-subtitle {
-  margin-top: 2px;
-  font-size: 12px;
+  margin-top: 4rpx;
+  font-size: 24rpx;
   color: rgba(255, 255, 255, 0.7);
 }
 
@@ -128,10 +128,10 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  height: 76px;
+  height: 152rpx;
   padding: 24rpx;
   background: #ffffff;
-  border-radius: 16px;
+  border-radius: 32rpx;
   border: 1px solid rgba(31, 37, 33, 0.08);
   box-sizing: border-box;
 }
@@ -143,15 +143,15 @@
 
 .quick-card-title {
   display: block;
-  font-size: 14px;
+  font-size: 28rpx;
   font-weight: 700;
   color: var(--color-text);
 }
 
 .quick-card-desc {
   display: block;
-  margin-top: 6px;
-  font-size: 11px;
+  margin-top: 12rpx;
+  font-size: 22rpx;
   color: var(--color-muted);
 }
 
@@ -160,7 +160,7 @@
   margin-top: 20rpx;
   padding: 28rpx;
   background: #ffffff;
-  border-radius: 16px;
+  border-radius: 32rpx;
   border: 1px solid rgba(31, 37, 33, 0.08);
 }
 
@@ -172,13 +172,13 @@
 }
 
 .stats-title {
-  font-size: 14px;
+  font-size: 28rpx;
   font-weight: 700;
   color: var(--color-text);
 }
 
 .stats-more {
-  font-size: 12px;
+  font-size: 24rpx;
   color: var(--color-muted);
 }
 
@@ -195,15 +195,14 @@
 }
 
 .stat-num {
-  font-size: 24px;
-  font-weight: 900;
+  font-size: 48rpx;
+  font-weight: 800;
   color: var(--color-text);
   line-height: 1.2;
 }
 
 .stat-label {
-  margin-top: 6px;
-  font-size: 11px;
+  margin-top: 12rpx;
+  font-size: 22rpx;
   color: var(--color-muted);
 }
-

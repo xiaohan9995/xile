@@ -11,8 +11,11 @@
       "root": "packageTeacher",
       "pages": [
         "home/home",
+        "login/login",
         "profile/profile",
+        "settings/settings",
         "cert-step1/cert-step1",
+        "cert-view/cert-view",
         "review-apply/review-apply",
         "review-records/review-records",
         "submission-success/submission-success"

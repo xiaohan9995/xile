@@ -1,0 +1,66 @@
+<view class="page-shell login-page">
+  <view class="login-header">
+    <view class="login-logo">🧘</view>
+    <text class="login-title">喜乐瑜伽教师认证中心</text>
+    <text class="login-subtitle" wx:if="{{step === 1}}">设置头像和昵称</text>
+    <text class="login-subtitle" wx:else>绑定手机号以使用教师服务</text>
+  </view>
+
+  <!-- Step 1: Avatar + Nickname -->
+  <view class="login-body" wx:if="{{loginReady && step === 1}}">
+    <button class="avatar-picker" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+      <image
+        class="avatar-preview"
+        wx:if="{{avatarTempPath}}"
+        src="{{avatarTempPath}}"
+        mode="aspectFill"
+      />
+      <view class="avatar-placeholder" wx:else>
+        <text class="avatar-placeholder-icon">📷</text>
+        <text class="avatar-placeholder-text">选择头像</text>
+      </view>
+    </button>
+
+    <input
+      class="nickname-input"
+      type="nickname"
+      placeholder="请输入昵称"
+      value="{{nickname}}"
+      bindinput="onNicknameInput"
+    />
+
+    <button
+      class="next-btn"
+      bindtap="onNextStep"
+      loading="{{loading}}"
+      disabled="{{loading}}"
+    >
+      下一步
+    </button>
+  </view>
+
+  <!-- Step 2: Phone Binding -->
+  <view class="login-body" wx:elif="{{loginReady && step === 2}}">
+    <button
+      class="phone-btn"
+      open-type="getPhoneNumber"
+      bindgetphonenumber="onGetPhoneNumber"
+      loading="{{loading}}"
+      disabled="{{loading}}"
+    >
+      微信手机号快捷验证
+    </button>
+    <text class="login-tip">仅用于身份验证，不会发送短信</text>
+  </view>
+
+  <!-- Loading State -->
+  <view class="login-body" wx:elif="{{!loginReady}}">
+    <view class="login-loading">
+      <text>正在登录...</text>
+    </view>
+  </view>
+
+  <view class="login-footer" wx:if="{{loginReady}}">
+    <text class="login-skip" bindtap="onSkip">暂时跳过</text>
+  </view>
+</view>

@@ -5,6 +5,7 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: () => import('../views/Login.vue'),
+    meta: { public: true },
   },
   {
     path: '/',
@@ -23,6 +24,13 @@ const routes = [
 const router = createRouter({
   history: createWebHistory('/admin/'),
   routes,
+})
+
+router.beforeEach((to) => {
+  if (to.meta.public) return true
+  const token = localStorage.getItem('admin_token')
+  if (!token) return { name: 'Login', query: { redirect: to.fullPath } }
+  return true
 })
 
 export default router

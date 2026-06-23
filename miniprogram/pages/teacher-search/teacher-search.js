@@ -1,27 +1,46 @@
 const { request } = require('../../utils/request');
+const auth = require('../../utils/auth');
 
 const app = getApp();
 let _searchTimer = null;
+
+const TIER_OPTIONS = ['全部', 'L0', 'L1', 'L2', 'L3', 'L4', 'L5'];
 
 Page({
   data: {
     statusBarHeight: 20,
     keyword: '',
-    activeFilter: 'all',
     searched: false,
-    filters: [
-      { label: '全部等级', value: 'all' },
-      { label: '全部地区', value: 'region' },
-      { label: '认证状态', value: 'status' },
-    ],
+    // Filter state
+    tierOptions: TIER_OPTIONS,
+    tierIndex: 0,
+    cityOptions: ['全部'],
+    cityIndex: 0,
+    showFilterPanel: false,
+    // Results
     teachers: [],
     loading: false,
+    loadingMore: false,
     error: '',
+    page: 1,
+    hasMore: true,
   },
 
   onLoad() {
     this.setData({ statusBarHeight: app.globalData.statusBarHeight });
+    this.loadCityOptions();
     this.doSearch();
+  },
+
+  onPullDownRefresh() {
+    this.setData({ page: 1, hasMore: true, teachers: [] });
+    this.doSearch().then(() => wx.stopPullDownRefresh());
+  },
+
+  onReachBottom() {
+    if (this.data.hasMore && !this.data.loadingMore) {
+      this.loadMore();
+    }
   },
 
   onInput(e) {
@@ -32,30 +51,88 @@ Page({
   debounceSearch() {
     if (_searchTimer) clearTimeout(_searchTimer);
     _searchTimer = setTimeout(() => {
+      this.setData({ page: 1, hasMore: true, teachers: [] });
       this.doSearch();
     }, 400);
   },
 
-  onFilterTap(e) {
-    const filter = e.currentTarget.dataset.filter;
-    this.setData({ activeFilter: filter });
+  toggleFilter() {
+    this.setData({ showFilterPanel: !this.data.showFilterPanel });
+  },
+
+  onTierChange(e) {
+    this.setData({ tierIndex: e.detail.value, page: 1, hasMore: true, teachers: [] });
     this.doSearch();
+  },
+
+  onCityChange(e) {
+    this.setData({ cityIndex: e.detail.value, page: 1, hasMore: true, teachers: [] });
+    this.doSearch();
+  },
+
+  resetFilters() {
+    this.setData({ tierIndex: 0, cityIndex: 0, page: 1, hasMore: true, teachers: [] });
+    this.doSearch();
+  },
+
+  async loadCityOptions() {
+    try {
+      const payload = await request({ url: '/api/mp/teachers/search?q=&page=1&pageSize=1' });
+      if (payload.cities && payload.cities.length) {
+        this.setData({ cityOptions: ['全部'].concat(payload.cities) });
+      }
+    } catch (e) {
+      // keep default
+    }
+  },
+
+  _buildUrl(page) {
+    const { keyword, tierIndex, tierOptions, cityIndex, cityOptions } = this.data;
+    let url = `/api/mp/teachers/search?q=${encodeURIComponent(keyword)}&page=${page}&pageSize=20`;
+    if (tierIndex > 0) {
+      url += `&tier=${encodeURIComponent(tierOptions[tierIndex])}`;
+    }
+    if (cityIndex > 0) {
+      url += `&city=${encodeURIComponent(cityOptions[cityIndex])}`;
+    }
+    return url;
   },
 
   async doSearch() {
     this.setData({ loading: true, error: '' });
     try {
-      const { keyword, activeFilter } = this.data;
-      let url = `/api/mp/teachers/search?q=${encodeURIComponent(keyword)}`;
-      if (activeFilter === 'status') {
-        url += '&status=valid';
+      const payload = await request({ url: this._buildUrl(1) });
+      this.setData({
+        teachers: payload.items || [],
+        searched: true,
+        hasMore: payload.hasMore || false,
+        page: 1,
+      });
+      if (payload.cities && payload.cities.length && this.data.cityOptions.length <= 1) {
+        this.setData({ cityOptions: ['全部'].concat(payload.cities) });
       }
-      const payload = await request({ url });
-      this.setData({ teachers: payload.items || [], searched: true });
     } catch (err) {
       this.setData({ error: '查询失败，请稍后重试' });
     } finally {
       this.setData({ loading: false });
+    }
+  },
+
+  async loadMore() {
+    this.setData({ loadingMore: true });
+    try {
+      const nextPage = this.data.page + 1;
+      const payload = await request({ url: this._buildUrl(nextPage) });
+      const newItems = payload.items || [];
+      this.setData({
+        teachers: this.data.teachers.concat(newItems),
+        page: nextPage,
+        hasMore: payload.hasMore || false,
+      });
+    } catch (err) {
+      wx.showToast({ title: '加载更多失败', icon: 'none' });
+    } finally {
+      this.setData({ loadingMore: false });
     }
   },
 

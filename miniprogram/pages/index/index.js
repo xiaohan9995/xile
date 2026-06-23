@@ -1,4 +1,5 @@
 const { request } = require('../../utils/request');
+const auth = require('../../utils/auth');
 
 const app = getApp();
 
@@ -7,7 +8,7 @@ Page({
     statusBarHeight: 20,
     stats: {
       totalTeachers: '--',
-      totalStudios: '--',
+      completedReviews: '--',
     },
   },
 
@@ -23,7 +24,7 @@ Page({
         this.setData({
           stats: {
             totalTeachers: this.formatNumber(payload.totalTeachers || 0),
-            totalStudios: this.formatNumber(payload.totalStudios || 0),
+            completedReviews: this.formatNumber(payload.completedReviews || 0),
           },
         });
       }
@@ -41,10 +42,28 @@ Page({
   },
 
   goMyCert() {
+    if (!auth.isLoggedIn() || !auth.isPhoneBound()) {
+      wx.navigateTo({ url: '/packageTeacher/login/login?returnUrl=' + encodeURIComponent('/packageTeacher/home/home') });
+      return;
+    }
     wx.navigateTo({ url: '/packageTeacher/home/home' });
   },
 
   goStudios() {
     wx.navigateTo({ url: '/pages/studios/studios' });
+  },
+
+  goYouzan() {
+    wx.navigateTo({
+      url: '/pages/webview/webview?url=' + encodeURIComponent('https://shop.youzan.com'),
+      fail() {
+        wx.setClipboardData({
+          data: 'https://shop.youzan.com',
+          success() {
+            wx.showToast({ title: '链接已复制', icon: 'success' });
+          },
+        });
+      },
+    });
   },
 });

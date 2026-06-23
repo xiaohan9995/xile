@@ -1,0 +1,158 @@
+/* ===== Cert View Page ===== */
+.cert-view-page {
+  padding-top: 0;
+}
+
+.cert-body {
+  padding: 24rpx 32rpx;
+}
+
+.cert-loading,
+.cert-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 400rpx;
+  font-size: 28rpx;
+  color: var(--color-muted);
+}
+
+/* ---- Certificate Card ---- */
+.cert-card {
+  background: #fff;
+  border-radius: 24rpx;
+  border: 1rpx solid rgba(31, 37, 33, 0.08);
+  overflow: hidden;
+}
+
+.cert-card__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40rpx 32rpx 24rpx;
+  background: linear-gradient(135deg, #5f7365, #849481);
+}
+
+.cert-card__org {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.8);
+  letter-spacing: 2rpx;
+}
+
+.cert-card__type {
+  margin-top: 8rpx;
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 4rpx;
+}
+
+.cert-card__image-wrap {
+  padding: 32rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cert-card__image {
+  width: 100%;
+  border-radius: 12rpx;
+}
+
+.cert-card__zoom-hint {
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  color: var(--color-muted);
+}
+
+.cert-card__placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60rpx 32rpx;
+}
+
+.cert-card__placeholder-icon {
+  font-size: 80rpx;
+  margin-bottom: 16rpx;
+}
+
+.cert-card__placeholder-text {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.cert-card__placeholder-hint {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: var(--color-muted);
+}
+
+/* ---- Info Rows ---- */
+.cert-card__info {
+  padding: 24rpx 32rpx 32rpx;
+  border-top: 1rpx solid rgba(31, 37, 33, 0.06);
+}
+
+.cert-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 0;
+}
+
+.cert-info-row + .cert-info-row {
+  border-top: 1rpx solid rgba(31, 37, 33, 0.04);
+}
+
+.cert-info-label {
+  font-size: 26rpx;
+  color: var(--color-muted);
+}
+
+.cert-info-value {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.cert-info-value--status {
+  color: #5f7365;
+}
+
+/* ---- Actions ---- */
+.cert-actions {
+  margin-top: 32rpx;
+  display: flex;
+  justify-content: center;
+}
+
+.cert-save-btn {
+  width: 100%;
+  height: 88rpx;
+  line-height: 88rpx;
+  background: #5f7365;
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 600;
+  border-radius: 44rpx;
+  border: none;
+  letter-spacing: 2rpx;
+}
+
+.cert-save-btn::after {
+  border: none;
+}
+
+/* ---- Note ---- */
+.cert-note {
+  margin-top: 24rpx;
+  padding: 20rpx 24rpx;
+  background: rgba(120, 136, 122, 0.06);
+  border-radius: 16rpx;
+  font-size: 22rpx;
+  color: var(--color-muted);
+  line-height: 1.6;
+}

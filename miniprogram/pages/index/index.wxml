@@ -32,6 +32,10 @@
         <text class="quick-card-title">瑜伽工作室</text>
         <text class="quick-card-desc">查看附近认证场馆</text>
       </view>
+      <view class="quick-card" bindtap="goYouzan">
+        <text class="quick-card-title">有赞学堂</text>
+        <text class="quick-card-desc">课程与培训资讯</text>
+      </view>
     </view>
 
     <!-- Stats card -->
@@ -46,7 +50,7 @@
           <text class="stat-label">认证教师总数</text>
         </view>
         <view class="stat-item">
-          <text class="stat-num">{{stats.totalStudios}}</text>
+          <text class="stat-num">{{stats.completedReviews}}</text>
           <text class="stat-label">本年度完成年审</text>
         </view>
       </view>

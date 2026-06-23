@@ -14,7 +14,7 @@
       <text class="studio-hero__eyebrow">认证场馆</text>
       <text class="studio-hero__heading">找一处安静练习的空间</text>
       <view class="studio-hero__badge">
-        <text class="studio-hero__badge-text">已收录 {{filteredStudios.length || 36}} 家喜乐瑜伽认证工作室</text>
+        <text class="studio-hero__badge-text">已收录 {{studios.length || 36}} 家喜乐瑜伽认证工作室</text>
       </view>
     </view>
   </view>
@@ -29,9 +29,9 @@
         placeholder-class="search-box__placeholder"
         bindinput="onKeywordInput"
         confirm-type="search"
-        bindconfirm="applyFilters"
+        bindconfirm="loadStudios"
       />
-      <view class="search-box__btn" bindtap="applyFilters">
+      <view class="search-box__btn" bindtap="loadStudios">
         <text class="search-box__btn-icon">⌕</text>
       </view>
     </view>
@@ -49,36 +49,30 @@
   </scroll-view>
 
   <!-- Studio Cards -->
-  <view class="studio-list">
-    <view
-      wx:for="{{filteredStudios}}"
+  <skeleton wx:if="{{loading && studios.length === 0}}" type="studio-list" count="{{3}}" />
+
+  <view class="studio-list" wx:if="{{!loading || studios.length > 0}}">
+    <studio-card
+      wx:for="{{studios}}"
       wx:key="id"
-      class="studio-card"
-      bindtap="openStudio"
-      data-id="{{item.id}}"
-    >
-      <image class="studio-card__img" src="{{item.coverImage}}" mode="aspectFill" />
-      <view class="studio-card__body">
-        <text class="studio-card__name">{{item.name}}</text>
-        <text class="studio-card__location">{{item.city}} · {{item.district}}</text>
-        <view class="studio-card__tags">
-          <text wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this" class="studio-card__tag">{{tag}}</text>
-        </view>
-      </view>
-    </view>
+      studio="{{item}}"
+    />
   </view>
 
   <!-- Empty State -->
-  <view wx:if="{{!loading && filteredStudios.length === 0}}" class="empty-card">
+  <view wx:if="{{!loading && studios.length === 0}}" class="empty-card">
     <text class="empty-icon">🧘</text>
     <text class="empty-title">未找到匹配的工作室</text>
     <text class="empty-desc">试试切换城市或修改搜索关键词</text>
     <view class="empty-action" bindtap="resetFilters">查看全部工作室</view>
   </view>
 
-  <!-- Loading -->
-  <view wx:if="{{loading}}" class="loading-wrap">
-    <text class="loading-text">加载中...</text>
+  <!-- Load more -->
+  <view wx:if="{{loadingMore}}" class="load-more">
+    <text class="load-more-text">加载中...</text>
+  </view>
+  <view wx:elif="{{!hasMore && studios.length > 0}}" class="load-more">
+    <text class="load-more-text">没有更多数据了</text>
   </view>
 <tab-bar active="studio" />
 </view>

@@ -16,7 +16,9 @@ export function mapAdminTeacher(teacher) {
     avatar: teacher.avatarUrl || DEFAULT_AVATAR,
     phone: teacher.phone || '未登记',
     city: teacher.city,
+    district: teacher.district,
     status: teacher.status,
+    committeeRemark: teacher.committeeRemark,
   }
 }
 
@@ -28,7 +30,9 @@ export function mapAdminStudio(studio) {
     city: studio.city,
     district: studio.district,
     address: studio.address,
-    contact: studio.contactText || '预约请通过有赞学堂',
+    contact: studio.contactText || '',
+    intro: studio.intro || '',
+    openingHours: studio.openingHours || '',
     image: studio.coverUrl || DEFAULT_STUDIO,
     status: studio.status,
     ownerTeacherName: studio.ownerTeacherName,
@@ -50,7 +54,13 @@ export function mapAdminReview(review) {
     expiryDate: review.previousValidUntil || '待确认',
     nextValidUntil: review.nextValidUntil,
     reviewedAt: review.reviewedAt,
-    files: (review.files || []).map((file) => file.filename || file.fileName || '未命名材料'),
+    reviewerComment: review.reviewerComment || '',
+    files: (review.files || []).map((file) => ({
+      id: file.id,
+      name: file.filename || file.fileName || '未命名材料',
+      url: file.url,
+      type: file.fileType || '',
+    })),
   }
 }
 
@@ -104,12 +114,20 @@ export async function createTeacher(data) {
   return api.post('/teachers', data)
 }
 
+export async function updateTeacher(id, data) {
+  return api.put(`/teachers/${id}`, data)
+}
+
 export async function deleteTeacher(id) {
   return api.delete(`/teachers/${id}`)
 }
 
 export async function createStudio(data) {
   return api.post('/studios', data)
+}
+
+export async function updateStudio(id, data) {
+  return api.put(`/studios/${id}`, data)
 }
 
 export async function deleteStudio(id) {
@@ -139,4 +157,13 @@ export async function saveSettings(data) {
 
 export async function inviteAdmin(data) {
   return api.post('/permissions/invite', data)
+}
+
+export async function fetchUsers() {
+  const payload = await api.get('/users')
+  return payload.items || []
+}
+
+export async function updateUserRole(userId, role, teacherId) {
+  return api.put(`/users/${userId}/role`, { role, teacherId: teacherId || undefined })
 }

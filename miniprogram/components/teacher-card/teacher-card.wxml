@@ -5,7 +5,7 @@
       src="{{teacher.avatarUrl || '/assets/default-avatar.png'}}"
       mode="aspectFill"
     />
-    <view class="teacher-card__online" wx:if="{{teacher.certificationStatus === 'active'}}"></view>
+    <view class="teacher-card__online" wx:if="{{teacher.certificationStatus === '认证有效'}}"></view>
   </view>
 
   <view class="teacher-card__body">
@@ -16,6 +16,7 @@
         <text class="teacher-card__badge-text">{{teacher.tier}} {{teacher.tierName}}</text>
       </view>
     </view>
+    <text class="teacher-card__location" wx:if="{{teacher.city}}">{{teacher.city}}{{teacher.district ? ' · ' + teacher.district : ''}}</text>
     <text class="teacher-card__cert-no" wx:if="{{teacher.teacherNo}}">认证编号: {{teacher.teacherNo}}</text>
     <text class="teacher-card__valid" wx:if="{{teacher.validUntil}}">有效期至: {{teacher.validUntil}}</text>
   </view>

@@ -11,7 +11,7 @@ page {
   --color-gold: #b89a63;
   --color-gold-light: #F7F4EF;
   --color-text: #1f2521;
-  --color-muted: #7e857e;
+  --color-muted: #5c635c;
   --color-surface: #E8ECE9;
   --color-card: #ffffff;
   --color-line: rgba(31, 37, 33, 0.08);
@@ -318,4 +318,63 @@ image {
 .empty-text {
   font-size: 26rpx;
   color: var(--color-muted);
+}
+
+/* ============================================
+   Load More
+   ============================================ */
+
+.load-more {
+  padding: 32rpx 0;
+  text-align: center;
+}
+
+.load-more-text {
+  font-size: 24rpx;
+  color: var(--color-muted);
+}
+
+/* ============================================
+   Skeleton Loading
+   ============================================ */
+
+@keyframes shimmer {
+  0% { background-position: -400rpx 0; }
+  100% { background-position: 400rpx 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 800rpx 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: var(--radius-sm);
+}
+
+.skeleton-circle {
+  border-radius: 50%;
+}
+
+.skeleton-card {
+  padding: 24rpx;
+  margin: 16rpx 32rpx;
+  background: var(--color-card);
+  border-radius: var(--radius-md);
+  border: 1rpx solid var(--color-line);
+}
+
+.skeleton-row {
+  height: 28rpx;
+  margin-bottom: 16rpx;
+}
+
+.skeleton-row--short {
+  width: 40%;
+}
+
+.skeleton-row--medium {
+  width: 65%;
+}
+
+.skeleton-row--long {
+  width: 90%;
 }

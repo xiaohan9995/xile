@@ -1,4 +1,5 @@
 const { request } = require('../../utils/request');
+const auth = require('../../utils/auth');
 
 const app = getApp();
 

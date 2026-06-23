@@ -1,0 +1,79 @@
+<view class="page-shell cert-view-page">
+  <!-- Header -->
+  <view class="page-header" style="padding-top:{{statusBarHeight}}px;">
+    <view class="page-header__back" bindtap="goBack">‹</view>
+    <text class="page-header__title">证书查看</text>
+    <view class="page-header__right"></view>
+  </view>
+
+  <!-- Loading -->
+  <view wx:if="{{loading}}" class="cert-loading">
+    <text>加载中...</text>
+  </view>
+
+  <!-- Error -->
+  <view wx:elif="{{error}}" class="cert-error">
+    <text>{{error}}</text>
+  </view>
+
+  <!-- Content -->
+  <view wx:elif="{{teacher}}" class="cert-body">
+    <!-- Certificate Card -->
+    <view class="cert-card">
+      <view class="cert-card__header">
+        <text class="cert-card__org">喜乐瑜伽教师认证中心</text>
+        <text class="cert-card__type">教师资格认证证书</text>
+      </view>
+
+      <view wx:if="{{certImageUrl}}" class="cert-card__image-wrap" bindtap="previewCert">
+        <image class="cert-card__image" src="{{certImageUrl}}" mode="widthFix" />
+        <view class="cert-card__zoom-hint">点击查看大图</view>
+      </view>
+
+      <view wx:else class="cert-card__placeholder">
+        <text class="cert-card__placeholder-icon">🏅</text>
+        <text class="cert-card__placeholder-text">电子证书生成中</text>
+        <text class="cert-card__placeholder-hint">证书将在审核通过后生成</text>
+      </view>
+
+      <view class="cert-card__info">
+        <view class="cert-info-row">
+          <text class="cert-info-label">姓名</text>
+          <text class="cert-info-value">{{teacher.name}}</text>
+        </view>
+        <view class="cert-info-row">
+          <text class="cert-info-label">编号</text>
+          <text class="cert-info-value">{{teacher.teacherNo}}</text>
+        </view>
+        <view class="cert-info-row">
+          <text class="cert-info-label">认证等级</text>
+          <text class="cert-info-value">{{teacher.tier}} {{teacher.tierName}}</text>
+        </view>
+        <view class="cert-info-row">
+          <text class="cert-info-label">认证时间</text>
+          <text class="cert-info-value">{{teacher.firstCertifiedOn}}</text>
+        </view>
+        <view class="cert-info-row">
+          <text class="cert-info-label">有效期至</text>
+          <text class="cert-info-value">{{teacher.validUntil}}</text>
+        </view>
+        <view class="cert-info-row">
+          <text class="cert-info-label">状态</text>
+          <text class="cert-info-value cert-info-value--status">{{teacher.certificationStatus}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- Actions -->
+    <view class="cert-actions" wx:if="{{certImageUrl}}">
+      <button class="cert-save-btn" bindtap="saveCert">保存到相册</button>
+    </view>
+
+    <!-- Note -->
+    <view class="cert-note">
+      <text>本证书由喜乐瑜伽教师管理委员会颁发，可通过小程序首页"教师查询"功能验证真伪。</text>
+    </view>
+  </view>
+
+  <tab-bar active="my" />
+</view>

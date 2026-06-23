@@ -1,0 +1,16 @@
+__pycache__
+*.pyc
+.git
+.claude
+node_modules
+admin-src/node_modules
+admin-src/dist
+miniprogram
+prototype
+docss
+*.md
+.env
+instance/
+backend/__pycache__
+backend/instance/
+backend/uploads/

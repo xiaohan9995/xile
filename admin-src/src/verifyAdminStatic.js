@@ -57,7 +57,7 @@ for (const [viewName, requiredTexts] of Object.entries(viewContracts)) {
 }
 
 const appFile = path.join(srcRoot, 'App.vue')
-for (const label of ['首页看板', '教师管理', '年审管理', '工作室管理', '批量导入', '数据分析', '权限管理', '系统设置']) {
+for (const label of ['首页看板', '教师管理', '年审及审核', '工作室管理', '批量导入', '数据分析', '权限管理', '系统设置']) {
   assertIncludes(appFile, label)
 }
 

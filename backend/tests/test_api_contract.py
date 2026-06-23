@@ -21,10 +21,10 @@ def test_health_endpoint_reports_service_status(client):
     response = client.get("/api/health")
 
     assert response.status_code == 200
-    assert response.get_json() == {
-        "service": "xile-yoga-certification",
-        "status": "ok",
-    }
+    payload = response.get_json()
+    assert payload["service"] == "xile-yoga-certification"
+    assert payload["status"] == "ok"
+    assert payload["db"] == "ok"
 
 
 def test_mp_stats_overview_returns_counts(client):
@@ -87,12 +87,19 @@ def test_studio_detail_returns_public_profile(client):
     assert isinstance(payload["tags"], list)
 
 
+def _login_as_teacher(client, teacher_id=1):
+    """Login as a teacher via dev mock code and return JWT token."""
+    resp = client.post("/api/mp/auth/login", json={"code": f"dev-mock-code-{teacher_id}"})
+    return resp.get_json()["token"]
+
+
 def test_mp_review_submission_creates_admin_visible_review_with_files(client):
+    token = _login_as_teacher(client, 1)
     response = client.post(
         "/api/mp/reviews",
         json={
             "teacherId": 1,
-            "reviewYear": 2027,
+            "reviewYear": 2026,
             "files": [
                 {
                     "title": "professional portrait",
@@ -102,12 +109,13 @@ def test_mp_review_submission_creates_admin_visible_review_with_files(client):
                 }
             ],
         },
+        headers={"Authorization": f"Bearer {token}"},
     )
 
     assert response.status_code == 201
     payload = response.get_json()
     assert payload["teacherId"] == 1
-    assert payload["reviewYear"] == 2027
+    assert payload["reviewYear"] == 2026
     assert payload["status"] == "submitted"
     assert payload["files"][0]["filename"] == "portrait.jpg"
 
@@ -123,21 +131,39 @@ def test_mp_review_submission_creates_admin_visible_review_with_files(client):
 
 
 def test_mp_review_submission_validates_teacher_and_files(client):
+    token = _login_as_teacher(client, 1)
     missing_files_response = client.post(
         "/api/mp/reviews",
-        json={"teacherId": 1, "reviewYear": 2027, "files": []},
+        json={"teacherId": 1, "reviewYear": 2026, "files": []},
+        headers={"Authorization": f"Bearer {token}"},
     )
     assert missing_files_response.status_code == 400
 
-    missing_teacher_response = client.post(
+    wrong_teacher_response = client.post(
         "/api/mp/reviews",
-        json={"teacherId": 999, "reviewYear": 2027, "files": [{"fileName": "portrait.jpg"}]},
+        json={"teacherId": 999, "reviewYear": 2026, "files": [{"fileName": "portrait.jpg"}]},
+        headers={"Authorization": f"Bearer {token}"},
     )
-    assert missing_teacher_response.status_code == 404
+    assert wrong_teacher_response.status_code == 403
 
 
-def test_mp_teacher_certification_returns_self_service_profile_and_reviews(client):
+def test_mp_teacher_certification_public_returns_summary_only(client):
     response = client.get("/api/mp/teachers/2/certification")
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert payload["teacher"]["id"] == 2
+    assert payload["teacher"]["teacherNo"] == "JY20230002"
+    assert "daysLeft" not in payload["teacher"]
+    assert "reviews" not in payload
+
+
+def test_mp_teacher_certification_owner_returns_full_data(client):
+    token = _login_as_teacher(client, 2)
+    response = client.get(
+        "/api/mp/teachers/me/certification",
+        headers={"Authorization": f"Bearer {token}"},
+    )
 
     assert response.status_code == 200
     payload = response.get_json()
@@ -367,3 +393,83 @@ def test_admin_permissions_list(client):
     payload = response.get_json()
     assert payload["total"] >= 1
     assert payload["items"][0]["username"] == "admin"
+
+
+def test_admin_user_list_and_role_update(client):
+    token = _login_as_teacher(client, 1)
+
+    response = client.get(
+        "/api/admin/users",
+        headers={"Authorization": "Bearer test-admin-token"},
+    )
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert payload["total"] >= 1
+    user = payload["items"][0]
+    assert user["role"] == "teacher"
+    assert user["teacherId"] == 1
+
+    update_response = client.put(
+        f"/api/admin/users/{user['id']}/role",
+        headers={"Authorization": "Bearer test-admin-token"},
+        json={"role": "student"},
+    )
+    assert update_response.status_code == 200
+    assert update_response.get_json()["role"] == "student"
+    assert update_response.get_json()["teacherId"] is None
+
+    restore_response = client.put(
+        f"/api/admin/users/{user['id']}/role",
+        headers={"Authorization": "Bearer test-admin-token"},
+        json={"role": "teacher", "teacherId": 1},
+    )
+    assert restore_response.status_code == 200
+    assert restore_response.get_json()["role"] == "teacher"
+    assert restore_response.get_json()["teacherId"] == 1
+
+
+def test_mp_auth_me_includes_avatar_and_phone(client):
+    token = _login_as_teacher(client, 1)
+    response = client.get(
+        "/api/mp/auth/me",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert "avatarUrl" in payload
+    assert "nickname" in payload
+    assert "phone" in payload
+    assert payload["role"] == "teacher"
+
+
+def test_mp_update_profile_sets_nickname(client):
+    token = _login_as_teacher(client, 1)
+    response = client.post(
+        "/api/mp/auth/update-profile",
+        headers={"Authorization": f"Bearer {token}"},
+        data={"nickname": "瑜伽老师"},
+        content_type="multipart/form-data",
+    )
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert payload["nickname"] == "瑜伽老师"
+
+    me_response = client.get(
+        "/api/mp/auth/me",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert me_response.get_json()["nickname"] == "瑜伽老师"
+
+
+def test_mp_login_response_includes_avatar_fields(client):
+    response = client.post(
+        "/api/mp/auth/login",
+        json={"code": "dev-mock-code-1"},
+    )
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert "avatarUrl" in payload
+    assert "nickname" in payload
