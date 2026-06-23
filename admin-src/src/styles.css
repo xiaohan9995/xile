@@ -23,6 +23,7 @@
 
 body {
   margin: 0;
+  line-height: 1.6;
   min-width: 1180px;
   background:
     radial-gradient(circle at 18% 8%, rgba(187, 161, 120, 0.12), transparent 28%),
@@ -204,6 +205,8 @@ button {
 .side-menu a.router-link-active {
   background: #d8ded9;
   color: #2c4a3e;
+  border-left: 3px solid var(--brand-green);
+  padding-left: 11px;
 }
 
 .sidebar-note {
@@ -633,6 +636,16 @@ button {
   color: var(--brand-green);
   font-size: 11px;
   font-weight: 800;
+}
+
+.status-pill.hidden {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.status-pill.pending {
+  background: #fffbeb;
+  color: #b45309;
 }
 
 .icon-danger {
