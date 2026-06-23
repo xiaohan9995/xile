@@ -18,7 +18,9 @@ page {
   --color-border: rgba(31, 37, 33, 0.12);
   --color-danger: #c84a4a;
   --radius-sm: 12rpx;
+  --radius-base: 16rpx;
   --radius-md: 24rpx;
+  --radius-xl: 32rpx;
   --radius-lg: 48rpx;
   --radius-full: 999rpx;
   --shadow-card: 0 10px 24px rgba(31, 37, 33, 0.06);
