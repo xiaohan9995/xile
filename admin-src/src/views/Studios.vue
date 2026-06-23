@@ -40,7 +40,7 @@
             <td>{{ studio.city }}</td>
             <td>{{ studio.address }}</td>
             <td>{{ studio.contact }}</td>
-            <td><span class="status-pill">{{ studio.status === 'hidden' ? '已隐藏' : '正常' }}</span></td>
+            <td><span :class="['status-pill', studio.status === 'hidden' ? 'hidden' : '']">{{ studio.status === 'hidden' ? '已隐藏' : '正常' }}</span></td>
             <td>
               <button class="table-action" @click="openEdit(studio)">编辑</button>
               <button class="icon-danger" @click="handleDelete(studio)">删除</button>
