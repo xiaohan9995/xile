@@ -58,8 +58,8 @@
 
 .filter-pill {
   flex: 1;
-  height: 72rpx;
-  border-radius: 36rpx;
+  height: 80rpx;
+  border-radius: 40rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -116,7 +116,7 @@
 .error-tip {
   padding: 24rpx 32rpx;
   font-size: 24rpx;
-  color: #b54c4c;
+  color: var(--color-danger);
   text-align: center;
 }
 

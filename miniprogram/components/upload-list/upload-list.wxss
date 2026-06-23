@@ -46,7 +46,7 @@
 }
 
 .upload-tile__upload {
-  color: #9ca3af;
+  color: var(--color-muted);
 }
 
 .upload-tile__body {
@@ -57,7 +57,7 @@
 
 .upload-tile__title {
   display: block;
-  color: #1f2937;
+  color: var(--color-text);
   font-size: 28rpx;
   font-weight: 800;
 }
@@ -65,8 +65,8 @@
 .upload-tile__desc {
   display: block;
   margin-top: 8rpx;
-  color: #9ca3af;
-  font-size: 21rpx;
+  color: var(--color-muted);
+  font-size: 22rpx;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

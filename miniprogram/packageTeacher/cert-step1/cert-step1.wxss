@@ -104,7 +104,7 @@
 }
 
 .field-required {
-  color: #ef4444;
+  color: var(--color-danger);
   font-family: "JetBrains Mono", monospace;
 }
 

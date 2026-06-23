@@ -30,7 +30,7 @@
   flex-direction: column;
   align-items: center;
   padding: 40rpx 32rpx 24rpx;
-  background: linear-gradient(135deg, #5f7365, #849481);
+  background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary));
 }
 
 .cert-card__org {
@@ -119,7 +119,7 @@
 }
 
 .cert-info-value--status {
-  color: #5f7365;
+  color: var(--color-primary-dark);
 }
 
 /* ---- Actions ---- */
@@ -133,7 +133,7 @@
   width: 100%;
   height: 88rpx;
   line-height: 88rpx;
-  background: #5f7365;
+  background: var(--color-primary-dark);
   color: #fff;
   font-size: 30rpx;
   font-weight: 600;
