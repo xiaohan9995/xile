@@ -98,10 +98,21 @@
         </div>
 
         <div class="file-strip">
-          <button v-for="file in selected.files" :key="file">📄 {{ file }}</button>
+          <a
+            v-for="file in selected.files"
+            :key="file.id"
+            :href="file.url"
+            target="_blank"
+            rel="noopener"
+            class="file-link"
+            :title="file.name"
+          >
+            <span class="file-icon">{{ file.type && file.type.startsWith('image') ? '🖼' : '📄' }}</span>
+            {{ file.name }}
+          </a>
         </div>
 
-        <div class="review-decision">
+        <div class="review-decision" v-if="selected.status === 'pending'">
           <label>
             <input type="radio" value="approved" v-model="decision" />
             通过
@@ -110,12 +121,16 @@
             <input type="radio" value="rejected" v-model="decision" />
             驳回
           </label>
-          <textarea v-model="comment" placeholder="输入审核意见（选填）" maxlength="300"></textarea>
+          <textarea v-model="comment" placeholder="输入审核意见（驳回时必填）" maxlength="300"></textarea>
         </div>
 
-        <div class="review-actions">
-          <button class="reject" @click="handleDecision('rejected')">驳回材料</button>
-          <button class="approve" @click="handleDecision('approved')">确认审核</button>
+        <div v-if="selected.reviewerComment && selected.status !== 'pending'" class="reviewer-comment">
+          <strong>审核意见：</strong>{{ selected.reviewerComment }}
+        </div>
+
+        <div class="review-actions" v-if="selected.status === 'pending'">
+          <button class="reject" :disabled="submitting" @click="confirmDecision('rejected')">驳回材料</button>
+          <button class="approve" :disabled="submitting" @click="confirmDecision('approved')">{{ submitting ? '提交中...' : '确认通过' }}</button>
         </div>
       </div>
     </section>
@@ -125,13 +140,16 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { fetchAdminReviews, submitReviewDecision } from '../api/adminData'
+import { useToast } from '../composables/useToast'
 
+const { show: toast } = useToast()
 const reviews = ref([])
 const activeTab = ref('pending')
 const keyword = ref('')
 const selectedId = ref(null)
 const decision = ref('approved')
 const comment = ref('')
+const submitting = ref(false)
 
 onMounted(async () => {
   await loadReviews()
@@ -141,7 +159,7 @@ async function loadReviews() {
   try {
     reviews.value = await fetchAdminReviews()
   } catch (error) {
-    console.warn('年审队列接口暂不可用', error)
+    toast('年审队列加载失败', 'error')
   }
 }
 
@@ -166,13 +184,28 @@ function clearSelection() {
   comment.value = ''
 }
 
+function confirmDecision(status) {
+  if (status === 'rejected' && !comment.value.trim()) {
+    toast('驳回时必须填写审核意见', 'error')
+    return
+  }
+  const label = status === 'approved' ? '通过' : '驳回'
+  if (!window.confirm(`确认${label}「${selected.value.name}」的年审申请？`)) return
+  handleDecision(status)
+}
+
 async function handleDecision(status) {
   const item = selected.value
   if (!item) return
+  submitting.value = true
   try {
     await submitReviewDecision(item.id, status, comment.value)
+    toast(status === 'approved' ? '已通过年审' : '已驳回年审')
   } catch (error) {
-    console.warn('审核接口调用失败', error)
+    toast('审核提交失败：' + (error.response?.data?.error || '网络错误'), 'error')
+    return
+  } finally {
+    submitting.value = false
   }
   await loadReviews()
   clearSelection()
@@ -180,4 +213,32 @@ async function handleDecision(status) {
 </script>
 
 <style scoped>
+.file-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  color: #333;
+  text-decoration: none;
+  font-size: 13px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.file-link:hover {
+  border-color: var(--brand-green, #4a7c59);
+  background: #f6faf7;
+}
+.file-icon {
+  font-size: 16px;
+}
+.reviewer-comment {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: #fef9f0;
+  border-left: 3px solid #c28a1a;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #5a4a28;
+}
 </style>

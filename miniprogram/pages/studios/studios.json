@@ -1,6 +1,9 @@
 {
   "navigationStyle": "custom",
+  "enablePullDownRefresh": true,
   "usingComponents": {
-    "tab-bar": "/components/tab-bar/tab-bar"
+    "tab-bar": "/components/tab-bar/tab-bar",
+    "skeleton": "/components/skeleton/skeleton",
+    "studio-card": "/components/studio-card/studio-card"
   }
 }

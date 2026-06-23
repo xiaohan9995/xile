@@ -4,14 +4,7 @@
     <div class="admin-frame">
       <header class="admin-topbar">
         <span class="version-pill">JoyYoga Back-End Console v2.0</span>
-        <nav class="top-tabs">
-          <RouterLink to="/dashboard">数据看板</RouterLink>
-          <RouterLink to="/teachers">教师管理</RouterLink>
-          <RouterLink to="/reviews">年审管理</RouterLink>
-          <RouterLink to="/studios">工作室管理</RouterLink>
-        </nav>
         <div class="admin-user">
-          <span class="bell">●</span>
           <img class="admin-avatar" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200&auto=format&fit=crop" alt="管理员" />
           <span>系统管理员</span>
         </div>
@@ -21,7 +14,7 @@
         <aside class="admin-sidebar">
           <div>
             <div class="admin-brand">
-              <div class="brand-mark">瑜</div>
+              <div class="brand-mark">喜</div>
               <div>
                 <strong>喜乐瑜伽教师</strong>
                 <span>认证管理中心</span>
@@ -48,6 +41,15 @@
         </section>
       </main>
     </div>
+
+    <!-- Toast notifications -->
+    <Transition name="toast">
+      <div v-if="toasts.length" class="toast-container">
+        <div v-for="t in toasts" :key="t.id" class="toast-item" :class="'toast--' + t.type">
+          {{ t.message }}
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -55,7 +57,9 @@
 import { RouterLink } from 'vue-router'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useToast } from './composables/useToast'
 
 const route = useRoute()
 const isLoginRoute = computed(() => route.name === 'Login')
+const { toasts } = useToast()
 </script>

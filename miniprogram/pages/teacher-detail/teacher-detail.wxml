@@ -16,7 +16,7 @@
           <view class="level-badge">{{teacher.tier || 'L'}}</view>
           <text class="tier-label">认证导师</text>
         </view>
-        <text class="profile-status">认证有效</text>
+        <text class="profile-status {{teacher.certificationStatus === '已过期' ? 'status-expired' : teacher.certificationStatus === '即将到期' ? 'status-expiring' : ''}}">{{teacher.certificationStatus || '未知'}}</text>
       </view>
     </view>
 

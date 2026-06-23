@@ -1,0 +1,42 @@
+<!-- Teacher List Skeleton -->
+<view wx:if="{{type === 'teacher-list'}}">
+  <view wx:for="{{count}}" wx:key="*this" class="skeleton-card">
+    <view class="sk-teacher-row">
+      <view class="skeleton skeleton-circle sk-avatar"></view>
+      <view class="sk-teacher-info">
+        <view class="skeleton skeleton-row skeleton-row--medium"></view>
+        <view class="skeleton skeleton-row skeleton-row--short"></view>
+        <view class="skeleton skeleton-row skeleton-row--long"></view>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- Studio List Skeleton -->
+<view wx:if="{{type === 'studio-list'}}">
+  <view wx:for="{{count}}" wx:key="*this" class="skeleton-card">
+    <view class="sk-studio-row">
+      <view class="skeleton sk-studio-img"></view>
+      <view class="sk-studio-info">
+        <view class="skeleton skeleton-row skeleton-row--medium"></view>
+        <view class="skeleton skeleton-row skeleton-row--short"></view>
+        <view class="sk-studio-tags">
+          <view class="skeleton sk-tag"></view>
+          <view class="skeleton sk-tag"></view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- Review Records Skeleton -->
+<view wx:if="{{type === 'review-list'}}">
+  <view class="skeleton-card">
+    <view class="skeleton skeleton-row skeleton-row--medium"></view>
+    <view class="skeleton skeleton-row skeleton-row--short"></view>
+  </view>
+  <view wx:for="{{count}}" wx:key="*this" class="skeleton-card">
+    <view class="skeleton skeleton-row skeleton-row--long"></view>
+    <view class="skeleton skeleton-row skeleton-row--short"></view>
+  </view>
+</view>

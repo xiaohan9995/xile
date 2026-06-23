@@ -34,3 +34,4 @@ project.private.config.json
 # Database
 *.db
 *.sqlite
+.gstack/

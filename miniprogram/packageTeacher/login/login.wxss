@@ -1,0 +1,160 @@
+/* ===== Login Page ===== */
+.login-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 0 64rpx;
+  background: var(--color-bg);
+}
+
+.login-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 80rpx;
+}
+
+.login-logo {
+  font-size: 96rpx;
+  margin-bottom: 24rpx;
+}
+
+.login-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: var(--color-text);
+  font-family: "Noto Serif SC", serif;
+}
+
+.login-subtitle {
+  margin-top: 16rpx;
+  font-size: 26rpx;
+  color: var(--color-muted);
+}
+
+.login-body {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Avatar Picker */
+.avatar-picker {
+  width: 200rpx;
+  height: 200rpx;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-bottom: 40rpx;
+  padding: 0;
+  border: 4rpx dashed var(--color-primary);
+  background: var(--color-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-picker::after {
+  display: none;
+}
+
+.avatar-preview {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.avatar-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.avatar-placeholder-icon {
+  font-size: 48rpx;
+}
+
+.avatar-placeholder-text {
+  font-size: 22rpx;
+  color: var(--color-muted);
+}
+
+/* Nickname Input */
+.nickname-input {
+  width: 100%;
+  height: 88rpx;
+  border-radius: 44rpx;
+  background: var(--color-card);
+  padding: 0 40rpx;
+  font-size: 28rpx;
+  color: var(--color-text);
+  margin-bottom: 40rpx;
+  border: 2rpx solid var(--color-border);
+}
+
+/* Buttons */
+.next-btn {
+  width: 100% !important;
+  height: 96rpx;
+  border-radius: 48rpx;
+  background: linear-gradient(135deg, #5f7365, #849481);
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 700;
+  letter-spacing: 2rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.next-btn:active {
+  opacity: 0.9;
+  transform: scale(0.98);
+}
+
+.phone-btn {
+  width: 100% !important;
+  height: 96rpx;
+  border-radius: 48rpx;
+  background: linear-gradient(135deg, #5f7365, #849481);
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 700;
+  letter-spacing: 2rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.phone-btn:active {
+  opacity: 0.9;
+  transform: scale(0.98);
+}
+
+.login-tip {
+  margin-top: 20rpx;
+  font-size: 22rpx;
+  color: var(--color-muted);
+}
+
+.login-footer {
+  margin-top: 60rpx;
+}
+
+.login-skip {
+  font-size: 26rpx;
+  color: var(--color-muted);
+  text-decoration: underline;
+}
+
+.login-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200rpx;
+  font-size: 28rpx;
+  color: var(--color-muted);
+}

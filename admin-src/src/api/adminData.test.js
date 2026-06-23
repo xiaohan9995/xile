@@ -70,7 +70,7 @@ test('maps admin review API records to review queue rows', () => {
   assert.equal(result.status, 'pending')
   assert.equal(result.avatar, '/static/demo/teacher.jpg')
   assert.equal(result.reviewYear, '2026年度')
-  assert.deepEqual(result.files, ['继续教育证明.pdf'])
+  assert.deepEqual(result.files, [{ id: undefined, name: '继续教育证明.pdf', url: undefined, type: '' }])
 })
 
 test('maps dashboard stats to KPI cards', () => {

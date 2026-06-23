@@ -22,21 +22,29 @@ Page({
     },
     records: [],
     allRecords: [],
+    loading: false,
   },
 
   onLoad() {
+    if (!auth.requireAuth('/packageTeacher/review-records/review-records')) return;
     this.setData({ statusBarHeight: app.globalData.statusBarHeight });
     this.loadRecords();
   },
 
-  async loadRecords() {
-    const teacherId = auth.getTeacherId();
-    if (!teacherId) {
-      wx.showToast({ title: '请先登录', icon: 'none' });
-      return;
+  onShow() {
+    if (auth.isLoggedIn()) {
+      this.loadRecords();
     }
+  },
+
+  onPullDownRefresh() {
+    this.loadRecords().then(() => wx.stopPullDownRefresh());
+  },
+
+  async loadRecords() {
+    this.setData({ loading: true });
     try {
-      const payload = await request({ url: `/api/mp/teachers/${teacherId}/certification` });
+      const payload = await request({ url: '/api/mp/teachers/me/certification' });
       const teacher = payload.teacher || {};
       const reviews = payload.reviews || [];
 
@@ -62,6 +70,8 @@ Page({
       });
     } catch (err) {
       wx.showToast({ title: '加载失败', icon: 'none' });
+    } finally {
+      this.setData({ loading: false });
     }
   },
 

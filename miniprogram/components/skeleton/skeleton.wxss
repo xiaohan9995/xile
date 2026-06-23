@@ -1,0 +1,44 @@
+.sk-teacher-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 20rpx;
+}
+
+.sk-avatar {
+  width: 88rpx;
+  height: 88rpx;
+  flex-shrink: 0;
+}
+
+.sk-teacher-info {
+  flex: 1;
+}
+
+.sk-studio-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 20rpx;
+}
+
+.sk-studio-img {
+  width: 160rpx;
+  height: 120rpx;
+  flex-shrink: 0;
+  border-radius: 12rpx;
+}
+
+.sk-studio-info {
+  flex: 1;
+}
+
+.sk-studio-tags {
+  display: flex;
+  gap: 12rpx;
+  margin-top: 8rpx;
+}
+
+.sk-tag {
+  width: 100rpx;
+  height: 36rpx;
+  border-radius: 18rpx;
+}

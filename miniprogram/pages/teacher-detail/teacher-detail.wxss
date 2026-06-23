@@ -68,6 +68,14 @@
   color: var(--color-primary-dark);
 }
 
+.profile-status.status-expired {
+  color: #b54c4c;
+}
+
+.profile-status.status-expiring {
+  color: #c28a1a;
+}
+
 /* ===== Info card ===== */
 .info-card {
   margin-top: 24rpx;

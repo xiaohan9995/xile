@@ -22,6 +22,7 @@ Page({
   },
 
   onLoad() {
+    if (!auth.requireAuth('/packageTeacher/cert-step1/cert-step1')) return;
     this.setData({ statusBarHeight: app.globalData.statusBarHeight });
   },
 

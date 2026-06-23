@@ -161,3 +161,12 @@
   color: #7e857e;
   text-align: right;
 }
+
+.menu-item--logout {
+  margin-top: 24rpx;
+  border-bottom: none;
+}
+
+.menu-item--logout .menu-item__label {
+  color: #c84a4a;
+}

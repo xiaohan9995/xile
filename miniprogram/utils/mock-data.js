@@ -145,6 +145,25 @@ const mockResponse = (url, options = {}) => {
   const path = normalizePath(url);
   const method = options.method || 'GET';
 
+  // ===== Auth 相关 =====
+  if (method === 'POST' && path === '/api/mp/auth/login') {
+    return {
+      token: 'mock-jwt-token-for-local-dev',
+      userId: 1,
+      role: 'teacher',
+      phoneBound: false,
+      teacherId: 2,
+    };
+  }
+
+  if (method === 'POST' && path === '/api/mp/auth/bind-phone') {
+    return { phone: '13800001111' };
+  }
+
+  if (path === '/api/mp/stats/overview') {
+    return { totalTeachers: 168, totalStudios: 42 };
+  }
+
   if (method === 'POST' && path === '/api/mp/reviews') {
     const data = options.data || {};
     return {
@@ -166,13 +185,29 @@ const mockResponse = (url, options = {}) => {
         teacher.teacherNo.indexOf(keyword) >= 0
       ))
       : teachers;
-    return { items, total: items.length };
+    return { items, total: items.length, page: 1, pageSize: 20, hasMore: false };
   }
 
   const teacherMatch = path.match(/^\/api\/mp\/teachers\/(\d+)\/summary$/);
   if (teacherMatch) {
     const teacher = teachers.find((item) => String(item.id) === teacherMatch[1]);
     return teacher || null;
+  }
+
+  if (path === '/api/mp/teachers/me/certification') {
+    const teacher = teachers[1];
+    return {
+      teacher: {
+        ...teacher,
+        daysLeft: 12,
+        reviewCycleYears: 2,
+        reviewRequired: true,
+        firstCertifiedOn: '2024.06.30',
+        certificateUrl: '',
+        phone: '13800001111',
+      },
+      reviews: reviewRecords.filter((record) => record.teacherId === teacher.id),
+    };
   }
 
   const certificationMatch = path.match(/^\/api\/mp\/teachers\/(\d+)\/certification$/);
@@ -182,18 +217,16 @@ const mockResponse = (url, options = {}) => {
     return {
       teacher: {
         ...teacher,
-        daysLeft: teacher.id === 2 ? 12 : 1095,
-        reviewCycleYears: 2,
-        reviewRequired: true,
+        validUntil: teacher.validUntil,
         firstCertifiedOn: teacher.id === 2 ? '2024.06.30' : '2023.01.01',
         certificateUrl: '',
+        teachingSummary: teacher.teachingSummary,
       },
-      reviews: reviewRecords.filter((record) => String(record.teacherId) === certificationMatch[1]),
     };
   }
 
   if (path === '/api/mp/studios') {
-    return { items: studios, total: studios.length };
+    return { items: studios, total: studios.length, page: 1, pageSize: 20, hasMore: false };
   }
 
   const studioMatch = path.match(/^\/api\/mp\/studios\/(\d+)$/);

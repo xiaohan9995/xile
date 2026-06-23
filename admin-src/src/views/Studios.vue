@@ -4,7 +4,7 @@
       <div>
         <h1>工作室管理</h1>
       </div>
-      <button class="primary-btn" @click="showCreate = true">新增工作室</button>
+      <button class="primary-btn" @click="openCreate">新增工作室</button>
     </div>
 
     <div class="toolbar">
@@ -24,6 +24,9 @@
           </tr>
         </thead>
         <tbody>
+          <tr v-if="filteredList.length === 0">
+            <td colspan="6" class="empty-row">{{ keyword ? '无匹配结果，请调整搜索条件' : '暂无工作室数据' }}</td>
+          </tr>
           <tr v-for="studio in filteredList" :key="studio.id">
             <td>
               <div class="studio-cell">
@@ -37,8 +40,9 @@
             <td>{{ studio.city }}</td>
             <td>{{ studio.address }}</td>
             <td>{{ studio.contact }}</td>
-            <td><span class="status-pill">{{ studio.status || '正常' }}</span></td>
+            <td><span class="status-pill">{{ studio.status === 'hidden' ? '已隐藏' : '正常' }}</span></td>
             <td>
+              <button class="table-action" @click="openEdit(studio)">编辑</button>
               <button class="icon-danger" @click="handleDelete(studio)">删除</button>
             </td>
           </tr>
@@ -46,6 +50,7 @@
       </table>
     </div>
 
+    <!-- Create Modal -->
     <div v-if="showCreate" class="modal-backdrop" @click.self="showCreate = false">
       <form class="admin-modal wide" @submit.prevent="handleCreate">
         <div class="modal-head">
@@ -54,33 +59,89 @@
         </div>
         <div class="form-grid two">
           <label>
-            名称
-            <input v-model="draft.name" required placeholder="请输入工作室名称" />
+            名称 <em>*</em>
+            <input v-model="createDraft.name" required placeholder="请输入工作室名称" />
           </label>
           <label>
             城市
-            <input v-model="draft.city" required placeholder="请输入城市" />
+            <input v-model="createDraft.city" placeholder="请输入城市" />
+          </label>
+          <label>
+            地区
+            <input v-model="createDraft.district" placeholder="请输入区/县" />
           </label>
           <label>
             联系方式
-            <input v-model="draft.contact" required placeholder="请输入联系方式" />
+            <input v-model="createDraft.contact" placeholder="请输入联系方式" />
           </label>
           <label>
             标签
-            <input v-model="draft.tags" placeholder="多个标签用逗号分隔" />
+            <input v-model="createDraft.tags" placeholder="多个标签用逗号分隔" />
+          </label>
+          <label>
+            营业时间
+            <input v-model="createDraft.openingHours" placeholder="如 9:00-21:00" />
           </label>
         </div>
         <label>
           地址
-          <input v-model="draft.address" placeholder="请输入详细地址" />
+          <input v-model="createDraft.address" placeholder="请输入详细地址" />
         </label>
         <label>
           简介
-          <input v-model="draft.intro" placeholder="请输入工作室简介" />
+          <input v-model="createDraft.intro" placeholder="请输入工作室简介" />
         </label>
         <div class="modal-actions">
           <button type="button" class="sync-btn" @click="showCreate = false">取消</button>
           <button type="submit" class="primary-btn">确认添加</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Edit Modal -->
+    <div v-if="showEdit" class="modal-backdrop" @click.self="showEdit = false">
+      <form class="admin-modal wide" @submit.prevent="handleUpdate">
+        <div class="modal-head">
+          <h2>编辑工作室 — {{ editDraft.name }}</h2>
+          <button type="button" @click="showEdit = false">×</button>
+        </div>
+        <div class="form-grid two">
+          <label>
+            名称 <em>*</em>
+            <input v-model="editDraft.name" required />
+          </label>
+          <label>
+            城市
+            <input v-model="editDraft.city" placeholder="城市" />
+          </label>
+          <label>
+            地区
+            <input v-model="editDraft.district" placeholder="区/县" />
+          </label>
+          <label>
+            联系方式
+            <input v-model="editDraft.contact" placeholder="联系方式" />
+          </label>
+          <label>
+            标签
+            <input v-model="editDraft.tags" placeholder="多个标签用逗号分隔" />
+          </label>
+          <label>
+            营业时间
+            <input v-model="editDraft.openingHours" placeholder="如 9:00-21:00" />
+          </label>
+        </div>
+        <label>
+          地址
+          <input v-model="editDraft.address" placeholder="详细地址" />
+        </label>
+        <label>
+          简介
+          <input v-model="editDraft.intro" placeholder="工作室简介" />
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="sync-btn" @click="showEdit = false">取消</button>
+          <button type="submit" class="primary-btn">保存修改</button>
         </div>
       </form>
     </div>
@@ -89,19 +150,36 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { fetchAdminStudios, createStudio, deleteStudio } from '../api/adminData'
+import { fetchAdminStudios, createStudio, updateStudio, deleteStudio } from '../api/adminData'
+import { useToast } from '../composables/useToast'
 
+const { show: toast } = useToast()
 const keyword = ref('')
 const showCreate = ref(false)
+const showEdit = ref(false)
 const studios = ref([])
 
-const draft = reactive({
+const createDraft = reactive({
   name: '',
   city: '',
+  district: '',
   contact: '',
   tags: '',
   address: '',
   intro: '',
+  openingHours: '',
+})
+
+const editDraft = reactive({
+  id: null,
+  name: '',
+  city: '',
+  district: '',
+  contact: '',
+  tags: '',
+  address: '',
+  intro: '',
+  openingHours: '',
 })
 
 async function loadStudios() {
@@ -123,28 +201,67 @@ const filteredList = computed(() => {
   })
 })
 
+function openCreate() {
+  createDraft.name = ''
+  createDraft.city = ''
+  createDraft.district = ''
+  createDraft.contact = ''
+  createDraft.tags = ''
+  createDraft.address = ''
+  createDraft.intro = ''
+  createDraft.openingHours = ''
+  showCreate.value = true
+}
+
+function openEdit(studio) {
+  editDraft.id = studio.id
+  editDraft.name = studio.name
+  editDraft.city = studio.city || ''
+  editDraft.district = studio.district || ''
+  editDraft.contact = studio.contact || ''
+  editDraft.tags = Array.isArray(studio.tags) ? studio.tags.join(', ') : (studio.tags || '')
+  editDraft.address = studio.address || ''
+  editDraft.intro = studio.intro || ''
+  editDraft.openingHours = studio.openingHours || ''
+  showEdit.value = true
+}
+
 async function handleCreate() {
   await createStudio({
-    name: draft.name,
-    city: draft.city,
-    contact: draft.contact,
-    tags: draft.tags,
-    address: draft.address,
-    intro: draft.intro,
+    name: createDraft.name,
+    city: createDraft.city,
+    district: createDraft.district,
+    contact: createDraft.contact,
+    tags: createDraft.tags,
+    address: createDraft.address,
+    intro: createDraft.intro,
+    openingHours: createDraft.openingHours,
   })
-  draft.name = ''
-  draft.city = ''
-  draft.contact = ''
-  draft.tags = ''
-  draft.address = ''
-  draft.intro = ''
   showCreate.value = false
+  toast('工作室添加成功')
+  await loadStudios()
+}
+
+async function handleUpdate() {
+  await updateStudio(editDraft.id, {
+    name: editDraft.name,
+    city: editDraft.city,
+    district: editDraft.district,
+    contact: editDraft.contact,
+    tags: editDraft.tags,
+    address: editDraft.address,
+    intro: editDraft.intro,
+    openingHours: editDraft.openingHours,
+  })
+  showEdit.value = false
+  toast('工作室信息已更新')
   await loadStudios()
 }
 
 async function handleDelete(studio) {
   if (!window.confirm(`确认删除工作室「${studio.name}」？`)) return
   await deleteStudio(studio.id)
+  toast('工作室已删除', 'info')
   await loadStudios()
 }
 </script>

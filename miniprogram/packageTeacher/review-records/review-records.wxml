@@ -7,8 +7,11 @@
   </view>
 
   <view class="records-body">
+    <!-- Skeleton loading -->
+    <skeleton wx:if="{{loading}}" type="review-list" count="{{3}}" />
+
     <!-- Current level section -->
-    <view class="current-level">
+    <view wx:if="{{!loading}}" class="current-level">
       <text class="current-label">当前认证等级</text>
       <view class="current-main">
         <text class="current-tier">{{current.tier}}</text>
@@ -18,17 +21,17 @@
     </view>
 
     <!-- Record tabs -->
-    <view class="record-tabs">
+    <view wx:if="{{!loading}}" class="record-tabs">
       <view class="record-tab {{activeTab === 'all' ? 'record-tab--active' : ''}}" bindtap="switchTab" data-tab="all">全部记录</view>
       <view class="record-tab {{activeTab === 'passed' ? 'record-tab--active' : ''}}" bindtap="switchTab" data-tab="passed">已通过</view>
     </view>
 
     <!-- Timeline list -->
-    <view wx:if="{{records.length === 0}}" class="empty-records">
+    <view wx:if="{{!loading && records.length === 0}}" class="empty-records">
       <text class="empty-text">暂无年审记录</text>
     </view>
 
-    <view class="timeline-list">
+    <view wx:if="{{!loading}}" class="timeline-list">
       <view
         wx:for="{{records}}"
         wx:key="year"

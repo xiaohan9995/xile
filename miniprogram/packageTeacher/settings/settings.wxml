@@ -1,0 +1,70 @@
+<view class="page-shell settings-page">
+  <!-- Header -->
+  <view class="page-header" style="padding-top:{{statusBarHeight}}px;">
+    <view class="page-header__back" bindtap="goBack">‹</view>
+    <text class="page-header__title">个人设置</text>
+    <view class="page-header__right"></view>
+  </view>
+
+  <view class="settings-body">
+    <!-- Avatar Section -->
+    <view class="settings-section">
+      <text class="section-title">头像</text>
+      <view class="avatar-row">
+        <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+          <image
+            class="avatar-img"
+            wx:if="{{avatarUrl}}"
+            src="{{avatarUrl}}"
+            mode="aspectFill"
+          />
+          <view class="avatar-empty" wx:else>
+            <text class="avatar-empty-icon">📷</text>
+          </view>
+          <view class="avatar-edit-badge">✏️</view>
+        </button>
+        <text class="avatar-tip">点击更换头像</text>
+      </view>
+    </view>
+
+    <!-- Nickname Section -->
+    <view class="settings-section">
+      <text class="section-title">昵称</text>
+      <input
+        class="settings-input"
+        type="nickname"
+        placeholder="请输入昵称"
+        value="{{nickname}}"
+        bindinput="onNicknameInput"
+      />
+    </view>
+
+    <!-- Phone Section -->
+    <view class="settings-section">
+      <text class="section-title">手机号</text>
+      <view class="phone-row">
+        <text class="phone-display" wx:if="{{phone}}">{{phone}}</text>
+        <text class="phone-display phone-empty" wx:else>未绑定</text>
+        <button
+          class="phone-change-btn"
+          open-type="getPhoneNumber"
+          bindgetphonenumber="onGetPhoneNumber"
+        >
+          {{phone ? '更换' : '绑定'}}
+        </button>
+      </view>
+    </view>
+
+    <!-- Save Button -->
+    <button
+      class="save-btn"
+      bindtap="onSave"
+      loading="{{loading}}"
+      disabled="{{loading}}"
+    >
+      保存修改
+    </button>
+  </view>
+
+  <tab-bar active="my" />
+</view>

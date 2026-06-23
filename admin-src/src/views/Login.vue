@@ -29,9 +29,10 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
+const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const username = ref('')
@@ -44,7 +45,7 @@ async function submit() {
   error.value = ''
   try {
     await authStore.login(username.value, password.value)
-    router.push('/admin/dashboard')
+    router.push(route.query.redirect || '/dashboard')
   } catch (err) {
     error.value = err.message || '登录失败，请检查用户名和密码'
   } finally {

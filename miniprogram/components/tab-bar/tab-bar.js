@@ -1,3 +1,5 @@
+const auth = require('../../utils/auth');
+
 Component({
   properties: {
     active: {
@@ -16,6 +18,10 @@ Component({
     },
     goMy() {
       if (this.data.active === 'my') return;
+      if (!auth.isLoggedIn() || !auth.isPhoneBound()) {
+        wx.navigateTo({ url: '/packageTeacher/login/login?returnUrl=' + encodeURIComponent('/packageTeacher/home/home') });
+        return;
+      }
       wx.reLaunch({ url: '/packageTeacher/home/home' });
     },
   },

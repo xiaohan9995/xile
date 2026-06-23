@@ -90,9 +90,14 @@
 }
 
 .teacher-card__cert-no,
-.teacher-card__valid {
+.teacher-card__valid,
+.teacher-card__location {
   font-size: 22rpx;
   color: var(--color-muted);
+}
+
+.teacher-card__cert-no,
+.teacher-card__valid {
   font-family: "Menlo", "SF Mono", monospace;
 }
 

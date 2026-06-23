@@ -1,0 +1,7 @@
+{
+  "containerBaseConfig": {
+    "serviceName": "xile-yoga",
+    "servicePath": "/",
+    "env": ""
+  }
+}
