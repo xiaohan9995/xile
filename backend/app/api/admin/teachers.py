@@ -1,4 +1,5 @@
-from datetime import date
+import calendar
+from datetime import date, datetime
 
 from flask import request
 
@@ -149,6 +150,59 @@ def delete_teacher(teacher_id):
 
 # ─── Import ──────────────────────────────────────────────────────────────────
 
+VALID_TIERS = {"L0", "L1", "L2", "L3", "L4", "L5"}
+
+# Expected column order:
+# A: name, B: phone, C: tier, D: city, E: district,
+# F: certifiedAt, G: validUntil, H: xileName, I: teacherNo
+
+
+def _cell_str(row, idx):
+    """Safely extract a stripped string from a row cell, handling short rows."""
+    if idx >= len(row) or row[idx] is None:
+        return ""
+    val = row[idx]
+    if isinstance(val, datetime):
+        return val.strftime("%Y-%m-%d")
+    if isinstance(val, date):
+        return val.isoformat()
+    if isinstance(val, float) and val == int(val):
+        return str(int(val))
+    return str(val).strip()
+
+
+def _parse_date(text):
+    """Parse a date string accepting YYYY-MM-DD, YYYY.MM.DD, YYYY/MM/DD formats."""
+    if not text:
+        return None
+    normalized = text.replace(".", "-").replace("/", "-")
+    try:
+        return date.fromisoformat(normalized)
+    except ValueError:
+        return None
+
+
+def _is_empty_row(row):
+    """Return True if all cells in the row are None or whitespace-only."""
+    if row is None:
+        return True
+    return all(cell is None or str(cell).strip() == "" for cell in row)
+
+
+def _parse_import_row(row):
+    """Parse a single Excel row into a dict of field values."""
+    return {
+        "name": _cell_str(row, 0),
+        "phone": _cell_str(row, 1),
+        "tier": _cell_str(row, 2).upper(),
+        "city": _cell_str(row, 3),
+        "district": _cell_str(row, 4),
+        "certifiedAt": _cell_str(row, 5),
+        "validUntil": _cell_str(row, 6),
+        "xileName": _cell_str(row, 7),
+        "teacherNo": _cell_str(row, 8),
+    }
+
 
 @admin_bp.post("/import/teachers/preview")
 @require_admin_token
@@ -165,44 +219,90 @@ def import_preview():
         return {"error": "invalid excel file"}, 400
 
     rows = list(ws.iter_rows(min_row=2, values_only=True))
-    total_rows = len(rows)
+    wb.close()
+
     errors = []
-    valid_rows = 0
+    parsed_rows = []
+    seen_teacher_nos = set()
+
+    # Collect existing teacherNo values from DB for duplicate detection
+    existing_nos = set(
+        no for (no,) in db.session.query(Teacher.teacher_no).all()
+    )
 
     for idx, row in enumerate(rows, start=2):
-        row_errors = []
-        name = str(row[0]).strip() if row[0] else ""
-        tier_code = str(row[1]).strip().upper() if row[1] else ""
-        cert_date = str(row[2]).strip() if row[2] else ""
+        # Skip completely empty rows
+        if _is_empty_row(row):
+            continue
 
-        if not name:
+        data = _parse_import_row(row)
+        row_errors = []
+
+        # Required: name
+        if not data["name"]:
             row_errors.append({"rowNumber": idx, "field": "name", "message": "姓名不能为空"})
-        if not tier_code or tier_code not in {"L0", "L1", "L2", "L3", "L4", "L5"}:
-            row_errors.append({"rowNumber": idx, "field": "level", "message": "等级代码无效（需为L0-L5）"})
-        if cert_date:
-            try:
-                date.fromisoformat(cert_date.replace(".", "-").replace("/", "-"))
-            except ValueError:
-                row_errors.append({"rowNumber": idx, "field": "certDate", "message": "日期格式无效（需YYYY-MM-DD）"})
-        else:
-            row_errors.append({"rowNumber": idx, "field": "certDate", "message": "认证日期不能为空"})
+
+        # Required: tier (must be L0-L5)
+        if not data["tier"] or data["tier"] not in VALID_TIERS:
+            row_errors.append({"rowNumber": idx, "field": "tier", "message": "等级代码无效（需为L0-L5）"})
+
+        # Required: certifiedAt
+        cert_date = _parse_date(data["certifiedAt"])
+        if not data["certifiedAt"]:
+            row_errors.append({"rowNumber": idx, "field": "certifiedAt", "message": "认证日期不能为空"})
+        elif cert_date is None:
+            row_errors.append({"rowNumber": idx, "field": "certifiedAt", "message": "日期格式无效（需YYYY-MM-DD）"})
+
+        # Optional: validUntil (validate format if provided)
+        if data["validUntil"]:
+            valid_until = _parse_date(data["validUntil"])
+            if valid_until is None:
+                row_errors.append({"rowNumber": idx, "field": "validUntil", "message": "有效期格式无效（需YYYY-MM-DD）"})
+
+        # Optional: teacherNo (check duplicates)
+        if data["teacherNo"]:
+            if data["teacherNo"] in seen_teacher_nos:
+                row_errors.append({"rowNumber": idx, "field": "teacherNo", "message": "编号在文件中重复"})
+            elif data["teacherNo"] in existing_nos:
+                row_errors.append({"rowNumber": idx, "field": "teacherNo", "message": "编号已存在于系统中"})
+            else:
+                seen_teacher_nos.add(data["teacherNo"])
 
         if row_errors:
             errors.extend(row_errors)
         else:
-            valid_rows += 1
+            parsed_rows.append(data)
 
-    batch = ImportBatch(admin_id=1, total_rows=total_rows, success_rows=valid_rows, error_rows=len(errors), status="preview")
+    total_rows = len([r for r in rows if not _is_empty_row(r)])
+    valid_rows = len(parsed_rows)
+
+    batch = ImportBatch(
+        admin_id=1,
+        total_rows=total_rows,
+        success_rows=valid_rows,
+        error_rows=total_rows - valid_rows,
+        status="preview",
+    )
     db.session.add(batch)
     db.session.flush()
 
     for err in errors:
-        db.session.add(ImportError(batch_id=batch.id, row_number=err["rowNumber"], field=err["field"], error_message=err["message"]))
+        db.session.add(ImportError(
+            batch_id=batch.id,
+            row_number=err["rowNumber"],
+            field=err["field"],
+            error_message=err["message"],
+        ))
 
     db.session.commit()
-    wb.close()
 
-    return {"batchId": batch.id, "totalRows": total_rows, "validRows": valid_rows, "errors": errors}
+    return {
+        "batchId": batch.id,
+        "totalRows": total_rows,
+        "validRows": valid_rows,
+        "errors": errors,
+        "preview": parsed_rows[:50],  # Return first 50 rows for UI preview
+    }
 
 
 @admin_bp.post("/import/teachers/commit")
@@ -210,7 +310,7 @@ def import_preview():
 def import_commit():
     payload = request.get_json(silent=True) or {}
     batch_id = payload.get("batchId") or request.form.get("batchId")
-    if not batch_id:
+    if batch_id is None:
         return {"error": "batchId required"}, 400
 
     batch = db.session.get(ImportBatch, batch_id)
@@ -229,37 +329,63 @@ def import_commit():
         return {"error": "invalid excel file"}, 400
 
     rows = list(ws.iter_rows(min_row=2, values_only=True))
-    year = date.today().year
+    wb.close()
+
+    # Collect existing teacherNo values for duplicate check during commit
+    existing_nos = set(
+        no for (no,) in db.session.query(Teacher.teacher_no).all()
+    )
+    used_nos = set()
     created = 0
 
     for row in rows:
-        name = str(row[0]).strip() if row[0] else ""
-        tier_code = str(row[1]).strip().upper() if row[1] else ""
-        cert_date_str = str(row[2]).strip() if row[2] else ""
-        phone = str(row[3]).strip() if len(row) > 3 and row[3] else ""
-        city = str(row[4]).strip() if len(row) > 4 and row[4] else ""
-
-        if not name or tier_code not in {"L0", "L1", "L2", "L3", "L4", "L5"}:
-            continue
-        try:
-            cert_date = date.fromisoformat(cert_date_str.replace(".", "-").replace("/", "-"))
-        except ValueError:
+        # Skip empty rows
+        if _is_empty_row(row):
             continue
 
-        tier = TeacherTier.query.filter_by(code=tier_code).first()
+        data = _parse_import_row(row)
+
+        # Validate required fields — skip invalid rows silently
+        if not data["name"]:
+            continue
+        if not data["tier"] or data["tier"] not in VALID_TIERS:
+            continue
+
+        cert_date = _parse_date(data["certifiedAt"])
+        if cert_date is None:
+            continue
+
+        tier = TeacherTier.query.filter_by(code=data["tier"]).first()
         if not tier:
             continue
 
-        teacher_no = generate_teacher_no()
+        # Determine teacherNo: use provided value or generate
+        teacher_no = data["teacherNo"]
+        if teacher_no:
+            # Skip if duplicate
+            if teacher_no in existing_nos or teacher_no in used_nos:
+                continue
+            used_nos.add(teacher_no)
+        else:
+            teacher_no = generate_teacher_no()
+            # Ensure generated number is tracked to avoid collision within batch
+            existing_nos.add(teacher_no)
 
-        cycle = tier.review_cycle_years or 3
-        valid_until = date(cert_date.year + cycle, cert_date.month, cert_date.day)
+        # Determine validUntil: use provided date or calculate from tier cycle
+        valid_until = _parse_date(data["validUntil"])
+        if valid_until is None:
+            cycle = tier.review_cycle_years or 3
+            target_year = cert_date.year + cycle
+            target_day = min(cert_date.day, calendar.monthrange(target_year, cert_date.month)[1])
+            valid_until = date(target_year, cert_date.month, target_day)
 
         teacher = Teacher(
             teacher_no=teacher_no,
-            real_name=name,
+            real_name=data["name"],
+            xile_name=data["xileName"] or None,
             tier_id=tier.id,
-            city=city or None,
+            city=data["city"] or None,
+            district=data["district"] or None,
             status="active",
             first_certified_on=cert_date,
             valid_until=valid_until,
@@ -267,14 +393,14 @@ def import_commit():
         db.session.add(teacher)
         db.session.flush()
 
-        if phone:
-            db.session.add(TeacherDetail(teacher_id=teacher.id, phone=phone))
+        if data["phone"]:
+            db.session.add(TeacherDetail(teacher_id=teacher.id, phone=data["phone"]))
 
         created += 1
 
     batch.status = "committed"
     batch.success_rows = created
+    db.session.add(AuditLog(admin_id=1, action="import_teachers", target_type="batch", target_id=batch.id))
     db.session.commit()
-    wb.close()
 
     return {"batchId": batch.id, "createdCount": created}
