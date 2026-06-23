@@ -45,8 +45,8 @@
 .studio-card__location {
   display: flex;
   align-items: center;
-  gap: 6rpx;
-  margin-top: 10rpx;
+  gap: 8rpx;
+  margin-top: 12rpx;
 }
 
 .studio-card__pin-icon {
@@ -62,8 +62,8 @@
 .studio-card__tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 10rpx;
-  margin-top: 14rpx;
+  gap: 12rpx;
+  margin-top: 12rpx;
 }
 
 .studio-card__tag {

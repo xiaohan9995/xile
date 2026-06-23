@@ -71,8 +71,8 @@
   display: inline-flex;
   align-items: center;
   gap: 4rpx;
-  padding: 4rpx 14rpx;
-  border-radius: 8rpx;
+  padding: 4rpx 12rpx;
+  border-radius: var(--radius-sm);
   background: var(--color-gold-light);
   white-space: nowrap;
 }

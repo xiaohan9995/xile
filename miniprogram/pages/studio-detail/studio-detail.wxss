@@ -66,7 +66,7 @@
   margin-top: 24rpx;
   padding: 18rpx 20rpx;
   background: var(--color-primary-light);
-  border-radius: 16rpx;
+  border-radius: var(--radius-base);
 }
 
 .lead-avatar-wrap {
@@ -104,7 +104,7 @@
 .info-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 10rpx;
+  gap: 12rpx;
   margin-top: 20rpx;
 }
 

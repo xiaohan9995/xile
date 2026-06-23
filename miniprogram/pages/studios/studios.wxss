@@ -56,7 +56,7 @@
   display: inline-flex;
   align-self: flex-start;
   margin-top: 12rpx;
-  padding: 14rpx 24rpx;
+  padding: 12rpx 24rpx;
   border-radius: 999rpx;
   background: rgba(255, 255, 255, 0.22);
 }
@@ -144,7 +144,7 @@
   margin: 40rpx 32rpx;
   padding: 80rpx 40rpx;
   background: #fff;
-  border-radius: 32rpx;
+  border-radius: var(--radius-xl);
   border: 1rpx solid var(--color-line);
   display: flex;
   flex-direction: column;
@@ -171,7 +171,7 @@
 
 .empty-action {
   margin-top: 28rpx;
-  padding: 14rpx 36rpx;
+  padding: 12rpx 36rpx;
   border-radius: 999rpx;
   background: var(--color-primary-dark);
   color: #fff;

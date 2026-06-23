@@ -151,7 +151,7 @@
   margin-top: 24rpx;
   padding: 20rpx 24rpx;
   background: rgba(120, 136, 122, 0.06);
-  border-radius: 16rpx;
+  border-radius: var(--radius-base);
   font-size: 22rpx;
   color: var(--color-muted);
   line-height: 1.6;
