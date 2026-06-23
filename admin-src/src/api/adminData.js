@@ -3,6 +3,11 @@ import api from './index.js'
 const DEFAULT_AVATAR = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop'
 const DEFAULT_STUDIO = 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=600&auto=format&fit=crop'
 
+function resolveAvatar(url) {
+  if (!url || url.startsWith('/static/demo/')) return DEFAULT_AVATAR
+  return url
+}
+
 export function mapAdminTeacher(teacher) {
   return {
     id: teacher.id,
@@ -13,7 +18,7 @@ export function mapAdminTeacher(teacher) {
     certNo: teacher.teacherNo,
     expiryDate: teacher.validUntil || '待确认',
     certifiedAt: teacher.certifiedAt,
-    avatar: teacher.avatarUrl || DEFAULT_AVATAR,
+    avatar: resolveAvatar(teacher.avatarUrl),
     phone: teacher.phone || '未登记',
     city: teacher.city,
     district: teacher.district,
@@ -47,7 +52,7 @@ export function mapAdminReview(review) {
     xileName: review.xileName,
     level: review.tier,
     city: review.city,
-    avatar: review.avatarUrl || DEFAULT_AVATAR,
+    avatar: resolveAvatar(review.avatarUrl),
     status: review.status === 'submitted' ? 'pending' : review.status,
     reviewYear: `${review.reviewYear}年度`,
     submittedAt: review.submittedAt || '未记录',

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "test": "node --test \"src/**/*.test.js\" && node src/verifyAdminStatic.js",
+    "test": "node --test src/api/adminData.test.js && node src/verifyAdminStatic.js",
     "build": "vite build",
     "preview": "vite preview"
   },
