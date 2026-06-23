@@ -100,7 +100,7 @@
   width: 100% !important;
   height: 96rpx;
   border-radius: 48rpx;
-  background: linear-gradient(135deg, #5f7365, #849481);
+  background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary));
   color: #fff;
   font-size: 30rpx;
   font-weight: 700;
@@ -119,7 +119,7 @@
   width: 100% !important;
   height: 96rpx;
   border-radius: 48rpx;
-  background: linear-gradient(135deg, #5f7365, #849481);
+  background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary));
   color: #fff;
   font-size: 30rpx;
   font-weight: 700;

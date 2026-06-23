@@ -15,6 +15,7 @@ page {
   --color-surface: #E8ECE9;
   --color-card: #ffffff;
   --color-line: rgba(31, 37, 33, 0.08);
+  --color-border: rgba(31, 37, 33, 0.12);
   --color-danger: #c84a4a;
   --radius-sm: 12rpx;
   --radius-md: 24rpx;

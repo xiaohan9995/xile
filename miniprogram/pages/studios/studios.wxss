@@ -115,7 +115,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 72rpx;
+  height: 80rpx;
   padding: 0 28rpx;
   margin-right: 16rpx;
   border-radius: 36rpx;

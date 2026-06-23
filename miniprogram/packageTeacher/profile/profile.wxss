@@ -73,13 +73,13 @@
   width: 10rpx;
   height: 10rpx;
   border-radius: 50%;
-  background: #D4AF37;
+  background: var(--color-gold);
 }
 
 .level-text {
   font-size: 22rpx;
   font-weight: 700;
-  color: #b08d1a;
+  color: var(--color-gold);
   letter-spacing: 2rpx;
 }
 
@@ -184,7 +184,7 @@
 }
 
 .menu-arrow {
-  color: #ccc;
+  color: var(--color-muted);
   font-size: 36rpx;
   font-weight: 300;
   flex-shrink: 0;

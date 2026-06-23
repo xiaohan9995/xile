@@ -69,7 +69,7 @@
 }
 
 .profile-status.status-expired {
-  color: #b54c4c;
+  color: var(--color-danger);
 }
 
 .profile-status.status-expiring {
