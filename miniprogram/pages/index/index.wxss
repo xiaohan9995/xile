@@ -31,34 +31,24 @@
 
 .home-visual__text {
   position: absolute;
-  left: 64rpx;
-  top: 50%;
-  transform: translateY(-50%);
+  left: 0;
+  right: 0;
+  bottom: 4rpx;
+  text-align: center;
   z-index: 2;
-}
-
-.home-visual__title {
-  display: block;
-  font-size: 48rpx;
-  font-weight: 700;
-  color: var(--color-text);
-  line-height: 1.4;
-  font-family: "Noto Serif SC", serif;
-  white-space: pre-line;
 }
 
 .home-visual__tagline {
   display: block;
-  margin-top: 16rpx;
   font-size: 26rpx;
   color: var(--color-muted);
   letter-spacing: 4rpx;
 }
 
-/* ===== Body (overlaps hero) ===== */
+/* ===== Body ===== */
 .home-body {
-  margin-top: -36rpx;
   padding: 0 32rpx;
+  padding-top: 16rpx;
   padding-bottom: 120rpx;
   position: relative;
   z-index: 3;
@@ -120,8 +110,8 @@
 .quick-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20rpx;
-  margin-top: 20rpx;
+  gap: 16rpx;
+  margin-top: 24rpx;
 }
 
 .quick-card {
@@ -205,4 +195,161 @@
   margin-top: 12rpx;
   font-size: 22rpx;
   color: var(--color-muted);
+}
+
+/* ===== Notice Card ===== */
+.notice-card {
+  margin-top: 0;
+  padding: 28rpx;
+  background: #ffffff;
+  border-radius: var(--radius-xl);
+  border: 1rpx solid var(--color-line);
+}
+
+.notice-header {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  margin-bottom: 20rpx;
+}
+
+.notice-icon {
+  font-size: 28rpx;
+}
+
+.notice-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.notice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.notice-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+}
+
+.notice-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: var(--color-gold);
+  flex-shrink: 0;
+  margin-top: 12rpx;
+}
+
+.notice-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.notice-item-title {
+  display: block;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.notice-item-desc {
+  display: block;
+  margin-top: 4rpx;
+  font-size: 22rpx;
+  color: var(--color-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ===== Featured Teachers ===== */
+.featured-card {
+  margin-top: 24rpx;
+  padding: 28rpx;
+  background: #ffffff;
+  border-radius: var(--radius-xl);
+  border: 1rpx solid var(--color-line);
+  margin-bottom: 20rpx;
+}
+
+.featured-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.featured-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.featured-more {
+  font-size: 24rpx;
+  color: var(--color-primary);
+}
+
+.featured-scroll {
+  white-space: nowrap;
+}
+
+.featured-teacher {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  width: 180rpx;
+  margin-right: 24rpx;
+}
+
+.featured-teacher:last-child {
+  margin-right: 0;
+}
+
+.featured-avatar-wrap {
+  position: relative;
+}
+
+.featured-avatar {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  border: 3rpx solid var(--color-primary-light);
+}
+
+.featured-avatar--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary-light);
+}
+
+.featured-avatar-initial {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.featured-name {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160rpx;
+}
+
+.featured-tier {
+  display: block;
+  margin-top: 4rpx;
+  font-size: 20rpx;
+  color: var(--color-gold);
+  font-weight: 600;
 }

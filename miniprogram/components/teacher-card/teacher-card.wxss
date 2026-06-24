@@ -30,6 +30,19 @@
   border: 2rpx solid var(--color-surface);
 }
 
+.teacher-card__avatar--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary-light);
+}
+
+.teacher-card__avatar-initial {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
 .teacher-card__online {
   position: absolute;
   right: 2rpx;

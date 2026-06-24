@@ -10,6 +10,7 @@ from .import_batch import ImportBatch
 from .import_error import ImportError
 from .audit_log import AuditLog
 from .system_config import SystemConfig
+from .announcement import Announcement
 
 __all__ = [
     "TeacherTier",
@@ -24,4 +25,5 @@ __all__ = [
     "ImportError",
     "AuditLog",
     "SystemConfig",
+    "Announcement",
 ]

@@ -1,4 +1,4 @@
 <view class="cert-badge">
-  <text class="cert-badge__icon">&#x1F6E1;</text>
+  <text class="cert-badge__icon">🛡</text>
   <text class="cert-badge__text">{{tier}} {{tierName}}</text>
 </view>

@@ -2,15 +2,18 @@
   <!-- Header -->
   <view class="page-header" style="padding-top:{{statusBarHeight}}px;">
     <view class="page-header__back" bindtap="goBack">‹</view>
-    <text class="page-header__title">讲师简介</text>
+    <text class="page-header__title">{{isTeacher ? '讲师简介' : '我的'}}</text>
     <view class="page-header__right"></view>
   </view>
 
   <view class="profile-body">
-    <!-- Avatar Section -->
-    <view class="avatar-section">
+    <!-- Teacher Profile -->
+    <view wx:if="{{isTeacher}}" class="avatar-section">
       <view class="avatar-wrap">
-        <image class="avatar-img" src="{{teacher.avatarUrl}}" mode="aspectFill" />
+        <image wx:if="{{teacher.avatarUrl}}" class="avatar-img" src="{{teacher.avatarUrl}}" mode="aspectFill" />
+        <view wx:else class="avatar-img avatar-img--placeholder">
+          <text class="avatar-initial">{{teacher.name[0] || '?'}}</text>
+        </view>
         <view class="avatar-badge">✓</view>
       </view>
       <text class="profile-name">{{teacher.name}}</text>
@@ -21,8 +24,22 @@
       <text class="profile-bio" wx:if="{{teacher.bio}}">「{{teacher.bio}}」</text>
     </view>
 
-    <!-- Metrics Grid -->
-    <view class="metrics-grid">
+    <!-- Non-Teacher Profile -->
+    <view wx:else class="avatar-section">
+      <view class="avatar-wrap">
+        <image wx:if="{{user.avatarUrl}}" class="avatar-img" src="{{user.avatarUrl}}" mode="aspectFill" />
+        <view wx:else class="avatar-img avatar-img--placeholder">
+          <text class="avatar-initial">{{user.nickname[0] || '我'}}</text>
+        </view>
+      </view>
+      <text class="profile-name">{{user.nickname || '用户'}}</text>
+      <view class="level-badge level-badge--student">
+        <text class="level-text">普通用户</text>
+      </view>
+    </view>
+
+    <!-- Metrics Grid (teacher only) -->
+    <view wx:if="{{isTeacher}}" class="metrics-grid">
       <view class="metric-card">
         <text class="metric-label">🗓 认证到期</text>
         <text class="metric-value">{{teacher.validUntil}}</text>
@@ -31,6 +48,12 @@
         <text class="metric-label">⏱ 认证天数</text>
         <text class="metric-value">{{teacher.daysLeft}} 天</text>
       </view>
+    </view>
+
+    <!-- Non-Teacher Prompt -->
+    <view wx:if="{{!isTeacher}}" class="not-teacher-prompt">
+      <text class="prompt-text">您尚未完成教师认证</text>
+      <text class="prompt-hint">完成认证后可查看证书、年审记录等专属功能</text>
     </view>
 
     <!-- Menu List -->
