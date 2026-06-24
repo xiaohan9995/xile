@@ -8,29 +8,42 @@ Page({
     statusBarHeight: 20,
     stats: {
       totalTeachers: '--',
-      completedReviews: '--',
+      totalStudios: '--',
     },
+    announcements: [],
+    featuredTeachers: [],
   },
 
   onLoad() {
     this.setData({ statusBarHeight: app.globalData.statusBarHeight });
     this.loadStats();
+    this.loadHomepage();
   },
 
   async loadStats() {
     try {
-      const payload = await request({ url: '/api/mp/stats/overview' });
+      const payload = await request({ url: '/api/mp/stats/overview', silent: true });
       if (payload) {
         this.setData({
           stats: {
             totalTeachers: this.formatNumber(payload.totalTeachers || 0),
-            completedReviews: this.formatNumber(payload.completedReviews || 0),
+            totalStudios: this.formatNumber(payload.totalStudios || 0),
           },
         });
       }
-    } catch (e) {
-      // Keep placeholder on failure
-    }
+    } catch (e) {}
+  },
+
+  async loadHomepage() {
+    try {
+      const payload = await request({ url: '/api/mp/homepage', silent: true });
+      if (payload) {
+        this.setData({
+          announcements: payload.announcements || [],
+          featuredTeachers: payload.featuredTeachers || [],
+        });
+      }
+    } catch (e) {}
   },
 
   formatNumber(num) {
@@ -65,5 +78,10 @@ Page({
         });
       },
     });
+  },
+
+  openTeacher(e) {
+    const id = e.currentTarget.dataset.id;
+    wx.navigateTo({ url: `/pages/teacher-detail/teacher-detail?id=${id}` });
   },
 });

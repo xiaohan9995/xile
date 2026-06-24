@@ -4,29 +4,38 @@
     <image class="home-visual__img" src="https://images.unsplash.com/photo-1545389336-cf090694435e?auto=format&fit=crop&w=640&q=80" mode="aspectFill" />
     <view class="home-visual__overlay"></view>
     <view class="home-visual__text">
-      <text class="home-visual__title">喜乐瑜伽\n教师认证中心</text>
       <text class="home-visual__tagline">成长 · 修习 · 传承</text>
     </view>
   </view>
 
-  <!-- Body content overlapping hero -->
+  <!-- Body content -->
   <view class="home-body">
-    <!-- CTA: 教师查询 -->
-    <button class="cta-btn" bindtap="goSearch">
-      <view class="cta-icon-box">
-        <text class="cta-icon">☰</text>
+    <!-- Announcements -->
+    <view class="notice-card" wx:if="{{announcements.length > 0}}">
+      <view class="notice-header">
+        <text class="notice-icon">📢</text>
+        <text class="notice-title">通知公告</text>
       </view>
-      <view class="cta-text-group">
-        <text class="cta-title">教师查询</text>
-        <text class="cta-subtitle">查认证教师信息</text>
+      <view class="notice-list">
+        <view wx:for="{{announcements}}" wx:key="id" class="notice-item">
+          <text class="notice-dot"></text>
+          <view class="notice-content">
+            <text class="notice-item-title">{{item.title}}</text>
+            <text class="notice-item-desc" wx:if="{{item.content}}">{{item.content}}</text>
+          </view>
+        </view>
       </view>
-    </button>
+    </view>
 
-    <!-- Quick grid -->
+    <!-- Quick grid: 2x2 -->
     <view class="quick-grid">
       <view class="quick-card" bindtap="goMyCert">
         <text class="quick-card-title">我的认证</text>
         <text class="quick-card-desc">查看个人认证信息</text>
+      </view>
+      <view class="quick-card" bindtap="goSearch">
+        <text class="quick-card-title">教师查询</text>
+        <text class="quick-card-desc">查认证教师信息</text>
       </view>
       <view class="quick-card" bindtap="goStudios">
         <text class="quick-card-title">瑜伽工作室</text>
@@ -38,22 +47,30 @@
       </view>
     </view>
 
-    <!-- Stats card -->
-    <view class="stats-card">
-      <view class="stats-header">
-        <text class="stats-title">数据统计</text>
-        <text class="stats-more">查看更多</text>
+    <!-- Featured Teachers -->
+    <view class="featured-card" wx:if="{{featuredTeachers.length > 0}}">
+      <view class="featured-header">
+        <text class="featured-title">认证讲师</text>
+        <text class="featured-more" bindtap="goSearch">查看全部</text>
       </view>
-      <view class="stats-grid">
-        <view class="stat-item">
-          <text class="stat-num">{{stats.totalTeachers}}</text>
-          <text class="stat-label">认证教师总数</text>
+      <scroll-view scroll-x class="featured-scroll" enhanced show-scrollbar="{{false}}">
+        <view
+          wx:for="{{featuredTeachers}}"
+          wx:key="id"
+          class="featured-teacher"
+          bindtap="openTeacher"
+          data-id="{{item.id}}"
+        >
+          <view class="featured-avatar-wrap">
+            <image wx:if="{{item.avatarUrl}}" class="featured-avatar" src="{{item.avatarUrl}}" mode="aspectFill" />
+            <view wx:else class="featured-avatar featured-avatar--placeholder">
+              <text class="featured-avatar-initial">{{item.name[0]}}</text>
+            </view>
+          </view>
+          <text class="featured-name">{{item.xileName || item.name}}</text>
+          <text class="featured-tier">{{item.tier}} {{item.tierName}}</text>
         </view>
-        <view class="stat-item">
-          <text class="stat-num">{{stats.completedReviews}}</text>
-          <text class="stat-label">本年度完成年审</text>
-        </view>
-      </view>
+      </scroll-view>
     </view>
   </view>
 <tab-bar active="home" />

@@ -31,3 +31,8 @@
   font-size: 40rpx;
   line-height: 1;
 }
+
+.tab-icon-img {
+  width: 44rpx;
+  height: 44rpx;
+}

@@ -4,9 +4,10 @@ import os
 from flask import request, send_file
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from sqlalchemy import extract
+from sqlalchemy.sql.expression import func
 
 from ...extensions import db, limiter
-from ...models import AnnualReview, Studio, Teacher, TeacherTier, User
+from ...models import Announcement, AnnualReview, Studio, Teacher, TeacherTier, User
 from .helpers import (
     _certification_status,
     _date_text,
@@ -19,6 +20,34 @@ from .helpers import (
     escape_like,
 )
 from . import mp_bp
+
+
+@mp_bp.get("/homepage")
+def homepage_data():
+    announcements = (
+        Announcement.query.filter_by(status="active")
+        .order_by(Announcement.display_order.desc(), Announcement.id.desc())
+        .limit(5)
+        .all()
+    )
+    featured_teachers = (
+        Teacher.query.filter(Teacher.status == "active")
+        .order_by(func.random())
+        .limit(3)
+        .all()
+    )
+    return {
+        "announcements": [
+            {
+                "id": a.id,
+                "title": a.title,
+                "content": a.content,
+                "linkUrl": a.link_url,
+            }
+            for a in announcements
+        ],
+        "featuredTeachers": [_teacher_summary(t) for t in featured_teachers],
+    }
 
 
 @mp_bp.get("/stats/overview")

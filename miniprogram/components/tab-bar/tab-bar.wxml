@@ -1,14 +1,14 @@
 <view class="tab-bar">
   <view class="tab-item {{active === 'home' ? 'active' : ''}}" bindtap="goHome">
-    <view class="tab-icon">⌂</view>
+    <image class="tab-icon-img" src="{{active === 'home' ? '/assets/icons/home-active.png' : '/assets/icons/home.png'}}" />
     <text>首页</text>
   </view>
   <view class="tab-item {{active === 'studio' ? 'active' : ''}}" bindtap="goStudio">
-    <view class="tab-icon">⊞</view>
+    <image class="tab-icon-img" src="{{active === 'studio' ? '/assets/icons/studio-active.png' : '/assets/icons/studio.png'}}" />
     <text>工作室</text>
   </view>
   <view class="tab-item {{active === 'my' ? 'active' : ''}}" bindtap="goMy">
-    <view class="tab-icon">⊘</view>
+    <image class="tab-icon-img" src="{{active === 'my' ? '/assets/icons/my-active.png' : '/assets/icons/my.png'}}" />
     <text>我的</text>
   </view>
 </view>

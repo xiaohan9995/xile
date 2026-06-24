@@ -164,6 +164,17 @@ const mockResponse = (url, options = {}) => {
     return { totalTeachers: 168, totalStudios: 42 };
   }
 
+  if (path === '/api/mp/homepage') {
+    return {
+      announcements: [
+        { id: 1, title: '2026年度年审通知', content: '请各位教师于7月31日前完成年度审核材料提交', linkUrl: '' },
+        { id: 2, title: 'L4高级导师认证开放申请', content: '符合条件的L3导师可提交晋升申请', linkUrl: '' },
+        { id: 3, title: '暑期工作坊报名中', content: '8月杭州站·阴瑜伽深度研修班，名额有限', linkUrl: '' },
+      ],
+      featuredTeachers: teachers.slice(0, 3),
+    };
+  }
+
   if (method === 'POST' && path === '/api/mp/reviews') {
     const data = options.data || {};
     return {

@@ -65,7 +65,7 @@
 
     <!-- Verification note -->
     <view class="verify-note">
-      <text class="verify-icon">&#x1F6E1;</text>
+      <text class="verify-icon">🛡</text>
       <text class="verify-text">该教师资质由喜乐瑜伽教师管理委员会认证维护</text>
     </view>
   </view>

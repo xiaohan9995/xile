@@ -189,3 +189,51 @@
   font-weight: 300;
   flex-shrink: 0;
 }
+
+/* Avatar placeholder */
+.avatar-img--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary-light);
+}
+
+.avatar-initial {
+  font-size: 56rpx;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+/* Non-teacher badge */
+.level-badge--student {
+  background: rgba(120, 136, 122, 0.1);
+  border-color: rgba(120, 136, 122, 0.2);
+}
+
+.level-badge--student .level-text {
+  color: var(--color-primary);
+}
+
+/* Not teacher prompt */
+.not-teacher-prompt {
+  margin-top: 32rpx;
+  padding: 32rpx 24rpx;
+  background: var(--color-card);
+  border-radius: var(--radius-lg);
+  border: 1rpx solid var(--color-line);
+  text-align: center;
+}
+
+.prompt-text {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.prompt-hint {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: var(--color-muted);
+}
