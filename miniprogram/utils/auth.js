@@ -53,6 +53,26 @@ const loginWithWechat = () => {
   });
 };
 
+const loginWithPassword = (username, password) => request({
+  url: '/api/mp/auth/password-login',
+  method: 'POST',
+  data: { username, password },
+}).then((data) => {
+  wx.setStorageSync(TOKEN_KEY, data.token);
+  wx.setStorageSync(USER_ID_KEY, data.userId);
+  wx.setStorageSync(USER_ROLE_KEY, data.role);
+  wx.setStorageSync(TEACHER_ID_KEY, data.teacherId);
+  // Password accounts have already been verified by the administrator.
+  wx.setStorageSync(PHONE_BOUND_KEY, true);
+  const app = getApp();
+  if (app && app.globalData) {
+    app.globalData.teacherId = data.teacherId;
+    app.globalData.userId = data.userId;
+    app.globalData.phoneBound = true;
+  }
+  return data;
+});
+
 const getToken = () => {
   return wx.getStorageSync(TOKEN_KEY) || '';
 };
@@ -119,7 +139,7 @@ const requireAuth = (pagePath) => {
     promise.then(() => {
       if (!isLoggedIn() || !isPhoneBound()) {
         wx.redirectTo({
-          url: `/packageTeacher/login/login?returnUrl=${encodeURIComponent(pagePath)}`,
+          url: `/packageTeacher/account-login/account-login?returnUrl=${encodeURIComponent(pagePath)}`,
         });
       }
     });
@@ -127,7 +147,7 @@ const requireAuth = (pagePath) => {
   }
   if (!isLoggedIn() || !isPhoneBound()) {
     wx.redirectTo({
-      url: `/packageTeacher/login/login?returnUrl=${encodeURIComponent(pagePath)}`,
+      url: `/packageTeacher/account-login/account-login?returnUrl=${encodeURIComponent(pagePath)}`,
     });
     return false;
   }
@@ -146,6 +166,7 @@ const logout = () => {
 
 module.exports = {
   loginWithWechat,
+  loginWithPassword,
   getToken,
   getTeacherId,
   getRole,

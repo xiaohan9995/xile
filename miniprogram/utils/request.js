@@ -2,7 +2,7 @@ const { mockResponse } = require('./mock-data');
 
 const ENV_CONFIG = {
   dev: {
-    baseUrl: 'http://127.0.0.1:5000',
+    baseUrl: 'http://127.0.0.1:5001',
     useCloudContainer: false,
   },
   prod: {
@@ -73,7 +73,9 @@ const request = (options) => {
     const config = getEnvConfig();
 
     const fallback = () => {
-      if (config.useCloudContainer) {
+      const app = typeof getApp === 'function' ? getApp() : null;
+      const useMockFallback = !!(app && app.globalData && app.globalData.useMockFallback);
+      if (config.useCloudContainer || !useMockFallback) {
         reject(new Error(`request failed: ${options.url}`));
         return;
       }

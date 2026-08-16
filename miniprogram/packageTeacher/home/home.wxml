@@ -24,6 +24,12 @@
       </view>
     </view>
 
+    <view class="review-task-card" bindtap="goReviewCenter">
+      <view class="review-task-card__seal">年审</view>
+      <view class="review-task-card__body"><text class="review-task-card__eyebrow">本期年审 · 当前进度</text><text class="review-task-card__title">{{review.statusText}}</text><text class="review-task-card__hint">{{review.hint}}</text><view class="review-task-card__rail"><view class="review-task-card__rail-dot"></view><view class="review-task-card__rail-line"></view><view class="review-task-card__rail-dot review-task-card__rail-dot--muted"></view></view></view>
+      <view class="review-task-card__action">{{review.actionText}}<text>›</text></view>
+    </view>
+
     <!-- Metric Row -->
     <view class="metric-row">
       <view class="metric-item">
@@ -48,9 +54,19 @@
         <text class="menu-item__label">年审记录</text>
         <text class="menu-item__arrow">›</text>
       </view>
+      <view class="menu-item" bindtap="goTeachingRecords">
+        <view class="menu-item__icon">📚</view>
+        <text class="menu-item__label">教学记录</text>
+        <text class="menu-item__arrow">›</text>
+      </view>
       <view class="menu-item" bindtap="goCertView">
         <view class="menu-item__icon">🏅</view>
         <text class="menu-item__label">证书查看</text>
+        <text class="menu-item__arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="goUsageGuide">
+        <view class="menu-item__icon">💡</view>
+        <text class="menu-item__label">使用指引</text>
         <text class="menu-item__arrow">›</text>
       </view>
       <view class="menu-item" bindtap="goReviewApply">

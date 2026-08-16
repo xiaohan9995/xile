@@ -1,0 +1,10 @@
+<view class="login-page">
+  <view class="page-header"><view class="page-header__back" bindtap="goBack">‹</view><text class="page-header__title">教师登录</text><view class="page-header__right"></view></view>
+  <view class="login-card">
+    <text class="title">教师工作台</text><text class="hint">使用管理员提供的教师编号或账号登录</text>
+    <input class="field" placeholder="教师编号 / 登录账号" value="{{username}}" bindinput="input" data-field="username" />
+    <input class="field" password placeholder="登录密码" value="{{password}}" bindinput="input" data-field="password" />
+    <button class="primary" bindtap="submit" loading="{{loading}}" disabled="{{loading}}">登录</button>
+    <text class="help">首次登录请使用管理员提供的初始密码；登录后请修改密码。</text>
+  </view>
+</view>

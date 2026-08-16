@@ -60,6 +60,12 @@ export function mapAdminReview(review) {
     nextValidUntil: review.nextValidUntil,
     reviewedAt: review.reviewedAt,
     reviewerComment: review.reviewerComment || '',
+    cycleId: review.cycleId || null,
+    cycleName: review.cycleName || '',
+    groupId: review.groupId || null,
+    groupName: review.groupName || '',
+    groupDecision: review.groupDecision || '',
+    publishedAt: review.publishedAt || null,
     files: (review.files || []).map((file) => ({
       id: file.id,
       name: file.filename || file.fileName || '未命名材料',
@@ -171,4 +177,50 @@ export async function fetchUsers() {
 
 export async function updateUserRole(userId, role, teacherId) {
   return api.put(`/users/${userId}/role`, { role, teacherId: teacherId || undefined })
+}
+
+export async function createTeacherAccount(data) {
+  return api.post('/teacher-accounts', data)
+}
+
+export async function fetchReviewCycles() {
+  const payload = await api.get('/review-cycles')
+  return payload.items || []
+}
+
+export async function createReviewCycle(data) {
+  return api.post('/review-cycles', data)
+}
+
+export async function fetchReviewGroups() {
+  const payload = await api.get('/review-groups')
+  return payload.items || []
+}
+
+export async function createReviewGroup(data) {
+  return api.post('/review-groups', data)
+}
+
+export async function assignReview(reviewId, data) {
+  return api.post(`/reviews/${reviewId}/assignment`, data)
+}
+
+export async function fetchReviewWorkflow(reviewId) {
+  return api.get(`/reviews/${reviewId}/workflow`)
+}
+
+export async function submitReviewOpinion(reviewId, data) {
+  return api.post(`/reviews/${reviewId}/opinions`, data)
+}
+
+export async function submitGroupDecision(reviewId, data) {
+  return api.post(`/reviews/${reviewId}/group-decision`, data)
+}
+
+export async function publishReview(reviewId, outcome) {
+  return api.post(`/reviews/${reviewId}/publish`, { outcome })
+}
+
+export async function returnReviewToGroup(reviewId, reason) {
+  return api.post(`/reviews/${reviewId}/return-to-group`, { reason })
 }

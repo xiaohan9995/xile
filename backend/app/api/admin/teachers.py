@@ -6,7 +6,7 @@ from flask import request
 from ...extensions import db
 from ...models import AuditLog, ImportBatch, ImportError, Teacher, TeacherDetail, TeacherTier
 from ...services.teacher_service import create_teacher as svc_create_teacher, generate_teacher_no
-from .helpers import require_admin_token, _date_text
+from .helpers import require_admin_roles, require_admin_token, _date_text
 from . import admin_bp
 
 
@@ -64,6 +64,7 @@ def get_teacher_detail(teacher_id):
 
 @admin_bp.put("/teachers/<int:teacher_id>")
 @require_admin_token
+@require_admin_roles("admin", "super_admin")
 def update_teacher(teacher_id):
     teacher = db.session.get(Teacher, teacher_id)
     if teacher is None or teacher.status == "hidden":
@@ -100,6 +101,7 @@ def update_teacher(teacher_id):
 
 @admin_bp.post("/teachers")
 @require_admin_token
+@require_admin_roles("admin", "super_admin")
 def create_teacher():
     payload = request.get_json(silent=True) or {}
     name = (payload.get("name") or "").strip()
@@ -138,6 +140,7 @@ def create_teacher():
 
 @admin_bp.delete("/teachers/<int:teacher_id>")
 @require_admin_token
+@require_admin_roles("admin", "super_admin")
 def delete_teacher(teacher_id):
     teacher = db.session.get(Teacher, teacher_id)
     if teacher is None:
@@ -206,6 +209,7 @@ def _parse_import_row(row):
 
 @admin_bp.post("/import/teachers/preview")
 @require_admin_token
+@require_admin_roles("admin", "super_admin")
 def import_preview():
     file = request.files.get("file")
     if not file:
@@ -307,6 +311,7 @@ def import_preview():
 
 @admin_bp.post("/import/teachers/commit")
 @require_admin_token
+@require_admin_roles("admin", "super_admin")
 def import_commit():
     payload = request.get_json(silent=True) or {}
     batch_id = payload.get("batchId") or request.form.get("batchId")

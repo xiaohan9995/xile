@@ -1,0 +1,11 @@
+.guide-body { padding:28rpx 28rpx 150rpx; }
+.guide-hero,.guide-card,.guide-tip { box-sizing:border-box; border:1rpx solid var(--color-line); border-radius:var(--radius-xl); background:#fff; box-shadow:var(--shadow-card); }
+.guide-hero { padding:36rpx; background:linear-gradient(135deg,#eff5ee,#fffaf0); }
+.guide-hero__title { display:block; margin-top:12rpx; color:var(--color-text); font-family:"Noto Serif SC","Songti SC",serif; font-size:42rpx; font-weight:700; line-height:1.3; }
+.guide-hero__text,.guide-text { display:block; margin-top:14rpx; color:var(--color-muted); font-size:25rpx; line-height:1.75; }
+.guide-list { display:flex; flex-direction:column; gap:18rpx; margin:22rpx 0; }
+.guide-card { display:flex; gap:24rpx; padding:28rpx; }
+.guide-number { color:var(--color-gold); font:700 25rpx "SF Mono",monospace; letter-spacing:2rpx; }
+.guide-title,.guide-tip__title { display:block; color:var(--color-text); font-size:30rpx; font-weight:700; }
+.guide-tip { padding:30rpx; }
+.guide-tip .btn-primary { margin-top:24rpx; }

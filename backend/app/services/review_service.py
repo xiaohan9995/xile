@@ -3,7 +3,7 @@ from datetime import date, datetime, timezone
 from sqlalchemy.exc import IntegrityError
 
 from ..extensions import db
-from ..models import AnnualReview, ReviewFile, Teacher, User
+from ..models import AnnualReview, AuditLog, ReviewCycle, ReviewFile, ReviewTeachingRecord, TeachingRecord, Teacher, User
 
 
 class ReviewError(Exception):
@@ -12,7 +12,7 @@ class ReviewError(Exception):
         self.status_code = status_code
 
 
-def submit_review(user_id, teacher_id, review_year, files):
+def submit_review(user_id, teacher_id, review_year, files, teaching_record_ids=None):
     user = db.session.get(User, user_id)
     if not user or not user.teacher_id:
         raise ReviewError("not a teacher", 403)
@@ -31,25 +31,36 @@ def submit_review(user_id, teacher_id, review_year, files):
     if review_year < current_year - 1 or review_year > current_year:
         raise ReviewError("reviewYear must be current or previous year", 400)
 
-    if not isinstance(files, list) or not files:
-        raise ReviewError("files required", 400)
+    if not isinstance(files, list):
+        raise ReviewError("files must be a list", 400)
+    if not files and not teaching_record_ids:
+        raise ReviewError("files or submitted teaching records required", 400)
 
     next_valid = _calculate_next_valid(teacher)
 
     review = AnnualReview.query.filter_by(teacher_id=teacher.id, review_year=review_year).first()
     if review is None:
+        cycle = ReviewCycle.query.filter_by(status="open").order_by(ReviewCycle.start_date.desc()).first()
         review = AnnualReview(
             teacher_id=teacher.id,
             review_year=review_year,
+            cycle_id=cycle.id if cycle else None,
             previous_valid_until=teacher.valid_until,
             next_valid_until=next_valid,
         )
         db.session.add(review)
     else:
-        if review.status == "approved":
+        if review.status in ("published_approved", "approved"):
             raise ReviewError("cannot resubmit an approved review", 409)
+        db.session.add(AuditLog(admin_id=1, action="teacher_resubmit", target_type="annual_review", target_id=review.id,
+                                detail=f"version {review.submission_version}; previous status {review.status}"))
+        review.submission_version += 1
         for file in review.files.all():
             db.session.delete(file)
+        for item in review.teaching_records.all():
+            db.session.delete(item)
+        for opinion in review.opinions.all():
+            db.session.delete(opinion)
         review.previous_valid_until = teacher.valid_until
         review.next_valid_until = next_valid
 
@@ -58,6 +69,10 @@ def submit_review(user_id, teacher_id, review_year, files):
     review.reviewer_admin_id = None
     review.reviewer_comment = None
     review.reviewed_at = None
+    review.group_decision = None
+    review.group_decided_at = None
+    review.published_at = None
+    review.published_by_id = None
 
     for index, file in enumerate(files, start=1):
         filename = file.get("fileName") or file.get("filename") or file.get("title") or f"review-file-{index}"
@@ -69,6 +84,14 @@ def submit_review(user_id, teacher_id, review_year, files):
                 file_size=int(file.get("fileSize") or 0),
             )
         )
+
+    selected_ids = {int(item) for item in (teaching_record_ids or []) if str(item).isdigit()}
+    if selected_ids:
+        records = TeachingRecord.query.filter(TeachingRecord.teacher_id == teacher.id, TeachingRecord.id.in_(selected_ids), TeachingRecord.status == "submitted").all()
+        if len(records) != len(selected_ids):
+            raise ReviewError("teaching records must belong to you and be submitted", 400)
+        for record in records:
+            review.teaching_records.append(ReviewTeachingRecord(teaching_record_id=record.id))
 
     try:
         db.session.commit()

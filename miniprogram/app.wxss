@@ -4,15 +4,15 @@
    ============================================ */
 
 page {
-  --color-primary: #78887A;
-  --color-primary-dark: #5f7365;
+  --color-primary: #6f826f;
+  --color-primary-dark: #486450;
   --color-primary-light: #F0F3F1;
-  --color-bg: #f7f4ee;
-  --color-gold: #b89a63;
+  --color-bg: #f8f6f0;
+  --color-gold: #aa8952;
   --color-gold-light: #F7F4EF;
   --color-text: #1f2521;
   --color-muted: #5c635c;
-  --color-surface: #E8ECE9;
+  --color-surface: #e7ece6;
   --color-card: #ffffff;
   --color-line: rgba(31, 37, 33, 0.08);
   --color-border: rgba(31, 37, 33, 0.12);
@@ -23,8 +23,8 @@ page {
   --radius-xl: 32rpx;
   --radius-lg: 48rpx;
   --radius-full: 999rpx;
-  --shadow-card: 0 10px 24px rgba(31, 37, 33, 0.06);
-  --shadow-elevated: 0 14rpx 28rpx rgba(31, 37, 33, 0.14);
+  --shadow-card: 0 12rpx 30rpx rgba(46, 61, 49, 0.065);
+  --shadow-elevated: 0 18rpx 36rpx rgba(46, 61, 49, 0.16);
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
   background: var(--color-bg);
   color: var(--color-text);
@@ -133,6 +133,24 @@ image {
   box-shadow: var(--shadow-card);
 }
 
+.section-eyebrow {
+  color: var(--color-gold);
+  font-size: 20rpx;
+  font-weight: 700;
+  letter-spacing: 3rpx;
+}
+
+.section-title {
+  display: block;
+  margin-top: 8rpx;
+  color: var(--color-text);
+  font-family: "Noto Serif SC", "Songti SC", serif;
+  font-size: 38rpx;
+  font-weight: 700;
+}
+
+.section-link { color: var(--color-primary-dark); font-size: 23rpx; font-weight: 700; }
+
 .soft-card {
   background: var(--color-card);
   border-radius: var(--radius-lg);
@@ -149,14 +167,15 @@ image {
   display: grid;
   grid-template-columns: 64rpx 1fr 64rpx;
   align-items: center;
-  background: rgba(247, 244, 238, 0.96);
+  background: rgba(248, 246, 240, 0.96);
   border-bottom: 1rpx solid var(--color-line);
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 20;
   box-sizing: border-box;
   min-height: 44px;
 }
+
+.page-header::after { content: ''; position: absolute; right: 28rpx; bottom: 0; width: 56rpx; height: 3rpx; border-radius: 99rpx; background: var(--color-gold); }
 
 .page-header__back {
   width: 64rpx;

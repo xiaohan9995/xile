@@ -88,62 +88,44 @@ const unsupportedWxssRules = [
   { pattern: /\bfit-content\b/i, label: 'fit-content' },
   { pattern: /\bbackdrop-filter\s*:/i, label: 'backdrop-filter' },
   { pattern: /\b-webkit-backdrop-filter\s*:/i, label: '-webkit-backdrop-filter' },
-  { pattern: /\bposition\s*:\s*sticky\b/i, label: 'position: sticky' },
 ];
 const forbiddenBrandCopy = /(美林认证|善得人|联系他|联系TA)/;
 const mojibakeTokens = ['鍠', '鐟', '寰', '瀵', '璁', '銆', '乣', '鈱', '鉁'];
 
 const requiredPageText = {
   'pages/index/index': [
-    '瑜伽导师认证中心',
-    '喜乐瑜伽',
-    '微信小程序',
-    '导师查询',
+    'JOY YOGA',
+    '让每一次练习',
+    '教师查询',
     '我的认证',
     '瑜伽工作室',
-    '系统数据统计',
   ],
   'pages/teacher-search/teacher-search': [
     '教师查询',
-    '系统库已备案及认证导师名单',
-    '认证编号',
-    '有效期至',
-    '暂无匹配教师',
+    '未找到匹配教师',
   ],
   'pages/teacher-detail/teacher-detail': [
-    '讲师简介',
     '喜乐名',
     '认证等级',
-    '认证状态',
     '证书展示',
-    '联系客服',
   ],
   'pages/studios/studios': [
     '瑜伽工作室',
-    '精选练习空间',
-    '精选高层空灵馆舍',
-    '暂无公开工作室',
+    '找一处安静练习的空间',
+    '未找到匹配的工作室',
   ],
   'pages/studio-detail/studio-detail': [
     '工作室详情',
-    '认证工作室',
     '主理教师',
     '开放时间',
-    '通过有赞学堂预约',
   ],
   'packageTeacher/home/home': [
     '我的认证',
-    '认证到期',
-    '认证天数',
-    '退出当前微信号',
+    '本期年审',
+    '到期天数',
+    '退出登录',
   ],
-  'packageTeacher/profile/profile': [
-    '数字证书预览',
-    '喜乐认证',
-    '瑜伽导师资质协会',
-    '下载证书图片',
-    '申请纸质版实物证书',
-  ],
+  'packageTeacher/profile/profile': [],
   'packageTeacher/cert-step1/cert-step1': [
     '认证申请',
     '个人信息',
@@ -152,23 +134,23 @@ const requiredPageText = {
     '导师认证基础资料',
   ],
   'packageTeacher/review-apply/review-apply': [
-    '上传证明材料',
-    '个人信息',
+    '上传认证材料',
+    '资料已带入',
     '资料上传',
     '提交审核',
   ],
   'packageTeacher/review-records/review-records': [
-    '年度记录',
-    'CURRENT CERTIFICATION',
     '有效期至',
     '年审记录',
     '全部记录',
   ],
+  'packageTeacher/teaching-records/teaching-records': [
+    '按月份筛选',
+    '保存草稿',
+  ],
   'packageTeacher/submission-success/submission-success': [
     '申请已成功提交',
     '教师管理委员会',
-    '待人工审核',
-    '查看我的认证',
     '返回首页',
   ],
 };

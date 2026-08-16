@@ -3,7 +3,7 @@
     <div class="page-head">
       <div>
         <h1>年审管理</h1>
-        <p>接收并核验从小程序在线提交的瑜伽认证材料。批准入册后，全链无缝将资质电子证书推送回其微信。</p>
+        <p>查看教师本期提交的材料。审核、组长决议和正式发布均在年审工作台完成。</p>
       </div>
       <button v-if="selected" class="sync-btn" @click="clearSelection">返回队列</button>
     </div>
@@ -17,7 +17,7 @@
     <template v-else-if="!selected">
       <div class="review-tabs">
         <button :class="{ active: activeTab === 'pending' }" @click="activeTab = 'pending'">
-          待审核（{{ pendingCount }}）
+          待处理（{{ pendingCount }}）
         </button>
         <button :class="{ active: activeTab === 'approved' }" @click="activeTab = 'approved'">
           已通过（{{ approvedCount }}）
@@ -112,25 +112,9 @@
           </a>
         </div>
 
-        <div class="review-decision" v-if="selected.status === 'pending'">
-          <label>
-            <input type="radio" value="approved" v-model="decision" />
-            通过
-          </label>
-          <label>
-            <input type="radio" value="rejected" v-model="decision" />
-            驳回
-          </label>
-          <textarea v-model="comment" placeholder="输入审核意见（驳回时必填）" maxlength="300"></textarea>
-        </div>
-
-        <div v-if="selected.reviewerComment && selected.status !== 'pending'" class="reviewer-comment">
-          <strong>审核意见：</strong>{{ selected.reviewerComment }}
-        </div>
-
-        <div class="review-actions" v-if="selected.status === 'pending'">
-          <button class="reject" :disabled="submitting" @click="confirmDecision('rejected')">驳回材料</button>
-          <button class="approve" :disabled="submitting" @click="confirmDecision('approved')">{{ submitting ? '提交中...' : '确认通过' }}</button>
+        <div class="reviewer-comment">
+          <strong>材料处理提示：</strong>请在“年审工作台”完成成员意见、组长决议和正式发布。
+          <RouterLink to="/review-workflow" class="table-action">前往年审工作台</RouterLink>
         </div>
       </div>
     </section>
@@ -139,7 +123,8 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { fetchAdminReviews, submitReviewDecision } from '../api/adminData'
+import { RouterLink } from 'vue-router'
+import { fetchAdminReviews } from '../api/adminData'
 import { useToast } from '../composables/useToast'
 
 const { show: toast } = useToast()
@@ -147,9 +132,6 @@ const reviews = ref([])
 const activeTab = ref('pending')
 const keyword = ref('')
 const selectedId = ref(null)
-const decision = ref('approved')
-const comment = ref('')
-const submitting = ref(false)
 
 onMounted(async () => {
   await loadReviews()
@@ -180,35 +162,6 @@ const selected = computed(() => reviews.value.find((r) => r.id === selectedId.va
 
 function clearSelection() {
   selectedId.value = null
-  decision.value = 'approved'
-  comment.value = ''
-}
-
-function confirmDecision(status) {
-  if (status === 'rejected' && !comment.value.trim()) {
-    toast('驳回时必须填写审核意见', 'error')
-    return
-  }
-  const label = status === 'approved' ? '通过' : '驳回'
-  if (!window.confirm(`确认${label}「${selected.value.name}」的年审申请？`)) return
-  handleDecision(status)
-}
-
-async function handleDecision(status) {
-  const item = selected.value
-  if (!item) return
-  submitting.value = true
-  try {
-    await submitReviewDecision(item.id, status, comment.value)
-    toast(status === 'approved' ? '已通过年审' : '已驳回年审')
-  } catch (error) {
-    toast('审核提交失败：' + (error.response?.data?.error || '网络错误'), 'error')
-    return
-  } finally {
-    submitting.value = false
-  }
-  await loadReviews()
-  clearSelection()
 }
 </script>
 

@@ -34,14 +34,25 @@
     <view wx:if="{{!loading}}" class="timeline-list">
       <view
         wx:for="{{records}}"
-        wx:key="year"
+        wx:key="id"
         class="timeline-item"
+        bindtap="toggleDetail"
+        data-id="{{item.id}}"
       >
         <text class="timeline-title">{{item.year}}</text>
         <text class="timeline-status {{item.statusClass}}">{{item.statusText}}</text>
         <view class="timeline-meta">
           <text>{{item.date}}</text>
           <text wx:if="{{item.reviewer}}"> · 审核人：{{item.reviewer}}</text>
+        </view>
+        <view wx:if="{{expandedId === item.id}}" class="review-detail">
+          <text wx:if="{{item.statusClass === 'status-approved'}}" class="detail-title">本期年审已正式发布</text>
+          <text wx:if="{{item.groupDecision}}" class="detail-text">审核小组结论：{{item.groupDecision}}</text>
+          <text wx:if="{{item.finalTier}}" class="detail-text">核定等级：{{item.finalTier}}</text>
+          <text wx:if="{{item.nextValidUntil}}" class="detail-text">新有效期：{{item.nextValidUntil}}</text>
+          <text wx:if="{{item.publishedAt}}" class="detail-text">发布时间：{{item.publishedAt}}</text>
+          <button wx:if="{{item.statusClass === 'status-rejected'}}" class="resubmit-btn" catchtap="resubmit" data-id="{{item.id}}">补充材料并重新提交</button>
+          <text wx:if="{{item.statusClass === 'status-submitted'}}" class="detail-text">材料正在处理中，正式发布前不会展示未定稿意见。</text>
         </view>
       </view>
     </view>

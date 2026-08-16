@@ -1,0 +1,9 @@
+<view class="page-shell guide-page">
+  <view class="page-header" style="padding-top:{{statusBarHeight}}px;"><view class="page-header__back" bindtap="goBack">‹</view><text class="page-header__title">使用指引</text><view class="page-header__right"></view></view>
+  <view class="guide-body">
+    <view class="guide-hero"><text class="section-eyebrow">HOW TO USE</text><text class="guide-hero__title">把年审变成日常的小习惯</text><text class="guide-hero__text">按下面四步完成资料维护、教学记录和本期年审；每个阶段只需要完成当前最重要的一件事。</text></view>
+    <view class="guide-list"><view wx:for="{{steps}}" wx:key="number" class="guide-card"><text class="guide-number">{{item.number}}</text><view><text class="guide-title">{{item.title}}</text><text class="guide-text">{{item.text}}</text></view></view></view>
+    <view class="guide-tip"><text class="guide-tip__title">需要补充材料？</text><text class="guide-text">年审未通过后，可在年审记录中查看正式结论，并从“补充材料并重新提交”继续处理。</text><button class="btn-primary" bindtap="goReview">查看年审进度</button></view>
+  </view>
+  <tab-bar active="my" />
+</view>

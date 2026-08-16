@@ -10,6 +10,9 @@ Page({
     nickname: '',
     phone: '',
     loading: false,
+    currentPassword: '',
+    newPassword: '',
+    changingPassword: false,
   },
 
   onLoad() {
@@ -59,6 +62,30 @@ Page({
 
   onNicknameInput(e) {
     this.setData({ nickname: e.detail.value || '' });
+  },
+
+  onPasswordInput(e) {
+    this.setData({ [e.currentTarget.dataset.field]: e.detail.value || '' });
+  },
+
+  async changePassword() {
+    if ((this.data.newPassword || '').length < 8) {
+      wx.showToast({ title: '新密码至少 8 位', icon: 'none' });
+      return;
+    }
+    this.setData({ changingPassword: true });
+    try {
+      await request({ url: '/api/mp/auth/change-password', method: 'POST', data: {
+        currentPassword: this.data.currentPassword,
+        newPassword: this.data.newPassword,
+      } });
+      this.setData({ currentPassword: '', newPassword: '' });
+      wx.showToast({ title: '密码已更新', icon: 'success' });
+    } catch (err) {
+      wx.showToast({ title: '密码更新失败', icon: 'none' });
+    } finally {
+      this.setData({ changingPassword: false });
+    }
   },
 
   onGetPhoneNumber(e) {

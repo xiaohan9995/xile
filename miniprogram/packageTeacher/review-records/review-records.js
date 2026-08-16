@@ -5,6 +5,11 @@ const app = getApp();
 
 const STATUS_MAP = {
   submitted: { text: '审核中', cls: 'status-submitted' },
+  in_review: { text: '审核中', cls: 'status-submitted' },
+  pending_publication: { text: '结果待发布', cls: 'status-submitted' },
+  pending_publication_rejected: { text: '结果待发布', cls: 'status-submitted' },
+  published_approved: { text: '已通过', cls: 'status-approved' },
+  published_rejected: { text: '未通过', cls: 'status-rejected' },
   approved: { text: '已通过', cls: 'status-approved' },
   rejected: { text: '已驳回', cls: 'status-rejected' },
   draft: { text: '草稿', cls: 'status-submitted' },
@@ -22,6 +27,7 @@ Page({
     },
     records: [],
     allRecords: [],
+    expandedId: null,
     loading: false,
   },
 
@@ -51,11 +57,16 @@ Page({
       const records = reviews.map((r) => {
         const statusInfo = STATUS_MAP[r.status] || { text: r.status, cls: 'status-submitted' };
         return {
+          id: r.id,
           year: r.yearTitle || `${r.reviewYear}年度年审`,
           date: r.reviewedAt || r.submittedAt || '待提交',
           reviewer: r.reviewer || '',
           statusText: statusInfo.text,
           statusClass: statusInfo.cls,
+          groupDecision: r.groupDecision || '',
+          finalTier: r.finalTier || '',
+          nextValidUntil: r.nextValidUntil || '',
+          publishedAt: r.publishedAt || '',
         };
       });
 
@@ -86,5 +97,14 @@ Page({
       ? allRecords.filter((r) => r.statusClass === 'status-approved')
       : allRecords;
     this.setData({ activeTab: tab, records: filtered });
+  },
+
+  toggleDetail(e) {
+    const id = e.currentTarget.dataset.id;
+    this.setData({ expandedId: this.data.expandedId === id ? null : id });
+  },
+
+  resubmit(e) {
+    wx.navigateTo({ url: `/packageTeacher/review-apply/review-apply?reviewId=${e.currentTarget.dataset.id}&resubmit=1` });
   },
 });

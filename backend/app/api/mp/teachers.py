@@ -72,6 +72,9 @@ def search_teachers():
     keyword = request.args.get("q", "").strip()
     city = request.args.get("city", "").strip()
     tier = request.args.get("tier", "").strip()
+    mode = request.args.get("mode", "name").strip()
+    if mode not in ("name", "certificate", "region"):
+        return {"error": "invalid search mode"}, 400
     try:
         page = max(int(request.args.get("page", 1)), 1)
     except (ValueError, TypeError):
@@ -82,7 +85,9 @@ def search_teachers():
         page_size = 20
 
     query = Teacher.query.filter(Teacher.status != "hidden")
-    if keyword:
+    if mode == "certificate" and keyword:
+        query = query.filter(Teacher.teacher_no == keyword)
+    elif mode == "name" and keyword:
         like_keyword = f"%{escape_like(keyword)}%"
         query = query.filter(
             (Teacher.real_name.like(like_keyword))

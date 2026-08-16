@@ -27,6 +27,13 @@
       </view>
     </view>
 
+    <view class="settings-section">
+      <text class="section-title">修改登录密码</text>
+      <input class="settings-input password-input" password placeholder="当前密码（首次登录可不填）" value="{{currentPassword}}" bindinput="onPasswordInput" data-field="currentPassword" />
+      <input class="settings-input password-input" password placeholder="新密码（至少 8 位）" value="{{newPassword}}" bindinput="onPasswordInput" data-field="newPassword" />
+      <button class="phone-change-btn" bindtap="changePassword" loading="{{changingPassword}}" disabled="{{changingPassword}}">更新密码</button>
+    </view>
+
     <!-- Nickname Section -->
     <view class="settings-section">
       <text class="section-title">昵称</text>
