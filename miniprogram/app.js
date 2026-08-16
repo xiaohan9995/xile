@@ -37,7 +37,7 @@ App({
     const envVersion = accountInfo.miniProgram.envVersion;
 
     if (envVersion === 'release' || envVersion === 'trial') {
-      const envId = 'prod-4gywi0mq15a2a767';
+      const envId = 'xile-yoga-d4g2za8xi82a16810';
       wx.cloud.init({ env: envId });
       this.globalData.cloudEnv = envId;
       this.globalData.apiBaseUrl = '';

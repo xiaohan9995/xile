@@ -14,18 +14,45 @@ from .models import (
 )
 
 
+DEFAULT_TEACHER_TIERS = (
+    {"code": "L0", "name": "见习教师", "review_cycle_years": 2, "review_required": True, "sort_order": 0},
+    {"code": "L1", "name": "认证教师", "review_cycle_years": 2, "review_required": True, "sort_order": 1},
+    {"code": "L2", "name": "资深教师", "review_cycle_years": 2, "review_required": True, "sort_order": 2},
+    {"code": "L3", "name": "认证导师", "review_cycle_years": 2, "review_required": True, "sort_order": 3},
+    {"code": "L4", "name": "高级导师", "review_cycle_years": 3, "review_required": True, "sort_order": 4},
+    {"code": "L5", "name": "荣誉导师", "review_cycle_years": None, "review_required": False, "sort_order": 5},
+)
+
+DEFAULT_SYSTEM_CONFIGS = {
+    "qr_verify_enabled": "true",
+    "cert_expiry_notify": "true",
+}
+
+
+def ensure_system_defaults():
+    """Create required reference data without changing existing production settings.
+
+    Safe to invoke at every container start: only rows that do not yet exist are
+    inserted. This deliberately excludes demo teachers, studios and accounts.
+    """
+    existing_tier_codes = {code for (code,) in db.session.query(TeacherTier.code).all()}
+    for tier in DEFAULT_TEACHER_TIERS:
+        if tier["code"] not in existing_tier_codes:
+            db.session.add(TeacherTier(**tier))
+
+    existing_config_keys = {key for (key,) in db.session.query(SystemConfig.key).all()}
+    for key, value in DEFAULT_SYSTEM_CONFIGS.items():
+        if key not in existing_config_keys:
+            db.session.add(SystemConfig(key=key, value=value))
+
+    db.session.commit()
+
+
 def seed_demo_data():
     if Teacher.query.first():
         return
 
-    tiers = {
-        "L0": TeacherTier(code="L0", name="见习教师", review_cycle_years=2, review_required=True, sort_order=0),
-        "L1": TeacherTier(code="L1", name="认证教师", review_cycle_years=2, review_required=True, sort_order=1),
-        "L2": TeacherTier(code="L2", name="资深教师", review_cycle_years=2, review_required=True, sort_order=2),
-        "L3": TeacherTier(code="L3", name="认证导师", review_cycle_years=2, review_required=True, sort_order=3),
-        "L4": TeacherTier(code="L4", name="高级导师", review_cycle_years=3, review_required=True, sort_order=4),
-        "L5": TeacherTier(code="L5", name="荣誉导师", review_cycle_years=None, review_required=False, sort_order=5),
-    }
+    tiers = {tier["code"]: TeacherTier(**tier) for tier in DEFAULT_TEACHER_TIERS}
     db.session.add_all(tiers.values())
     db.session.flush()
 

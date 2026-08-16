@@ -45,7 +45,7 @@ const viewContracts = {
   'ImportTeachers.vue': ['uploadImportPreview', 'commitImport'],
   'Analytics.vue': ['数据分析', '等级分布', 'fetchAnalytics'],
   'Permissions.vue': ['权限管理', '邀请管理员', 'fetchPermissions'],
-  'Settings.vue': ['系统设置', '年审规则', 'saveSettings'],
+  'Settings.vue': ['认证规则', '等级与年审周期', 'saveSettings'],
   'Login.vue': ['喜乐瑜伽', '登录'],
 }
 
@@ -57,7 +57,7 @@ for (const [viewName, requiredTexts] of Object.entries(viewContracts)) {
 }
 
 const appFile = path.join(srcRoot, 'App.vue')
-for (const label of ['本期总览', '年审工作台', '年审资料库', '教师档案', '认证场馆', '批量导入', '数据分析', '账号与权限', '规则设置']) {
+for (const label of ['本期总览', '年审工作台', '年审资料库', '教师档案', '认证场馆', '批量导入', '数据分析', '账号与权限', '认证规则']) {
   assertIncludes(appFile, label)
 }
 

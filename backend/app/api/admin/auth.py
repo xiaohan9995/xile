@@ -20,9 +20,10 @@ def login():
 
     dev_token = current_app.config.get("ADMIN_DEV_TOKEN")
     if dev_token and username == "admin" and password == "password":
+        admin = AdminUser.query.filter_by(username="admin").first()
         return {
             "token": dev_token,
-            "admin": {"username": "admin", "name": "系统管理员", "role": "super_admin"},
+            "admin": {"id": admin.id if admin else None, "username": "admin", "name": "系统管理员", "role": "super_admin"},
         }
 
     admin = AdminUser.query.filter_by(username=username).first()
@@ -36,5 +37,5 @@ def login():
     )
     return {
         "token": token,
-        "admin": {"username": admin.username, "name": admin.username, "role": admin.role},
+        "admin": {"id": admin.id, "username": admin.username, "name": admin.username, "role": admin.role},
     }
