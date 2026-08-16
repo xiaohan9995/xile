@@ -11,6 +11,7 @@
             <span class="admin-presence"></span>
             <div><strong>{{ adminName }}</strong><small>{{ roleLabel }} · 在线工作中</small></div>
           </div>
+          <button class="logout-btn" type="button" title="退出当前账号" @click="handleLogout">退出</button>
         </div>
       </header>
 
@@ -69,11 +70,12 @@
 <script setup>
 import { RouterLink } from 'vue-router'
 import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useToast } from './composables/useToast'
 import { useAuthStore } from './stores/auth'
 
 const route = useRoute()
+const router = useRouter()
 const isLoginRoute = computed(() => route.name === 'Login')
 const { toasts } = useToast()
 const auth = useAuthStore()
@@ -82,4 +84,10 @@ const canManage = computed(() => ['admin', 'super_admin'].includes(role.value))
 const isSuperAdmin = computed(() => role.value === 'super_admin')
 const adminName = computed(() => auth.admin?.name || auth.admin?.username || '系统管理员')
 const roleLabel = computed(() => ({ reviewer: '审核成员', group_leader: '审核组长', admin: '年审管理员', super_admin: '系统管理员' }[role.value] || '审核成员'))
+
+function handleLogout() {
+  if (!window.confirm('确认退出当前账号？')) return
+  auth.logout()
+  router.replace({ name: 'Login' })
+}
 </script>

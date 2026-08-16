@@ -1160,6 +1160,8 @@ textarea:focus {
 .topbar-help:hover,.topbar-help:focus-visible { color:#fff; background:var(--brand-green); transform:translateY(-1px); outline:none; }
 .admin-user strong, .admin-user small { display:block; line-height:1.35; }
 .admin-user small { color: var(--muted-light); font-size: 11px; font-weight: 500; }
+.logout-btn { padding:6px 8px; border:0; border-radius:8px; background:transparent; color:#89958c; font-size:11px; font-weight:800; cursor:pointer; transition:background .18s ease, color .18s ease; }
+.logout-btn:hover, .logout-btn:focus-visible { color:#a44e49; background:#f9eeee; outline:none; }
 @media (max-width:720px) { .admin-topbar { height:60px; padding:0 18px; } .topbar-context { display:none; } .admin-user small { display:none; } }
 .admin-presence { width:30px; height:30px; display:grid; place-items:center; border-radius:50%; background:linear-gradient(135deg, var(--brand-gold), #d8bf91); }
 .admin-presence::after { content:""; width:8px; height:8px; border-radius:50%; background:#fff; box-shadow:0 0 0 4px rgba(255,255,255,.4); }
