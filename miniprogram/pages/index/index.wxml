@@ -4,12 +4,24 @@
     <image class="home-visual__img" src="https://images.unsplash.com/photo-1545389336-cf090694435e?auto=format&fit=crop&w=640&q=80" mode="aspectFill" />
     <view class="home-visual__overlay"></view>
     <view class="home-visual__text">
+      <text class="home-visual__eyebrow">JOY YOGA · TEACHER CERTIFICATION</text>
+      <text class="home-visual__title">让每一次练习<br />被认真看见</text>
       <text class="home-visual__tagline">成长 · 修习 · 传承</text>
     </view>
   </view>
 
   <!-- Body content -->
   <view class="home-body">
+    <view class="home-intro">
+      <text class="section-eyebrow">认证服务</text>
+      <text class="section-title">查询、认证与连接</text>
+      <text class="home-intro__note">认证教师、资质查询与场馆服务，一站完成。</text>
+    </view>
+
+    <view class="cta-btn" bindtap="goMyCert">
+      <view class="cta-text-group"><text class="cta-title">进入我的认证</text><text class="cta-subtitle">查看证书、年审状态与教学记录</text></view>
+      <text class="cta-arrow">›</text>
+    </view>
     <!-- Announcements -->
     <view class="notice-card" wx:if="{{announcements.length > 0}}">
       <view class="notice-header">
@@ -29,10 +41,6 @@
 
     <!-- Quick grid: 2x2 -->
     <view class="quick-grid">
-      <view class="quick-card" bindtap="goMyCert">
-        <text class="quick-card-title">我的认证</text>
-        <text class="quick-card-desc">查看个人认证信息</text>
-      </view>
       <view class="quick-card" bindtap="goSearch">
         <text class="quick-card-title">教师查询</text>
         <text class="quick-card-desc">查认证教师信息</text>
@@ -40,10 +48,6 @@
       <view class="quick-card" bindtap="goStudios">
         <text class="quick-card-title">瑜伽工作室</text>
         <text class="quick-card-desc">查看附近认证场馆</text>
-      </view>
-      <view class="quick-card" bindtap="goYouzan">
-        <text class="quick-card-title">有赞学堂</text>
-        <text class="quick-card-desc">课程与培训资讯</text>
       </view>
     </view>
 

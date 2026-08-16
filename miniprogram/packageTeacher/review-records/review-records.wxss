@@ -139,6 +139,10 @@
   font-size: 22rpx;
   color: var(--color-muted);
 }
+.review-detail { display:flex; flex-direction:column; gap:10rpx; margin-top:22rpx; padding-top:20rpx; border-top:1rpx dashed var(--color-line); }
+.detail-title { color:var(--color-primary-dark); font-size:25rpx; font-weight:700; }
+.detail-text { color:var(--color-muted); font-size:23rpx; line-height:1.6; }
+.resubmit-btn { width:100%; margin-top:8rpx; color:#fff; background:var(--color-primary); border-radius:14rpx; font-size:25rpx; }
 
 /* ===== Empty state ===== */
 .empty-records {

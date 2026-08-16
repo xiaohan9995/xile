@@ -31,7 +31,7 @@
             </td>
             <td>
               <span class="status-pill" :class="member.role === 'super_admin' ? '' : 'blue'">
-                {{ member.role === 'super_admin' ? '超级管理员' : '审核管理员' }}
+                {{ adminRoleLabel(member.role) }}
               </span>
             </td>
             <td>{{ member.createdAt || '—' }}</td>
@@ -100,6 +100,8 @@
           角色
           <select v-model="inviteForm.role">
             <option value="admin">审核管理员</option>
+            <option value="reviewer">审核成员</option>
+            <option value="group_leader">审核组长</option>
             <option value="super_admin">超级管理员</option>
           </select>
         </label>
@@ -134,6 +136,10 @@
             </option>
           </select>
         </label>
+        <template v-if="roleForm.role === 'teacher'">
+          <label>教师登录账号<input v-model="roleForm.username" placeholder="教师编号或自定义账号" /></label>
+          <label>初始密码<input v-model="roleForm.password" type="password" placeholder="至少 8 位" /></label>
+        </template>
         <div class="modal-actions">
           <button class="sync-btn" @click="showRoleModal = false">取消</button>
           <button class="primary-btn" @click="handleSetRole">确认</button>
@@ -145,7 +151,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { fetchPermissions, inviteAdmin, fetchUsers, updateUserRole, fetchAdminTeachers } from '../api/adminData'
+import { createTeacherAccount, fetchPermissions, inviteAdmin, fetchUsers, updateUserRole, fetchAdminTeachers } from '../api/adminData'
 
 const members = ref([])
 const users = ref([])
@@ -153,7 +159,9 @@ const teacherOptions = ref([])
 const showInvite = ref(false)
 const showRoleModal = ref(false)
 const inviteForm = ref({ username: '', password: '', role: 'admin' })
-const roleForm = ref({ userId: null, role: 'student', teacherId: null, currentRole: '' })
+const roleForm = ref({ userId: null, role: 'student', teacherId: null, currentRole: '', username: '', password: '' })
+
+const adminRoleLabel = (role) => ({ super_admin: '超级管理员', admin: '普通管理员', reviewer: '审核成员', group_leader: '审核组长' }[role] || role)
 
 onMounted(async () => {
   await Promise.all([loadMembers(), loadUsers(), loadTeachers()])
@@ -184,18 +192,27 @@ function openRoleModal(user) {
     role: user.role,
     teacherId: user.teacherId || null,
     currentRole: user.role,
+    username: '',
+    password: '',
   }
   showRoleModal.value = true
 }
 
 async function handleSetRole() {
-  const { userId, role, teacherId } = roleForm.value
+  const { userId, role, teacherId, username, password } = roleForm.value
   if (role === 'teacher' && !teacherId) {
     alert('请选择关联的教师')
     return
   }
+  if (role === 'teacher' && (!username.trim() || password.length < 8)) {
+    alert('请填写教师登录账号和至少 8 位的初始密码')
+    return
+  }
   try {
     await updateUserRole(userId, role, teacherId)
+    if (role === 'teacher') {
+      await createTeacherAccount({ teacherId, username, password })
+    }
     showRoleModal.value = false
     await loadUsers()
   } catch (e) {

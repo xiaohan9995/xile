@@ -7,6 +7,8 @@ Page({
   data: {
     statusBarHeight: 20,
     submitting: false,
+    deadline: '',
+    teachingRecords: [],
     files: [
       { title: '专业头像照片', desc: '清晰正面免冠证件照，5MB以内', icon: '📷', done: false, fileName: '', tempPath: '', fileKey: '' },
       { title: '培训证书', desc: '权威机构课程证书，PDF/JPG格式', icon: '📄', done: false, fileName: '', tempPath: '', fileKey: '' },
@@ -17,6 +19,29 @@ Page({
   onLoad() {
     if (!auth.requireAuth('/packageTeacher/review-apply/review-apply')) return;
     this.setData({ statusBarHeight: app.globalData.statusBarHeight });
+    this.loadPreparation();
+  },
+
+  async loadPreparation() {
+    try {
+      const [certification, records] = await Promise.all([
+        request({ url: '/api/mp/teachers/me/certification', silent: true }),
+        request({ url: '/api/mp/teaching-records', silent: true }),
+      ]);
+      const review = (certification.reviews || [])[0] || {};
+      const selectedIds = review.teachingRecordIds || (records.items || []).filter((item) => item.status === 'submitted').map((item) => item.id);
+      this.setData({
+        deadline: review.submissionDeadline || '',
+        teachingRecords: (records.items || []).filter((item) => item.status === 'submitted').map((item) => ({ ...item, selected: selectedIds.includes(item.id) })),
+      });
+    } catch (err) {
+      // The application remains usable when there are no historical records yet.
+    }
+  },
+
+  toggleTeachingRecord(e) {
+    const index = e.currentTarget.dataset.index;
+    this.setData({ [`teachingRecords[${index}].selected`]: !this.data.teachingRecords[index].selected });
   },
 
   chooseFile(e) {
@@ -77,8 +102,9 @@ Page({
     if (this.data.submitting) return;
     const selectedFiles = this.data.files.filter((f) => f.done);
 
-    if (selectedFiles.length === 0) {
-      wx.showToast({ title: '请先上传至少一项证明材料', icon: 'none' });
+    const selectedTeachingRecords = this.data.teachingRecords.filter((item) => item.selected);
+    if (selectedFiles.length === 0 && selectedTeachingRecords.length === 0) {
+      wx.showToast({ title: '请上传材料或引用教学记录', icon: 'none' });
       return;
     }
 
@@ -123,6 +149,7 @@ Page({
           idNumber: application.idNumber || '',
           specialization: application.specialization || '',
           files: filesPayload,
+          teachingRecordIds: selectedTeachingRecords.map((item) => item.id),
         },
       });
 

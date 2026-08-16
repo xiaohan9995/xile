@@ -41,9 +41,9 @@
             <td><strong class="mono-cert">{{ teacher.certNo }}</strong></td>
             <td>{{ teacher.city || '—' }}</td>
             <td>{{ teacher.expiryDate }}</td>
-            <td>
+            <td class="table-actions">
               <button class="table-action" @click="openEdit(teacher)">编辑</button>
-              <button class="icon-danger" @click="handleDelete(teacher)">删除</button>
+              <button class="danger-action" @click="handleDelete(teacher)">删除</button>
             </td>
           </tr>
         </tbody>
@@ -71,7 +71,7 @@
         </div>
         <div class="form-grid two">
           <label>
-            姓名 <em>*</em>
+            <span class="field-label">姓名 <em>*</em></span>
             <input v-model="createDraft.name" required placeholder="请输入姓名" />
           </label>
           <label>
@@ -118,7 +118,7 @@
         </div>
         <div class="form-grid two">
           <label>
-            姓名 <em>*</em>
+            <span class="field-label">姓名 <em>*</em></span>
             <input v-model="editDraft.name" required />
           </label>
           <label>

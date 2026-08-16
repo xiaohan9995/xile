@@ -94,6 +94,19 @@
   margin: 24rpx 0;
 }
 
+.review-task-card { display:flex; align-items:flex-start; gap:18rpx; margin:0 0 24rpx; padding:26rpx; border-radius:var(--radius-xl); background:linear-gradient(135deg,#fffdf7,#f7f1e4); border:1rpx solid rgba(170,137,82,.3); }
+.review-task-card__seal { width:64rpx; height:64rpx; flex-shrink:0; display:flex; align-items:center; justify-content:center; border:1rpx solid var(--color-gold); border-radius:50%; color:var(--color-gold); font-family:"Noto Serif SC", serif; font-size:20rpx; font-weight:700; }
+.review-task-card__body { min-width:0; flex:1; }
+.review-task-card__eyebrow,.review-task-card__hint { display:block; color:var(--color-muted); font-size:22rpx; }
+.review-task-card__title { display:block; margin-top:6rpx; color:var(--color-text); font-size:30rpx; font-weight:700; }
+.review-task-card__hint { margin-top:6rpx; }
+.review-task-card__action { max-width:130rpx; flex-shrink:0; color:var(--color-primary-dark); font-size:23rpx; font-weight:700; text-align:right; line-height:1.45; }
+.review-task-card__action text { display:block; font-size:34rpx; }
+.review-task-card__rail { display:flex; align-items:center; width:124rpx; margin-top:16rpx; }
+.review-task-card__rail-dot { width:12rpx; height:12rpx; border-radius:50%; background:var(--color-primary); }
+.review-task-card__rail-dot--muted { background:#d8c8a7; }
+.review-task-card__rail-line { height:2rpx; flex:1; background:linear-gradient(90deg,var(--color-primary),#d8c8a7); }
+
 .metric-item {
   display: flex;
   flex-direction: column;

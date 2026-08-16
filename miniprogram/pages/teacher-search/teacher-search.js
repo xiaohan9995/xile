@@ -10,6 +10,12 @@ Page({
   data: {
     statusBarHeight: 20,
     keyword: '',
+    searchMode: 'name',
+    searchModes: [
+      { id: 'region', label: '按地区' },
+      { id: 'name', label: '按姓名/喜乐名' },
+      { id: 'certificate', label: '按证书编号' },
+    ],
     searched: false,
     // Filter state
     tierOptions: TIER_OPTIONS,
@@ -48,6 +54,13 @@ Page({
     this.debounceSearch();
   },
 
+  switchMode(e) {
+    const mode = e.currentTarget.dataset.mode;
+    if (mode === this.data.searchMode) return;
+    this.setData({ searchMode: mode, keyword: '', page: 1, hasMore: true, teachers: [], searched: false, error: '' });
+    if (mode === 'region' && this.data.cityIndex > 0) this.doSearch();
+  },
+
   debounceSearch() {
     if (_searchTimer) clearTimeout(_searchTimer);
     _searchTimer = setTimeout(() => {
@@ -67,7 +80,7 @@ Page({
 
   onCityChange(e) {
     this.setData({ cityIndex: e.detail.value, page: 1, hasMore: true, teachers: [] });
-    this.doSearch();
+    if (this.data.searchMode === 'region' || this.data.keyword) this.doSearch();
   },
 
   resetFilters() {
@@ -87,8 +100,8 @@ Page({
   },
 
   _buildUrl(page) {
-    const { keyword, tierIndex, tierOptions, cityIndex, cityOptions } = this.data;
-    let url = `/api/mp/teachers/search?q=${encodeURIComponent(keyword)}&page=${page}&pageSize=20`;
+    const { keyword, searchMode, tierIndex, tierOptions, cityIndex, cityOptions } = this.data;
+    let url = `/api/mp/teachers/search?mode=${searchMode}&q=${encodeURIComponent(keyword)}&page=${page}&pageSize=20`;
     if (tierIndex > 0) {
       url += `&tier=${encodeURIComponent(tierOptions[tierIndex])}`;
     }
@@ -99,6 +112,15 @@ Page({
   },
 
   async doSearch() {
+    if (this.data.searchMode === 'region' && this.data.cityIndex === 0) {
+      this.setData({ searched: false, teachers: [], error: '' });
+      wx.showToast({ title: '请选择地区后查询', icon: 'none' });
+      return;
+    }
+    if (this.data.searchMode !== 'region' && !this.data.keyword.trim()) {
+      this.setData({ searched: false, teachers: [], error: '' });
+      return;
+    }
     this.setData({ loading: true, error: '' });
     try {
       const payload = await request({ url: this._buildUrl(1) });

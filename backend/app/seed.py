@@ -213,7 +213,7 @@ def seed_demo_data():
         db.session.add(
             AdminUser(
                 username="admin",
-                password_hash=generate_password_hash("password"),
+                password_hash=generate_password_hash("password", method="pbkdf2:sha256"),
                 role="super_admin",
             )
         )

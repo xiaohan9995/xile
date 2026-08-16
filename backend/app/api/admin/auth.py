@@ -22,7 +22,7 @@ def login():
     if dev_token and username == "admin" and password == "password":
         return {
             "token": dev_token,
-            "admin": {"username": "admin", "name": "系统管理员"},
+            "admin": {"username": "admin", "name": "系统管理员", "role": "super_admin"},
         }
 
     admin = AdminUser.query.filter_by(username=username).first()

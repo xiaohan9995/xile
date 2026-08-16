@@ -91,18 +91,29 @@ def _file_payload(file):
 
 
 def _review_payload(review):
-    return {
+    published = review.status in ("approved", "rejected", "published_approved", "published_rejected")
+    payload = {
         "id": review.id,
         "reviewYear": review.review_year,
         "yearTitle": f"{review.review_year}年度年审",
         "status": review.status,
         "submittedAt": _datetime_text(review.submitted_at),
         "reviewedAt": _datetime_text(review.reviewed_at),
-        "reviewer": "教师管理委员会" if review.reviewed_at else "待审核",
+        "reviewer": "教师管理委员会" if published else "审核中",
         "previousValidUntil": _date_text(review.previous_valid_until),
         "nextValidUntil": _date_text(review.next_valid_until),
+        "submissionVersion": review.submission_version,
+        "submissionDeadline": _date_text(review.cycle.submission_deadline) if review.cycle else None,
+        "teachingRecordIds": [item.teaching_record_id for item in review.teaching_records.order_by("id").all()],
         "files": [_file_payload(file) for file in review.files.order_by("id").all()],
     }
+    if published:
+        payload.update({
+            "groupDecision": review.group_decision or review.reviewer_comment,
+            "finalTier": review.final_tier.code if review.final_tier else None,
+            "publishedAt": _datetime_text(review.published_at),
+        })
+    return payload
 
 
 def _get_current_user():

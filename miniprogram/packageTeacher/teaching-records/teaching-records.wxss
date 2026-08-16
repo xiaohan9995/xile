@@ -1,0 +1,20 @@
+.content { padding:28rpx 28rpx 160rpx; }
+.intro,.form-card,.record-card,.empty { box-sizing:border-box; margin-bottom:20rpx; padding:30rpx; border:1rpx solid var(--color-line); border-radius:var(--radius-xl); background:#fff; box-shadow:var(--shadow-card); }
+.intro { background:linear-gradient(135deg,#faf8f0,#edf3eb); }
+.intro__title,.record-title,.form-card__title { display:block; color:var(--color-text); font-family:"Noto Serif SC", "Songti SC", serif; font-size:38rpx; font-weight:700; }
+.intro__text,.record-meta,.record-description,.form-card__hint { display:block; margin-top:12rpx; color:var(--color-muted); font-size:24rpx; line-height:1.65; }
+.intro .btn-primary { margin-top:26rpx; }
+.form-card__hint { margin-bottom:24rpx; color:var(--color-gold); }
+.field { display:block; box-sizing:border-box; width:100%; min-height:88rpx; padding:20rpx; margin-bottom:16rpx; border:1rpx solid #d8e0da; border-radius:16rpx; background:#fbfcfa; font-size:27rpx; }
+.field--area { min-height:160rpx; }
+.record-actions { display:flex; gap:16rpx; }
+.record-actions button { flex:1; }
+.btn-secondary { color:var(--color-primary-dark); border:1rpx solid var(--color-primary); background:#fff; }
+.evidence-row { display:flex; justify-content:space-between; gap:20rpx; margin-bottom:18rpx; padding:18rpx; color:var(--color-primary-dark); border:1rpx dashed var(--color-primary); border-radius:16rpx; font-size:24rpx; }
+.record-card { position:relative; overflow:hidden; }
+.record-card::before { content:""; position:absolute; top:0; bottom:0; left:0; width:6rpx; background:linear-gradient(var(--color-primary),var(--color-gold)); }
+.record-index { display:block; margin-bottom:12rpx; color:var(--color-gold); font:700 19rpx "SF Mono", monospace; letter-spacing:2rpx; }
+.record-hours { position:absolute; right:30rpx; top:52rpx; color:var(--color-primary-dark); font-size:23rpx; font-weight:700; }
+.empty { display:flex; flex-direction:column; gap:10rpx; align-items:center; color:var(--color-muted); text-align:center; }
+.empty text:last-child { font-size:23rpx; }
+.empty__mark { color:var(--color-gold); font:700 34rpx "SF Mono", monospace; }

@@ -7,13 +7,14 @@ from ...extensions import db
 from ...models import (
     AdminUser,
     AnnualReview,
+    AuditLog,
     Studio,
     SystemConfig,
     Teacher,
     TeacherTier,
     User,
 )
-from .helpers import require_admin_token, _date_text, _datetime_text
+from .helpers import current_admin_id, require_admin_roles, require_admin_token, _date_text, _datetime_text
 from . import admin_bp
 
 
@@ -27,6 +28,7 @@ def dashboard_stats():
     expiring_deadline = today + timedelta(days=90)
     current_year = today.year
 
+    eligible = Teacher.query.join(TeacherTier).filter(Teacher.status != "hidden", TeacherTier.review_required.is_(True)).count()
     return {
         "teacherCount": Teacher.query.filter(Teacher.status != "hidden").count(),
         "activeTeacherCount": Teacher.query.filter_by(status="active").count(),
@@ -41,6 +43,14 @@ def dashboard_stats():
             AnnualReview.status == "approved",
             db.extract("year", AnnualReview.reviewed_at) == current_year,
         ).count(),
+        "reviewOverview": {
+            "due": eligible,
+            "submitted": AnnualReview.query.filter(AnnualReview.status.in_(("submitted", "in_review"))).count(),
+            "inReview": AnnualReview.query.filter_by(status="in_review").count(),
+            "pendingPublication": AnnualReview.query.filter(AnnualReview.status.in_(("pending_publication", "pending_publication_rejected"))).count(),
+            "publishedApproved": AnnualReview.query.filter_by(status="published_approved").count(),
+            "publishedRejected": AnnualReview.query.filter_by(status="published_rejected").count(),
+        },
     }
 
 
@@ -136,6 +146,7 @@ def get_settings():
 
 @admin_bp.put("/settings")
 @require_admin_token
+@require_admin_roles("admin", "super_admin")
 def update_settings():
     payload = request.get_json(silent=True) or {}
 
@@ -182,6 +193,7 @@ def get_permissions():
 
 @admin_bp.post("/permissions/invite")
 @require_admin_token
+@require_admin_roles("admin", "super_admin")
 def invite_admin():
     payload = request.get_json(silent=True) or {}
     username = (payload.get("username") or "").strip()
@@ -196,18 +208,47 @@ def invite_admin():
     if len(password) < 8:
         return {"error": "password must be at least 8 characters"}, 400
     role = payload.get("role") or "admin"
-    if role not in ("admin", "super_admin"):
-        return {"error": "role must be admin or super_admin"}, 400
+    if role not in ("admin", "super_admin", "reviewer", "group_leader"):
+        return {"error": "invalid admin role"}, 400
 
     admin = AdminUser(
         username=username,
-        password_hash=generate_password_hash(password),
+        password_hash=generate_password_hash(password, method="pbkdf2:sha256"),
         role=role,
     )
     db.session.add(admin)
     db.session.commit()
 
     return {"id": admin.id, "username": admin.username, "role": admin.role}, 201
+
+
+@admin_bp.post("/teacher-accounts")
+@require_admin_token
+@require_admin_roles("admin", "super_admin")
+def create_teacher_account():
+    """Create or reset a teacher's initial password account."""
+    payload = request.get_json(silent=True) or {}
+    teacher_id = payload.get("teacherId")
+    username = (payload.get("username") or "").strip()
+    password = payload.get("password") or ""
+    if not teacher_id or not username or len(password) < 8:
+        return {"error": "teacherId, username and an 8-character password are required"}, 400
+    teacher = db.session.get(Teacher, teacher_id)
+    if not teacher:
+        return {"error": "teacher not found"}, 404
+    user = User.query.filter_by(teacher_id=teacher_id).first()
+    if user is None:
+        user = User(teacher_id=teacher_id, role="teacher")
+        db.session.add(user)
+    duplicate = User.query.filter(User.username == username, User.id != user.id).first()
+    if duplicate:
+        return {"error": "username already exists"}, 409
+    user.username = username
+    user.password_hash = generate_password_hash(password, method="pbkdf2:sha256")
+    user.must_change_password = True
+    db.session.add(AuditLog(admin_id=current_admin_id() or 1, action="set_teacher_password", target_type="teacher", target_id=teacher_id))
+    db.session.commit()
+    return {"id": user.id, "teacherId": teacher_id, "username": username, "mustChangePassword": True}, 201
 
 
 # ─── Users (Mini Program) ───────────────────────────────────────────────────
@@ -237,6 +278,7 @@ def user_list():
 
 @admin_bp.put("/users/<int:user_id>/role")
 @require_admin_token
+@require_admin_roles("admin", "super_admin")
 def update_user_role(user_id):
     user = db.session.get(User, user_id)
     if user is None:

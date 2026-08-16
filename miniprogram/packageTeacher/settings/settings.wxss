@@ -99,6 +99,8 @@
   border: 2rpx solid var(--color-border);
 }
 
+.password-input { margin-bottom: 16rpx; }
+
 /* Phone */
 .phone-row {
   display: flex;

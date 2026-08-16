@@ -2,7 +2,7 @@ from flask import request
 
 from ...extensions import db
 from ...models import AuditLog, Studio
-from .helpers import require_admin_token
+from .helpers import require_admin_roles, require_admin_token
 from . import admin_bp
 
 
@@ -33,6 +33,7 @@ def studio_list():
 
 @admin_bp.post("/studios")
 @require_admin_token
+@require_admin_roles("admin", "super_admin")
 def create_studio():
     payload = request.get_json(silent=True) or {}
     name = (payload.get("name") or "").strip()
@@ -57,6 +58,7 @@ def create_studio():
 
 @admin_bp.delete("/studios/<int:studio_id>")
 @require_admin_token
+@require_admin_roles("admin", "super_admin")
 def delete_studio(studio_id):
     studio = db.session.get(Studio, studio_id)
     if studio is None:
@@ -69,6 +71,7 @@ def delete_studio(studio_id):
 
 @admin_bp.put("/studios/<int:studio_id>")
 @require_admin_token
+@require_admin_roles("admin", "super_admin")
 def update_studio(studio_id):
     studio = db.session.get(Studio, studio_id)
     if studio is None or studio.status == "hidden":

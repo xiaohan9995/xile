@@ -34,6 +34,9 @@
   flex-direction: column;
   gap: 18rpx;
 }
+.teaching-reference { display: flex; flex-direction: column; gap: 16rpx; margin-top: 20rpx; }
+.reference-row { display: flex; align-items: center; gap: 18rpx; padding: 18rpx; border: 1rpx solid #dfe7df; border-radius: 16rpx; background: #f8fbf8; }
+.reference-check { width: 32rpx; height: 32rpx; line-height: 32rpx; text-align: center; color: #fff; background: #657b68; border-radius: 50%; font-size: 22rpx; }
 
 .upload-tile {
   display: flex;

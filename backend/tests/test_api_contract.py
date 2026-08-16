@@ -52,6 +52,17 @@ def test_teacher_search_filters_by_name_and_hides_private_fields(client):
     assert "idCardNo" not in teacher
 
 
+def test_teacher_search_supports_exact_certificate_and_region_modes(client):
+    exact = client.get("/api/mp/teachers/search?mode=certificate&q=JY20230001")
+    assert exact.status_code == 200
+    assert exact.get_json()["total"] == 1
+    assert exact.get_json()["items"][0]["name"] == "张三"
+
+    region = client.get("/api/mp/teachers/search?mode=region&city=上海市")
+    assert region.status_code == 200
+    assert all(item["city"] == "上海市" for item in region.get_json()["items"])
+
+
 def test_teacher_detail_returns_public_certification_profile(client):
     response = client.get("/api/mp/teachers/1/summary")
 
@@ -316,32 +327,113 @@ def test_admin_review_queue_returns_reviews_with_avatar(client):
     assert review["status"] == "submitted"
 
 
-def test_admin_review_decision_approves_and_updates_valid_until(client):
+def test_admin_review_decision_endpoint_is_retired(client):
     response = client.post(
         "/api/admin/reviews/1/decision",
         headers={"Authorization": "Bearer test-admin-token"},
         json={"status": "approved", "comment": "材料完整，准予通过"},
     )
 
-    assert response.status_code == 200
-    payload = response.get_json()
-    assert payload["status"] == "approved"
-    assert payload["reviewerComment"] == "材料完整，准予通过"
-
-    cert = client.get("/api/mp/teachers/2/certification")
-    teacher = cert.get_json()["teacher"]
-    assert teacher["validUntil"] == "2028.06.30"
+    assert response.status_code == 410
+    assert "collaborative" in response.get_json()["error"]
 
 
-def test_admin_review_decision_rejects_invalid_status(client):
+def test_admin_review_decision_endpoint_is_retired_for_every_outcome(client):
     response = client.post(
         "/api/admin/reviews/1/decision",
         headers={"Authorization": "Bearer test-admin-token"},
         json={"status": "archived"},
     )
 
-    assert response.status_code == 400
-    assert response.get_json()["error"] == "invalid status"
+    assert response.status_code == 410
+
+
+def test_teacher_password_account_and_teaching_record(client):
+    admin_headers = {"Authorization": "Bearer test-admin-token"}
+    account = client.post(
+        "/api/admin/teacher-accounts", headers=admin_headers,
+        json={"teacherId": 1, "username": "JY20230001", "password": "initial-pass"},
+    )
+    assert account.status_code == 201
+
+    login = client.post("/api/mp/auth/password-login", json={"username": "JY20230001", "password": "initial-pass"})
+    assert login.status_code == 200
+    assert login.get_json()["mustChangePassword"] is True
+    headers = {"Authorization": f"Bearer {login.get_json()['token']}"}
+    changed = client.post(
+        "/api/mp/auth/change-password", headers=headers,
+        json={"currentPassword": "", "newPassword": "changed-pass"},
+    )
+    assert changed.status_code == 200
+    relogin = client.post("/api/mp/auth/password-login", json={"username": "JY20230001", "password": "changed-pass"})
+    assert relogin.status_code == 200
+    record = client.post(
+        "/api/mp/teaching-records", headers=headers,
+        json={"taughtOn": "2026-06-15", "platform": "上海线下", "title": "晨间流瑜伽", "durationHours": 2},
+    )
+    assert record.status_code == 201
+    records = client.get("/api/mp/teaching-records", headers=headers)
+    assert records.get_json()["total"] == 1
+
+
+def test_collaborative_review_requires_assignment_decision_and_publication(client):
+    headers = {"Authorization": "Bearer test-admin-token"}
+    cycle = client.post(
+        "/api/admin/review-cycles", headers=headers,
+        json={"name": "2026 年度年审", "startDate": "2026-01-01", "submissionDeadline": "2026-07-31"},
+    )
+    assert cycle.status_code == 201
+    group = client.post(
+        "/api/admin/review-groups", headers=headers,
+        json={"name": "L2 审核组", "leaderId": 1, "memberIds": [1], "tierScope": ["L2"]},
+    )
+    assert group.status_code == 201
+    assignment = client.post(
+        "/api/admin/reviews/1/assignment", headers=headers,
+        json={"cycleId": cycle.get_json()["id"], "groupId": group.get_json()["id"]},
+    )
+    assert assignment.get_json()["status"] == "in_review"
+    opinion = client.post(
+        "/api/admin/reviews/1/opinions", headers=headers,
+        json={"conclusion": "approved", "comment": "材料完整，建议通过"},
+    )
+    assert opinion.status_code == 201
+    decision = client.post(
+        "/api/admin/reviews/1/group-decision", headers=headers,
+        json={"conclusion": "approved", "decision": "审核组一致同意通过"},
+    )
+    assert decision.get_json()["status"] == "pending_publication"
+    published = client.post("/api/admin/reviews/1/publish", headers=headers, json={"outcome": "approved"})
+    assert published.get_json()["status"] == "published_approved"
+
+
+def test_group_decision_requires_member_opinions_and_can_be_returned(client):
+    headers = {"Authorization": "Bearer test-admin-token"}
+    cycle = client.post("/api/admin/review-cycles", headers=headers, json={"name": "退回测试批次", "startDate": "2026-01-01", "submissionDeadline": "2026-07-31"})
+    group = client.post("/api/admin/review-groups", headers=headers, json={"name": "退回测试审核组", "leaderId": 1, "memberIds": [1], "tierScope": ["L2"]})
+    client.post("/api/admin/reviews/1/assignment", headers=headers, json={"cycleId": cycle.get_json()["id"], "groupId": group.get_json()["id"]})
+    blocked = client.post("/api/admin/reviews/1/group-decision", headers=headers, json={"conclusion": "approved", "decision": "缺少意见"})
+    assert blocked.status_code == 409
+    client.post("/api/admin/reviews/1/opinions", headers=headers, json={"conclusion": "approved", "comment": "材料完整"})
+    client.post("/api/admin/reviews/1/group-decision", headers=headers, json={"conclusion": "approved", "decision": "同意通过"})
+    returned = client.post("/api/admin/reviews/1/return-to-group", headers=headers, json={"reason": "请补充有效期说明"})
+    assert returned.status_code == 200
+    workflow = client.get("/api/admin/reviews/1/workflow", headers=headers).get_json()
+    assert workflow["status"] == "returned_to_group"
+    assert workflow["opinionProgress"] == {"submitted": 1, "required": 1}
+
+
+def test_teaching_records_can_be_drafted_filtered_and_referenced_by_review(client):
+    token = _login_as_teacher(client, 1)
+    headers = {"Authorization": f"Bearer {token}"}
+    draft = client.post("/api/mp/teaching-records", headers=headers, json={"taughtOn": "2026-06-15", "status": "draft"})
+    assert draft.status_code == 201
+    submitted = client.put(f"/api/mp/teaching-records/{draft.get_json()['id']}", headers=headers, json={"platform": "上海线下", "title": "晨间流瑜伽", "status": "submitted"})
+    assert submitted.status_code == 200
+    filtered = client.get("/api/mp/teaching-records?month=2026-06", headers=headers)
+    assert filtered.get_json()["total"] == 1
+    review = client.post("/api/mp/reviews", headers=headers, json={"reviewYear": 2026, "files": [], "teachingRecordIds": [draft.get_json()["id"]]})
+    assert review.status_code == 201
 
 
 def test_admin_analytics(client):

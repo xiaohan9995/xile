@@ -40,7 +40,7 @@ for (const [routePath, viewName] of routeContracts) {
 const viewContracts = {
   'Dashboard.vue': ['数据看板', 'fetchDashboardCards'],
   'Teachers.vue': ['教师管理', '新增教师', 'fetchAdminTeachers'],
-  'Reviews.vue': ['年审管理', '待审核', 'submitReviewDecision'],
+  'Reviews.vue': ['年审管理', '待处理', '年审工作台'],
   'Studios.vue': ['工作室管理', '新增工作室', 'fetchAdminStudios'],
   'ImportTeachers.vue': ['uploadImportPreview', 'commitImport'],
   'Analytics.vue': ['数据分析', '等级分布', 'fetchAnalytics'],
@@ -57,7 +57,7 @@ for (const [viewName, requiredTexts] of Object.entries(viewContracts)) {
 }
 
 const appFile = path.join(srcRoot, 'App.vue')
-for (const label of ['首页看板', '教师管理', '年审及审核', '工作室管理', '批量导入', '数据分析', '权限管理', '系统设置']) {
+for (const label of ['本期总览', '年审工作台', '年审资料库', '教师档案', '认证场馆', '批量导入', '数据分析', '账号与权限', '规则设置']) {
   assertIncludes(appFile, label)
 }
 

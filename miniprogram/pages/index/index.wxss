@@ -24,8 +24,8 @@
   inset: 0;
   background: linear-gradient(
     to right,
-    rgba(247, 244, 238, 0.92) 0%,
-    rgba(247, 244, 238, 0) 100%
+    rgba(35, 59, 43, 0.82) 0%,
+    rgba(72, 100, 80, 0.3) 100%
   );
 }
 
@@ -33,26 +33,34 @@
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 4rpx;
-  text-align: center;
+  left: 40rpx;
+  right: 40rpx;
+  bottom: 48rpx;
+  text-align: left;
   z-index: 2;
 }
 
 .home-visual__tagline {
   display: block;
   font-size: 26rpx;
-  color: var(--color-muted);
-  letter-spacing: 4rpx;
+  margin-top: 16rpx;
+  color: rgba(255,255,255,.75);
+  letter-spacing: 3rpx;
 }
+.home-visual__eyebrow { display:block; color:#e8d8b9; font-size:20rpx; font-weight:700; letter-spacing:2rpx; }
+.home-visual__title { display:block; margin-top:14rpx; color:#fff; font-family:"Noto Serif SC", "Songti SC", serif; font-size:48rpx; font-weight:700; line-height:1.25; }
 
 /* ===== Body ===== */
 .home-body {
   padding: 0 32rpx;
-  padding-top: 16rpx;
+  padding-top: 28rpx;
   padding-bottom: 120rpx;
   position: relative;
   z-index: 3;
 }
+.home-intro { display:flex; flex-direction:column; align-items:flex-start; margin:0 4rpx 22rpx; }
+.home-intro .section-title { margin-top:8rpx; }
+.home-intro__note { margin-top:12rpx; color:var(--color-muted); font-size:23rpx; line-height:1.6; }
 
 /* ===== CTA Button ===== */
 .cta-btn {
@@ -60,12 +68,13 @@
   height: 144rpx;
   display: flex;
   align-items: center;
-  gap: 28rpx;
+  gap: 20rpx;
   padding: 0 36rpx;
   background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary));
   border-radius: var(--radius-xl);
   box-sizing: border-box;
 }
+.cta-arrow { color:#fff; font-size:50rpx; font-weight:300; }
 
 .cta-btn:active {
   opacity: 0.92;
@@ -118,14 +127,13 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  height: 152rpx;
+  height: 168rpx;
   padding: 24rpx;
   background: #ffffff;
   border-radius: var(--radius-xl);
   border: 1rpx solid var(--color-line);
   box-sizing: border-box;
 }
-
 .quick-card:active {
   background: #f5f5f3;
   transform: scale(0.98);

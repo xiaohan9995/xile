@@ -1,0 +1,21 @@
+<view class="page-shell teaching-page">
+  <view class="page-header" style="padding-top:{{statusBarHeight}}px;"><view class="page-header__back" bindtap="goBack">‹</view><text class="page-header__title">教学记录</text><view class="page-header__right"></view></view>
+  <view class="content">
+    <view class="intro"><text class="section-eyebrow">TEACHING LOG</text><text class="intro__title">记录每一次教学</text><text class="intro__text">已提交的记录将在本期年审中作为可追溯的教学佐证。</text><button class="btn-primary" bindtap="toggleForm">{{showForm ? '收起表单' : '＋ 新增教学记录'}}</button></view>
+    <picker mode="date" fields="month" value="{{month}}" bindchange="chooseMonth"><view class="field">{{month || '按月份筛选'}}</view></picker>
+    <view wx:if="{{showForm}}" class="form-card">
+      <text class="form-card__title">填写本次教学</text><text class="form-card__hint">日期、平台和活动名称为必填项</text>
+      <picker mode="date" value="{{form.taughtOn}}" bindchange="input" data-field="taughtOn"><view class="field">{{form.taughtOn || '选择教学日期'}}</view></picker>
+      <input class="field" placeholder="教学平台或地区" value="{{form.platform}}" bindinput="input" data-field="platform" />
+      <input class="field" placeholder="课程或活动名称" value="{{form.title}}" bindinput="input" data-field="title" />
+      <input class="field" type="digit" placeholder="时长（小时，可选）" value="{{form.durationHours}}" bindinput="input" data-field="durationHours" />
+      <input class="field" type="number" placeholder="参与人数（可选）" value="{{form.participantCount}}" bindinput="input" data-field="participantCount" />
+      <textarea class="field field--area" placeholder="教学内容说明（可选）" value="{{form.description}}" bindinput="input" data-field="description" />
+      <view class="evidence-row" bindtap="chooseEvidence"><text>＋ 添加佐证附件（可选）</text><text wx:if="{{form.evidenceName}}">{{form.evidenceName}}</text></view>
+      <view class="record-actions"><button class="btn-secondary" bindtap="saveDraft" loading="{{saving}}">保存草稿</button><button class="btn-primary" bindtap="submit" loading="{{saving}}">提交记录</button></view>
+    </view>
+    <view wx:if="{{!loading && records.length === 0}}" class="empty"><text class="empty__mark">01</text><text>暂无教学记录</text><text>第一条记录将成为年审材料的一部分。</text></view>
+    <view wx:for="{{records}}" wx:key="id" class="record-card"><text class="record-index">{{item.status === 'draft' ? '草稿' : '已提交'}}</text><view><text class="record-title">{{item.title}}</text><text class="record-meta">{{item.taughtOn}} · {{item.platform}}</text></view><text wx:if="{{item.durationHours}}" class="record-hours">{{item.durationHours}} 小时</text><text wx:if="{{item.description}}" class="record-description">{{item.description}}</text></view>
+  </view>
+  <tab-bar active="my" />
+</view>

@@ -3,11 +3,12 @@ import uuid
 
 from flask import current_app, request, send_from_directory
 from flask_jwt_extended import get_jwt_identity, jwt_required
+from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 from ...extensions import db, limiter
 from ...models import User
-from ...services.auth_service import AuthError, wx_login, get_phone_number
+from ...services.auth_service import AuthError, password_login, wx_login, get_phone_number
 from . import mp_bp
 
 
@@ -33,6 +34,41 @@ def mp_login():
         "avatarUrl": user.avatar_url,
         "nickname": user.nickname,
     }
+
+
+@mp_bp.post("/auth/password-login")
+@limiter.limit("5 per minute")
+def teacher_password_login():
+    payload = request.get_json(silent=True) or {}
+    username = (payload.get("username") or "").strip()
+    password = payload.get("password") or ""
+    if not username or not password:
+        return {"error": "username and password required"}, 400
+    try:
+        token, user = password_login(username, password)
+    except AuthError as e:
+        return {"error": e.message}, e.status_code
+    return {"token": token, "userId": user.id, "teacherId": user.teacher_id, "role": user.role,
+            "mustChangePassword": user.must_change_password}
+
+
+@mp_bp.post("/auth/change-password")
+@jwt_required()
+def change_password():
+    payload = request.get_json(silent=True) or {}
+    current_password = payload.get("currentPassword") or ""
+    new_password = payload.get("newPassword") or ""
+    if len(new_password) < 8:
+        return {"error": "new password must be at least 8 characters"}, 400
+    user = db.session.get(User, int(get_jwt_identity()))
+    if not user or not user.password_hash:
+        return {"error": "password account not found"}, 404
+    if not user.must_change_password and not check_password_hash(user.password_hash, current_password):
+        return {"error": "current password is incorrect"}, 400
+    user.password_hash = generate_password_hash(new_password, method="pbkdf2:sha256")
+    user.must_change_password = False
+    db.session.commit()
+    return {"ok": True}
 
 
 @mp_bp.post("/auth/bind-phone")
@@ -75,6 +111,7 @@ def auth_me():
         "phone": user.phone,
         "avatarUrl": user.avatar_url,
         "nickname": user.nickname,
+        "mustChangePassword": user.must_change_password,
     }
 
 

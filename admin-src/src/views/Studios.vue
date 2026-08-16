@@ -41,9 +41,9 @@
             <td>{{ studio.address }}</td>
             <td>{{ studio.contact }}</td>
             <td><span :class="['status-pill', studio.status === 'hidden' ? 'hidden' : '']">{{ studio.status === 'hidden' ? '已隐藏' : '正常' }}</span></td>
-            <td>
+            <td class="table-actions">
               <button class="table-action" @click="openEdit(studio)">编辑</button>
-              <button class="icon-danger" @click="handleDelete(studio)">删除</button>
+              <button class="danger-action" @click="handleDelete(studio)">删除</button>
             </td>
           </tr>
         </tbody>
@@ -59,7 +59,7 @@
         </div>
         <div class="form-grid two">
           <label>
-            名称 <em>*</em>
+            <span class="field-label">名称 <em>*</em></span>
             <input v-model="createDraft.name" required placeholder="请输入工作室名称" />
           </label>
           <label>
@@ -107,7 +107,7 @@
         </div>
         <div class="form-grid two">
           <label>
-            名称 <em>*</em>
+            <span class="field-label">名称 <em>*</em></span>
             <input v-model="editDraft.name" required />
           </label>
           <label>

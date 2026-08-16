@@ -5,6 +5,7 @@ import uuid
 
 import requests as http_requests
 from flask_jwt_extended import create_access_token
+from werkzeug.security import check_password_hash
 
 from ..extensions import db
 from ..models import Teacher, User
@@ -50,6 +51,16 @@ def wx_login(code):
             user.role = "teacher" if teacher else "student"
             db.session.commit()
 
+    token = create_access_token(identity=str(user.id), additional_claims={"teacherId": user.teacher_id, "jti": uuid.uuid4().hex})
+    return token, user
+
+
+def password_login(username, password):
+    user = User.query.filter_by(username=username).first()
+    if not user or not user.password_hash or not check_password_hash(user.password_hash, password):
+        raise AuthError("invalid username or password", 401)
+    if user.role != "teacher" or not user.teacher_id:
+        raise AuthError("teacher account is not linked", 403)
     token = create_access_token(identity=str(user.id), additional_claims={"teacherId": user.teacher_id, "jti": uuid.uuid4().hex})
     return token, user
 

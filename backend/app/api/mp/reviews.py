@@ -25,9 +25,10 @@ def submit_review_endpoint():
         return {"error": "invalid reviewYear"}, 400
 
     files = payload.get("files") or []
+    teaching_record_ids = payload.get("teachingRecordIds") or []
 
     try:
-        review = submit_review(user_id, teacher_id, review_year, files)
+        review = submit_review(user_id, teacher_id, review_year, files, teaching_record_ids)
     except ReviewError as e:
         return {"error": e.message}, e.status_code
 
@@ -36,6 +37,7 @@ def submit_review_endpoint():
         "teacherId": review.teacher_id,
         "reviewYear": review.review_year,
         "status": review.status,
+        "submissionVersion": review.submission_version,
         "submittedAt": _datetime_text(review.submitted_at),
         "files": [_file_payload(f) for f in review.files.order_by("id").all()],
     }, 201

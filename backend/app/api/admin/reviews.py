@@ -1,10 +1,10 @@
-from flask import request
+from flask import g, request
 
 from ...extensions import db
 from ...models import AnnualReview, AuditLog
 from ...services.review_service import ReviewError, decide_review
 from ...utils.storage import file_url as _file_url
-from .helpers import require_admin_token, _date_text, _datetime_text
+from .helpers import current_admin_id, require_admin_roles, require_admin_token, _date_text, _datetime_text
 from . import admin_bp
 
 
@@ -16,6 +16,11 @@ def review_queue():
     if status and status != "all":
         query = query.filter_by(status=status)
     reviews = query.order_by(AnnualReview.submitted_at.desc(), AnnualReview.id.desc()).all()
+    if getattr(g, "current_admin_role", None) in ("reviewer", "group_leader"):
+        admin_id = current_admin_id()
+        reviews = [review for review in reviews if review.group and (
+            review.group.leader_id == admin_id or any(member.admin_id == admin_id for member in review.group.members)
+        )]
     items = [
         {
             "id": review.id,
@@ -27,10 +32,16 @@ def review_queue():
             "city": review.teacher.city if review.teacher else None,
             "avatarUrl": review.teacher.avatar_url if review.teacher else None,
             "reviewYear": review.review_year,
+            "cycleId": review.cycle_id,
+            "cycleName": review.cycle.name if review.cycle else None,
+            "groupId": review.group_id,
+            "groupName": review.group.name if review.group else None,
             "status": review.status,
             "submittedAt": _datetime_text(review.submitted_at),
             "reviewedAt": _datetime_text(review.reviewed_at),
             "reviewerComment": review.reviewer_comment,
+            "groupDecision": review.group_decision,
+            "publishedAt": _datetime_text(review.published_at),
             "previousValidUntil": _date_text(review.previous_valid_until),
             "nextValidUntil": _date_text(review.next_valid_until),
             "files": [
@@ -52,22 +63,6 @@ def review_queue():
 
 @admin_bp.post("/reviews/<int:review_id>/decision")
 @require_admin_token
+@require_admin_roles("admin", "super_admin")
 def review_decision(review_id):
-    payload = request.get_json(silent=True) or {}
-    status = payload.get("status")
-    comment = payload.get("comment", "")
-
-    try:
-        review = decide_review(review_id, status, comment)
-    except ReviewError as e:
-        return {"error": e.message}, e.status_code
-
-    db.session.add(AuditLog(admin_id=1, action=f"review_{review.status}", target_type="annual_review", target_id=review.id))
-    db.session.commit()
-
-    return {
-        "id": review.id,
-        "status": review.status,
-        "reviewerComment": review.reviewer_comment,
-        "reviewedAt": _datetime_text(review.reviewed_at),
-    }
+    return {"error": "direct decisions are retired; use the collaborative review workflow"}, 410
