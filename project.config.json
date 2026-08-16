@@ -31,6 +31,7 @@
     "include": []
   },
   "miniprogramRoot": "miniprogram/",
-  "appid": "wx203da898ab6e40f2",
-  "editorSetting": {}
+  "appid": "wxf34d7e608bc79d85",
+  "editorSetting": {},
+  "isGameTourist": false
 }

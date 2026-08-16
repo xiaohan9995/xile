@@ -15,8 +15,9 @@
         <thead>
           <tr>
             <th>管理员</th>
-            <th>角色</th>
+            <th><span class="role-column-title">角色<button class="role-help" type="button" aria-label="查看角色权限范围">?<span class="role-tooltip"><b>角色权限说明</b><i>超级管理员：账号、规则与全部管理权限</i><i>审核管理员：批次、分配、退回与发布</i><i>审核组长：汇总组内意见、提交集体决议</i><i>审核成员：仅提交获分配教师的个人意见</i></span></button></span></th>
             <th>创建时间</th>
+            <th>操作</th>
           </tr>
         </thead>
         <tbody>
@@ -35,9 +36,20 @@
               </span>
             </td>
             <td>{{ member.createdAt || '—' }}</td>
+            <td class="admin-actions"><button v-if="canEditAdmin(member)" class="text-btn" @click="openAdminRoleModal(member)">编辑角色</button><span v-else-if="member.id === auth.admin?.id" class="admin-self-hint">本人</span><span v-else class="admin-self-hint">—</span></td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div v-if="showAdminRoleModal" class="modal-backdrop" @click.self="showAdminRoleModal = false">
+      <div class="admin-modal">
+        <div class="modal-head"><h2>编辑管理员角色</h2><button @click="showAdminRoleModal = false">×</button></div>
+        <p class="modal-desc">正在设置 <strong>{{ adminRoleForm.username }}</strong> 的后台权限。</p>
+        <label>角色<select v-model="adminRoleForm.role"><option value="admin">审核管理员</option><option value="reviewer">审核成员</option><option value="group_leader">审核组长</option><option value="super_admin">超级管理员</option></select></label>
+        <p class="role-modal-hint">角色变更后，该账号下次登录将看到对应的工作台与功能范围。</p>
+        <div class="modal-actions"><button class="sync-btn" @click="showAdminRoleModal = false">取消</button><button class="primary-btn" @click="handleUpdateAdminRole">保存角色</button></div>
+      </div>
     </div>
 
     <!-- Mini program users -->
@@ -150,18 +162,24 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { createTeacherAccount, fetchPermissions, inviteAdmin, fetchUsers, updateUserRole, fetchAdminTeachers } from '../api/adminData'
+import { computed, ref, onMounted } from 'vue'
+import { createTeacherAccount, fetchPermissions, inviteAdmin, fetchUsers, updateAdminRole, updateUserRole, fetchAdminTeachers } from '../api/adminData'
+import { useAuthStore } from '../stores/auth'
 
 const members = ref([])
 const users = ref([])
 const teacherOptions = ref([])
 const showInvite = ref(false)
 const showRoleModal = ref(false)
+const showAdminRoleModal = ref(false)
 const inviteForm = ref({ username: '', password: '', role: 'admin' })
 const roleForm = ref({ userId: null, role: 'student', teacherId: null, currentRole: '', username: '', password: '' })
+const adminRoleForm = ref({ id: null, username: '', role: '' })
+const auth = useAuthStore()
+const isSuperAdmin = computed(() => auth.admin?.role === 'super_admin')
 
 const adminRoleLabel = (role) => ({ super_admin: '超级管理员', admin: '普通管理员', reviewer: '审核成员', group_leader: '审核组长' }[role] || role)
+const canEditAdmin = (member) => isSuperAdmin.value && member.id !== auth.admin?.id
 
 onMounted(async () => {
   await Promise.all([loadMembers(), loadUsers(), loadTeachers()])
@@ -196,6 +214,21 @@ function openRoleModal(user) {
     password: '',
   }
   showRoleModal.value = true
+}
+
+function openAdminRoleModal(member) {
+  adminRoleForm.value = { id: member.id, username: member.username, role: member.role }
+  showAdminRoleModal.value = true
+}
+
+async function handleUpdateAdminRole() {
+  try {
+    await updateAdminRole(adminRoleForm.value.id, adminRoleForm.value.role)
+    showAdminRoleModal.value = false
+    await loadMembers()
+  } catch (e) {
+    alert(e.response?.data?.error || '角色更新失败')
+  }
 }
 
 async function handleSetRole() {
@@ -278,6 +311,16 @@ async function handleInvite() {
   color: #999;
   padding: 24px;
 }
+.role-column-title { display:inline-flex; align-items:center; gap:6px; }
+.role-help { position:relative; display:inline-grid; width:17px; height:17px; place-items:center; padding:0; border:1px solid #c8d2c9; border-radius:50%; color:var(--brand-green); background:#fff; font-size:11px; font-weight:800; cursor:help; }
+.role-tooltip { position:absolute; z-index:8; top:calc(100% + 8px); left:-16px; display:none; width:250px; padding:13px; border:1px solid var(--line-strong); border-radius:10px; color:var(--ink); background:#fff; box-shadow:0 12px 28px rgba(41,56,44,.16); font-size:12px; font-weight:400; line-height:1.6; text-align:left; }
+.role-tooltip::before { content:""; position:absolute; top:-5px; left:20px; width:8px; height:8px; border-top:1px solid var(--line-strong); border-left:1px solid var(--line-strong); background:#fff; transform:rotate(45deg); }
+.role-tooltip b,.role-tooltip i { position:relative; display:block; font-style:normal; }
+.role-tooltip b { margin-bottom:5px; font-size:12px; }
+.role-help:hover .role-tooltip,.role-help:focus-visible .role-tooltip { display:block; }
+.admin-actions { min-width:90px; }
+.admin-self-hint { color:var(--muted-light); font-size:12px; }
+.role-modal-hint { color:var(--muted); font-size:12px; line-height:1.6; }
 
 .modal-desc {
   margin: 0 0 12px;

@@ -222,6 +222,24 @@ def invite_admin():
     return {"id": admin.id, "username": admin.username, "role": admin.role}, 201
 
 
+@admin_bp.put("/permissions/<int:admin_id>/role")
+@require_admin_token
+@require_admin_roles("super_admin")
+def update_admin_role(admin_id):
+    admin = db.session.get(AdminUser, admin_id)
+    payload = request.get_json(silent=True) or {}
+    role = (payload.get("role") or "").strip()
+    if admin is None:
+        return {"error": "admin user not found"}, 404
+    if admin.id == current_admin_id():
+        return {"error": "cannot change your own super administrator role"}, 409
+    if role not in ("admin", "reviewer", "group_leader", "super_admin"):
+        return {"error": "invalid admin role"}, 400
+    admin.role = role
+    db.session.commit()
+    return {"id": admin.id, "username": admin.username, "role": admin.role}
+
+
 @admin_bp.post("/teacher-accounts")
 @require_admin_token
 @require_admin_roles("admin", "super_admin")

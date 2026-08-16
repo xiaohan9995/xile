@@ -1,6 +1,9 @@
 import pytest
 
 from backend.app import create_app
+from backend.app.extensions import db
+from backend.app.models import SystemConfig, TeacherTier
+from backend.app.seed import ensure_system_defaults
 
 
 @pytest.fixture()
@@ -25,6 +28,29 @@ def test_health_endpoint_reports_service_status(client):
     assert payload["service"] == "xile-yoga-certification"
     assert payload["status"] == "ok"
     assert payload["db"] == "ok"
+
+
+def test_production_reference_data_initialization_is_idempotent():
+    app = create_app(
+        {
+            "TESTING": True,
+            "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
+            "ADMIN_DEV_TOKEN": "test-admin-token",
+        }
+    )
+    with app.app_context():
+        db.create_all()
+        ensure_system_defaults()
+        assert TeacherTier.query.count() == 6
+        assert SystemConfig.query.count() == 2
+
+        l1 = TeacherTier.query.filter_by(code="L1").first()
+        l1.review_cycle_years = 4
+        db.session.commit()
+        ensure_system_defaults()
+
+        assert TeacherTier.query.count() == 6
+        assert TeacherTier.query.filter_by(code="L1").first().review_cycle_years == 4
 
 
 def test_mp_stats_overview_returns_counts(client):
@@ -485,6 +511,32 @@ def test_admin_permissions_list(client):
     payload = response.get_json()
     assert payload["total"] >= 1
     assert payload["items"][0]["username"] == "admin"
+
+
+def test_super_admin_can_update_another_admin_role_but_not_their_own(client):
+    headers = {"Authorization": "Bearer test-admin-token"}
+    created = client.post(
+        "/api/admin/permissions/invite",
+        headers=headers,
+        json={"username": "reviewer-one", "password": "reviewer-pass", "role": "reviewer"},
+    )
+    assert created.status_code == 201
+    admin_id = created.get_json()["id"]
+
+    updated = client.put(
+        f"/api/admin/permissions/{admin_id}/role",
+        headers=headers,
+        json={"role": "group_leader"},
+    )
+    assert updated.status_code == 200
+    assert updated.get_json()["role"] == "group_leader"
+
+    self_update = client.put(
+        "/api/admin/permissions/1/role",
+        headers=headers,
+        json={"role": "reviewer"},
+    )
+    assert self_update.status_code == 409
 
 
 def test_admin_user_list_and_role_update(client):

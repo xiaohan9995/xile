@@ -39,7 +39,7 @@
                 <RouterLink to="/import"><i>06</i>批量导入</RouterLink>
                 <RouterLink to="/analytics"><i>07</i>数据分析</RouterLink>
                 <RouterLink to="/permissions"><i>08</i>账号与权限</RouterLink>
-                <RouterLink to="/settings"><i>09</i>规则设置</RouterLink>
+                <RouterLink to="/settings"><i>09</i>认证规则</RouterLink>
               </template>
             </nav>
           </div>

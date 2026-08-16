@@ -5,6 +5,9 @@ set -e
 cd /app
 flask db upgrade 2>/dev/null || python -c "from app import create_app; from app.extensions import db; app=create_app(); app.app_context().push(); db.create_all()"
 
+# Create only required reference data (tiers and system defaults); no demo data.
+python /app/init_production_data.py
+
 # Start nginx in background
 nginx -g 'daemon on;'
 

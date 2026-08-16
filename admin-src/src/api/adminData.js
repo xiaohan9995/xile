@@ -170,6 +170,10 @@ export async function inviteAdmin(data) {
   return api.post('/permissions/invite', data)
 }
 
+export async function updateAdminRole(adminId, role) {
+  return api.put(`/permissions/${adminId}/role`, { role })
+}
+
 export async function fetchUsers() {
   const payload = await api.get('/users')
   return payload.items || []

@@ -2,6 +2,16 @@ import os
 from datetime import timedelta
 
 
+def _database_uri():
+    """Use the bundled PyMySQL driver when a generic MySQL URI is supplied."""
+    uri = os.getenv("MYSQL_DATABASE_URI", "sqlite:///xile.db")
+    if uri.startswith("mysql://"):
+        return f"mysql+pymysql://{uri.removeprefix('mysql://')}"
+    if uri.startswith("mysql+mysqldb://"):
+        return f"mysql+pymysql://{uri.removeprefix('mysql+mysqldb://')}"
+    return uri
+
+
 class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=8)
@@ -9,7 +19,7 @@ class Config:
 
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-jwt-secret")
-    SQLALCHEMY_DATABASE_URI = os.getenv("MYSQL_DATABASE_URI", "sqlite:///xile.db")
+    SQLALCHEMY_DATABASE_URI = _database_uri()
     ADMIN_DEV_TOKEN = os.getenv("ADMIN_DEV_TOKEN")
 
 

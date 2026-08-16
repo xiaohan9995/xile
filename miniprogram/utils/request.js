@@ -6,7 +6,7 @@ const ENV_CONFIG = {
     useCloudContainer: false,
   },
   prod: {
-    env: '',
+    env: 'xile-yoga-d4g2za8xi82a16810',
     serviceName: 'xile-yoga',
     useCloudContainer: true,
   },
