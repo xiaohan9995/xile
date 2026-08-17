@@ -3,6 +3,7 @@ from logging.config import fileConfig
 
 from flask import current_app
 from alembic import context
+import sqlalchemy as sa
 
 config = context.config
 fileConfig(config.config_file_name)
@@ -43,9 +44,26 @@ def run_migrations_offline():
 def run_migrations_online():
     connectable = get_engine()
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=get_metadata())
-        with context.begin_transaction():
-            context.run_migrations()
+        # Cloud Hosting can start more than one container for a new revision.
+        # MySQL DDL is non-transactional, so concurrent initial migrations can
+        # leave a table behind before Alembic records the revision. Serialize
+        # the complete migration run on MySQL with a connection-scoped lock.
+        lock_name = "xile_yoga_alembic_migration"
+        lock_acquired = False
+        if connection.dialect.name in {"mysql", "mariadb"}:
+            lock_acquired = connection.execute(
+                sa.text("SELECT GET_LOCK(:name, :timeout)"),
+                {"name": lock_name, "timeout": 120},
+            ).scalar() == 1
+            if not lock_acquired:
+                raise RuntimeError("Timed out waiting for the database migration lock")
+        try:
+            context.configure(connection=connection, target_metadata=get_metadata())
+            with context.begin_transaction():
+                context.run_migrations()
+        finally:
+            if lock_acquired:
+                connection.execute(sa.text("SELECT RELEASE_LOCK(:name)"), {"name": lock_name})
 
 
 if context.is_offline_mode():

@@ -8,7 +8,7 @@ from flask_jwt_extended import create_access_token
 from werkzeug.security import check_password_hash
 
 from ..extensions import db
-from ..models import Teacher, User
+from ..models import Teacher, TeacherDetail, User
 
 _wx_token_cache = {"token": None, "expires_at": 0}
 
@@ -104,6 +104,21 @@ def get_phone_number(phone_code):
         return phone_info.get("purePhoneNumber") or phone_info.get("phoneNumber")
     else:
         return "13800001111"
+
+
+def link_user_to_teacher_by_phone(user, phone_number):
+    """Associate an authenticated WeChat user with the administrator's teacher record."""
+    detail = TeacherDetail.query.filter_by(phone=phone_number).first()
+    if detail is None:
+        return None
+
+    teacher = db.session.get(Teacher, detail.teacher_id)
+    if teacher is None:
+        return None
+
+    user.teacher_id = teacher.id
+    user.role = "teacher"
+    return teacher
 
 
 def _get_or_create_user(openid):

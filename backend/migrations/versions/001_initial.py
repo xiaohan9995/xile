@@ -13,8 +13,15 @@ branch_labels = None
 depends_on = None
 
 
+def create_table_if_missing(name, *columns, **kwargs):
+    """Make the first migration safe to resume after non-transactional MySQL DDL."""
+    if sa.inspect(op.get_bind()).has_table(name):
+        return None
+    return op.create_table(name, *columns, **kwargs)
+
+
 def upgrade():
-    op.create_table(
+    create_table_if_missing(
         "teacher_tiers",
         sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("code", sa.String(4), unique=True, nullable=False),
@@ -24,7 +31,7 @@ def upgrade():
         sa.Column("sort_order", sa.Integer(), server_default="0"),
     )
 
-    op.create_table(
+    create_table_if_missing(
         "teachers",
         sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("teacher_no", sa.String(32), unique=True, nullable=False, index=True),
@@ -42,7 +49,7 @@ def upgrade():
         sa.Column("updated_at", sa.DateTime(), server_default=sa.func.now()),
     )
 
-    op.create_table(
+    create_table_if_missing(
         "teacher_details",
         sa.Column("teacher_id", sa.Integer(), sa.ForeignKey("teachers.id"), primary_key=True),
         sa.Column("phone", sa.String(20)),
@@ -52,7 +59,7 @@ def upgrade():
         sa.Column("extra_json", sa.Text()),
     )
 
-    op.create_table(
+    create_table_if_missing(
         "admin_users",
         sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("username", sa.String(32), unique=True, nullable=False),
@@ -61,7 +68,7 @@ def upgrade():
         sa.Column("created_at", sa.DateTime(), server_default=sa.func.now()),
     )
 
-    op.create_table(
+    create_table_if_missing(
         "annual_reviews",
         sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("teacher_id", sa.Integer(), sa.ForeignKey("teachers.id"), nullable=False, index=True),
@@ -76,7 +83,7 @@ def upgrade():
         sa.UniqueConstraint("teacher_id", "review_year", name="uq_review_teacher_year"),
     )
 
-    op.create_table(
+    create_table_if_missing(
         "review_files",
         sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("review_id", sa.Integer(), sa.ForeignKey("annual_reviews.id"), nullable=False, index=True),
@@ -87,7 +94,7 @@ def upgrade():
         sa.Column("created_at", sa.DateTime(), server_default=sa.func.now()),
     )
 
-    op.create_table(
+    create_table_if_missing(
         "studios",
         sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("name", sa.String(64), nullable=False),
@@ -106,7 +113,7 @@ def upgrade():
         sa.Column("updated_at", sa.DateTime(), server_default=sa.func.now()),
     )
 
-    op.create_table(
+    create_table_if_missing(
         "users",
         sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("openid", sa.String(64), unique=True, nullable=False, index=True),
@@ -118,7 +125,7 @@ def upgrade():
         sa.Column("created_at", sa.DateTime(), server_default=sa.func.now()),
     )
 
-    op.create_table(
+    create_table_if_missing(
         "import_batches",
         sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("admin_id", sa.Integer(), sa.ForeignKey("admin_users.id"), nullable=False),
@@ -129,7 +136,7 @@ def upgrade():
         sa.Column("created_at", sa.DateTime(), server_default=sa.func.now()),
     )
 
-    op.create_table(
+    create_table_if_missing(
         "import_errors",
         sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("batch_id", sa.Integer(), sa.ForeignKey("import_batches.id"), nullable=False, index=True),
@@ -138,7 +145,7 @@ def upgrade():
         sa.Column("error_message", sa.String(256)),
     )
 
-    op.create_table(
+    create_table_if_missing(
         "audit_logs",
         sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("admin_id", sa.Integer(), sa.ForeignKey("admin_users.id"), nullable=False, index=True),
@@ -149,7 +156,7 @@ def upgrade():
         sa.Column("created_at", sa.DateTime(), server_default=sa.func.now()),
     )
 
-    op.create_table(
+    create_table_if_missing(
         "system_configs",
         sa.Column("key", sa.String(64), primary_key=True),
         sa.Column("value", sa.Text(), nullable=False, server_default=""),

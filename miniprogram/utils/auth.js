@@ -8,6 +8,26 @@ const PHONE_BOUND_KEY = 'phoneBound';
 const AVATAR_URL_KEY = 'userAvatarUrl';
 const NICKNAME_KEY = 'userNickname';
 
+const applySession = (data) => {
+  wx.setStorageSync(TOKEN_KEY, data.token);
+  wx.setStorageSync(USER_ID_KEY, data.userId);
+  wx.setStorageSync(USER_ROLE_KEY, data.role || 'student');
+  wx.setStorageSync(PHONE_BOUND_KEY, !!data.phoneBound);
+  if (data.avatarUrl) wx.setStorageSync(AVATAR_URL_KEY, data.avatarUrl);
+  if (data.nickname) wx.setStorageSync(NICKNAME_KEY, data.nickname);
+  if (data.teacherId) wx.setStorageSync(TEACHER_ID_KEY, data.teacherId);
+  else wx.removeStorageSync(TEACHER_ID_KEY);
+
+  const app = typeof getApp === 'function' ? getApp() : null;
+  if (app && app.globalData) {
+    app.globalData.teacherId = data.teacherId || null;
+    app.globalData.userId = data.userId || null;
+    app.globalData.phoneBound = !!data.phoneBound;
+    app.globalData.avatarUrl = data.avatarUrl || '';
+    app.globalData.nickname = data.nickname || '';
+  }
+};
+
 const loginWithWechat = () => {
   return new Promise((resolve, reject) => {
     wx.login({
@@ -23,27 +43,7 @@ const loginWithWechat = () => {
           data: { code },
         })
           .then((data) => {
-            wx.setStorageSync(TOKEN_KEY, data.token);
-            wx.setStorageSync(USER_ID_KEY, data.userId);
-            wx.setStorageSync(USER_ROLE_KEY, data.role);
-            wx.setStorageSync(PHONE_BOUND_KEY, !!data.phoneBound);
-            if (data.avatarUrl) {
-              wx.setStorageSync(AVATAR_URL_KEY, data.avatarUrl);
-            }
-            if (data.nickname) {
-              wx.setStorageSync(NICKNAME_KEY, data.nickname);
-            }
-            if (data.teacherId) {
-              wx.setStorageSync(TEACHER_ID_KEY, data.teacherId);
-            }
-            const app = getApp();
-            if (app && app.globalData) {
-              app.globalData.teacherId = data.teacherId;
-              app.globalData.userId = data.userId;
-              app.globalData.phoneBound = !!data.phoneBound;
-              app.globalData.avatarUrl = data.avatarUrl || '';
-              app.globalData.nickname = data.nickname || '';
-            }
+            applySession(data);
             resolve(data);
           })
           .catch(reject);
@@ -58,18 +58,7 @@ const loginWithPassword = (username, password) => request({
   method: 'POST',
   data: { username, password },
 }).then((data) => {
-  wx.setStorageSync(TOKEN_KEY, data.token);
-  wx.setStorageSync(USER_ID_KEY, data.userId);
-  wx.setStorageSync(USER_ROLE_KEY, data.role);
-  wx.setStorageSync(TEACHER_ID_KEY, data.teacherId);
-  // Password accounts have already been verified by the administrator.
-  wx.setStorageSync(PHONE_BOUND_KEY, true);
-  const app = getApp();
-  if (app && app.globalData) {
-    app.globalData.teacherId = data.teacherId;
-    app.globalData.userId = data.userId;
-    app.globalData.phoneBound = true;
-  }
+  applySession({ ...data, phoneBound: true });
   return data;
 });
 
@@ -132,23 +121,29 @@ const setPhoneBound = (value) => {
   }
 };
 
+const setTeacherIdentity = (teacherId, role) => {
+  if (teacherId) wx.setStorageSync(TEACHER_ID_KEY, teacherId);
+  else wx.removeStorageSync(TEACHER_ID_KEY);
+  wx.setStorageSync(USER_ROLE_KEY, role || (teacherId ? 'teacher' : 'student'));
+  const app = typeof getApp === 'function' ? getApp() : null;
+  if (app && app.globalData) app.globalData.teacherId = teacherId || null;
+};
+
+const loginUrl = (pagePath) => `/packageTeacher/login/login?returnUrl=${encodeURIComponent(pagePath)}`;
+
 const requireAuth = (pagePath) => {
   const app = typeof getApp === 'function' ? getApp() : null;
   if (app && app.globalData && !app.globalData.loginReady) {
     const promise = app.globalData.loginPromise || Promise.resolve();
     promise.then(() => {
-      if (!isLoggedIn() || !isPhoneBound()) {
-        wx.redirectTo({
-          url: `/packageTeacher/account-login/account-login?returnUrl=${encodeURIComponent(pagePath)}`,
-        });
+      if (!isLoggedIn() || !isPhoneBound() || !isTeacher()) {
+        wx.redirectTo({ url: loginUrl(pagePath) });
       }
     });
     return false;
   }
-  if (!isLoggedIn() || !isPhoneBound()) {
-    wx.redirectTo({
-      url: `/packageTeacher/account-login/account-login?returnUrl=${encodeURIComponent(pagePath)}`,
-    });
+  if (!isLoggedIn() || !isPhoneBound() || !isTeacher()) {
+    wx.redirectTo({ url: loginUrl(pagePath) });
     return false;
   }
   return true;
@@ -178,6 +173,8 @@ module.exports = {
   isLoggedIn,
   isPhoneBound,
   setPhoneBound,
+  setTeacherIdentity,
+  loginUrl,
   requireAuth,
   logout,
 };
