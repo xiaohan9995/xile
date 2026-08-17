@@ -159,7 +159,9 @@ def upgrade():
     create_table_if_missing(
         "system_configs",
         sa.Column("key", sa.String(64), primary_key=True),
-        sa.Column("value", sa.Text(), nullable=False, server_default=""),
+        # Older Tencent Cloud MySQL versions reject DEFAULT values on TEXT.
+        # SystemConfig's ORM-level default supplies an empty value when needed.
+        sa.Column("value", sa.Text(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), server_default=sa.func.now()),
     )
 
