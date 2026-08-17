@@ -226,6 +226,26 @@ def test_mp_auth_login_dev_mode(client):
     assert "token" in payload
 
 
+def test_mp_phone_binding_links_matching_teacher_record(client, monkeypatch):
+    from backend.app.api.mp import auth as mp_auth
+
+    monkeypatch.setattr(mp_auth, "get_phone_number", lambda _code: "13800000000")
+    login = client.post("/api/mp/auth/login", json={"code": "new-wechat-user"})
+    assert login.status_code == 200
+
+    response = client.post(
+        "/api/mp/auth/bind-phone",
+        json={"code": "phone-code"},
+        headers={"Authorization": f"Bearer {login.get_json()['token']}"},
+    )
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert payload["matchedTeacher"] is True
+    assert payload["teacherId"] == 1
+    assert payload["role"] == "teacher"
+
+
 def test_admin_dashboard_requires_bearer_token(client):
     response = client.get("/api/admin/stats/dashboard")
 

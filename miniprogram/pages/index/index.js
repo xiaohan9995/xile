@@ -55,8 +55,8 @@ Page({
   },
 
   goMyCert() {
-    if (!auth.isLoggedIn() || !auth.isPhoneBound()) {
-      wx.navigateTo({ url: '/packageTeacher/account-login/account-login?returnUrl=' + encodeURIComponent('/packageTeacher/home/home') });
+    if (!auth.isLoggedIn() || !auth.isPhoneBound() || !auth.isTeacher()) {
+      wx.navigateTo({ url: auth.loginUrl('/packageTeacher/home/home') });
       return;
     }
     wx.navigateTo({ url: '/packageTeacher/home/home' });

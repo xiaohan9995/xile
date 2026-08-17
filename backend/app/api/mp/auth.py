@@ -8,7 +8,13 @@ from werkzeug.utils import secure_filename
 
 from ...extensions import db, limiter
 from ...models import User
-from ...services.auth_service import AuthError, password_login, wx_login, get_phone_number
+from ...services.auth_service import (
+    AuthError,
+    get_phone_number,
+    link_user_to_teacher_by_phone,
+    password_login,
+    wx_login,
+)
 from . import mp_bp
 
 
@@ -90,10 +96,20 @@ def bind_phone():
     except AuthError as e:
         return {"error": e.message}, e.status_code
 
+    existing_user = User.query.filter(User.phone == phone_number, User.id != user.id).first()
+    if existing_user:
+        return {"error": "该手机号已绑定其他微信账号，请联系管理员处理"}, 409
+
     user.phone = phone_number
+    teacher = link_user_to_teacher_by_phone(user, phone_number)
     db.session.commit()
 
-    return {"phone": phone_number}
+    return {
+        "phone": phone_number,
+        "teacherId": teacher.id if teacher else None,
+        "role": user.role,
+        "matchedTeacher": bool(teacher),
+    }
 
 
 @mp_bp.get("/auth/me")

@@ -1,82 +1,40 @@
-const { uploadFile } = require('../../utils/request');
 const { request } = require('../../utils/request');
 const auth = require('../../utils/auth');
-
-const app = getApp();
 
 Page({
   data: {
     loading: false,
     loginReady: false,
     returnUrl: '',
-    step: 1,
-    avatarTempPath: '',
-    nickname: '',
+    step: 0,
   },
 
   onLoad(options) {
     this.setData({
       returnUrl: decodeURIComponent(options.returnUrl || '/packageTeacher/home/home'),
     });
-    if (!auth.isLoggedIn()) {
-      this.setData({ loading: true });
-      auth.loginWithWechat()
-        .then((data) => {
-          this.setData({ loginReady: true, loading: false });
-          if (data.avatarUrl && data.phoneBound) {
-            wx.reLaunch({ url: this.data.returnUrl });
-          } else if (data.avatarUrl) {
-            this.setData({ step: 2 });
-          }
-        })
-        .catch(() => {
-          wx.showToast({ title: '登录失败，请重试', icon: 'none' });
-          this.setData({ loading: false, loginReady: true });
-        });
-    } else {
-      this.setData({ loginReady: true });
-      if (auth.getAvatarUrl() && auth.isPhoneBound()) {
-        wx.reLaunch({ url: this.data.returnUrl });
-      } else if (auth.getAvatarUrl()) {
-        this.setData({ step: 2 });
-      }
+    this.setData({ loginReady: true });
+    if (auth.isLoggedIn() && auth.isPhoneBound() && auth.isTeacher()) {
+      wx.reLaunch({ url: this.data.returnUrl });
+    } else if (auth.isLoggedIn() && !auth.isPhoneBound()) {
+      this.setData({ step: 2 });
+    } else if (auth.isLoggedIn()) {
+      this.setData({ step: 3 });
     }
   },
 
-  onChooseAvatar(e) {
-    const { avatarUrl } = e.detail;
-    if (avatarUrl) {
-      this.setData({ avatarTempPath: avatarUrl });
-    }
-  },
-
-  onNicknameInput(e) {
-    this.setData({ nickname: e.detail.value || '' });
-  },
-
-  async onNextStep() {
-    if (!this.data.avatarTempPath) {
-      wx.showToast({ title: '请选择头像', icon: 'none' });
-      return;
-    }
-    if (!this.data.nickname.trim()) {
-      wx.showToast({ title: '请填写昵称', icon: 'none' });
-      return;
-    }
-
+  async onWechatLogin() {
     this.setData({ loading: true });
     try {
-      const res = await uploadFile({
-        url: '/api/mp/auth/update-profile',
-        filePath: this.data.avatarTempPath,
-        name: 'avatar',
-        formData: { nickname: this.data.nickname.trim() },
-      });
-      auth.setAvatarUrl(res.avatarUrl);
-      auth.setNickname(res.nickname);
-      this.setData({ step: 2, loading: false });
+      const data = await auth.loginWithWechat();
+      if (data.phoneBound && data.teacherId) {
+        wx.reLaunch({ url: this.data.returnUrl });
+        return;
+      }
+      this.setData({ step: data.phoneBound ? 3 : 2 });
     } catch (err) {
-      wx.showToast({ title: '保存失败，请重试', icon: 'none' });
+      wx.showToast({ title: '微信登录失败，请重试', icon: 'none' });
+    } finally {
       this.setData({ loading: false });
     }
   },
@@ -94,8 +52,14 @@ Page({
       method: 'POST',
       data: { code },
     })
-      .then(() => {
+      .then((data) => {
         auth.setPhoneBound(true);
+        auth.setTeacherIdentity(data.teacherId, data.role);
+        if (!data.matchedTeacher) {
+          this.setData({ step: 3 });
+          wx.showToast({ title: '未匹配到教师档案', icon: 'none' });
+          return;
+        }
         wx.showToast({ title: '验证成功', icon: 'success' });
         setTimeout(() => {
           wx.reLaunch({ url: this.data.returnUrl });
@@ -111,5 +75,11 @@ Page({
 
   onSkip() {
     wx.navigateBack({ fail: () => wx.reLaunch({ url: '/pages/index/index' }) });
+  },
+
+  goPasswordLogin() {
+    wx.navigateTo({
+      url: `/packageTeacher/account-login/account-login?returnUrl=${encodeURIComponent(this.data.returnUrl)}`,
+    });
   },
 });

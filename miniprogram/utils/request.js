@@ -102,7 +102,9 @@ const request = (options) => {
         if (!silent) {
           wx.showToast({ title: errMsg, icon: 'none', duration: 2000 });
         }
-        fallback();
+        // A business error (for example, a failed credential check) must reach
+        // the caller unchanged. Mock data is only for unavailable dev servers.
+        reject(new Error(errMsg));
       }
     };
 

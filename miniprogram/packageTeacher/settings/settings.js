@@ -103,6 +103,7 @@ Page({
       .then((res) => {
         this.setData({ phone: res.phone });
         auth.setPhoneBound(true);
+        auth.setTeacherIdentity(res.teacherId, res.role);
         wx.showToast({ title: '手机号已更新', icon: 'success' });
       })
       .catch(() => {
