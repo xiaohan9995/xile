@@ -1,248 +1,177 @@
-/* ===== Login Page ===== */
+page {
+  padding-bottom: 0;
+  background: var(--color-bg);
+}
+
 .login-page {
   min-height: 100vh;
-  background: var(--color-bg);
-  display: flex;
-  flex-direction: column;
+  background:
+    radial-gradient(circle at 86% 8%, rgba(137, 101, 43, 0.14), transparent 30%),
+    linear-gradient(180deg, #f3f7f3 0%, #f8faf7 56%, #f5f7f4 100%);
 }
 
-/* ===== Visual Header ===== */
-.login-visual {
-  position: relative;
-  height: 560rpx;
-  overflow: hidden;
-  background: linear-gradient(145deg, #31503d 0%, #6f826f 55%, #a9905c 150%);
+.login-shell {
+  padding: 116rpx 40rpx calc(80rpx + env(safe-area-inset-bottom));
 }
 
-.login-visual__mask {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 18% 10%, rgba(255, 255, 255, 0.2), transparent 32%), radial-gradient(circle at 85% 85%, rgba(237, 216, 162, 0.27), transparent 35%);
-}
-
-.login-visual__brand {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 100rpx;
+.login-brand {
   display: flex;
   flex-direction: column;
   align-items: center;
-  z-index: 2;
+  margin-bottom: 56rpx;
 }
 
-.login-visual__name {
-  font-size: 52rpx;
+.login-brand__avatar {
+  width: 132rpx;
+  height: 132rpx;
+  border-radius: 36rpx;
+  box-shadow: var(--shadow-elevated);
+}
+
+.login-brand__eyebrow {
+  display: block;
+  margin-top: 26rpx;
+  color: var(--color-gold);
+  font-size: 20rpx;
   font-weight: 700;
-  color: #ffffff;
-  letter-spacing: 8rpx;
-  font-family: "Noto Serif SC", serif;
+  letter-spacing: 4rpx;
 }
 
-.login-visual__tagline {
-  margin-top: 16rpx;
-  font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.75);
-  letter-spacing: 6rpx;
+.login-brand__name {
+  display: block;
+  margin-top: 10rpx;
+  color: var(--color-text);
+  font-size: 44rpx;
+  font-weight: 800;
+  letter-spacing: 2rpx;
 }
 
-/* ===== Form Area ===== */
-.login-form-area {
-  flex: 1;
-  margin-top: -60rpx;
-  padding: 0 40rpx;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  z-index: 3;
+.login-brand__note {
+  display: block;
+  margin-top: 8rpx;
+  color: var(--color-muted);
+  font-size: 25rpx;
 }
 
-/* ===== Card ===== */
 .login-card {
-  width: 100%;
-  padding: 56rpx 44rpx 48rpx;
-  background: #ffffff;
-  border-radius: 28rpx;
-  box-shadow: 0 8rpx 40rpx rgba(0, 0, 0, 0.06);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  padding: 48rpx 36rpx 40rpx;
+  background: var(--color-card);
+  border: 1rpx solid rgba(66, 109, 88, 0.1);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-elevated);
+}
+
+.login-card__eyebrow {
+  display: block;
+  color: var(--color-gold);
+  font-size: 22rpx;
+  font-weight: 700;
+  letter-spacing: 2rpx;
 }
 
 .login-card__heading {
-  font-size: 32rpx;
-  font-weight: 700;
+  display: block;
+  margin-top: 12rpx;
   color: var(--color-text);
-  letter-spacing: 1rpx;
+  font-size: 40rpx;
+  font-weight: 800;
+  line-height: 1.25;
 }
 
 .login-card__sub {
-  margin-top: 8rpx;
-  font-size: 24rpx;
-  color: var(--color-muted);
-  margin-bottom: 40rpx;
-}
-
-/* ===== Avatar Picker ===== */
-.avatar-picker {
-  margin-top: 40rpx;
-  width: 160rpx;
-  height: 160rpx;
-  padding: 0;
-  border: none;
-  background: transparent;
-  line-height: normal;
-}
-
-.avatar-picker::after {
-  display: none;
-}
-
-.avatar-img {
-  width: 160rpx;
-  height: 160rpx;
-  border-radius: 50%;
-  border: 3rpx solid rgba(120, 136, 122, 0.2);
-}
-
-.avatar-empty {
-  width: 160rpx;
-  height: 160rpx;
-  border-radius: 50%;
-  background: linear-gradient(145deg, #f0ede7, #e8e4dd);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 3rpx solid rgba(120, 136, 122, 0.15);
-}
-
-.avatar-empty__plus {
-  font-size: 64rpx;
-  font-weight: 200;
-  color: var(--color-primary);
-  line-height: 1;
-  margin-top: -4rpx;
-}
-
-.avatar-hint {
+  display: block;
   margin-top: 16rpx;
-  margin-bottom: 36rpx;
-  font-size: 22rpx;
   color: var(--color-muted);
+  font-size: 26rpx;
+  line-height: 1.7;
 }
 
-/* ===== Input Field ===== */
-.field {
+.wechat-btn,
+.account-btn {
   width: 100%;
-  margin-bottom: 36rpx;
-}
-
-.field__input {
-  width: 100%;
-  height: 92rpx;
-  padding: 0 32rpx;
-  font-size: 28rpx;
-  color: var(--color-text);
-  background: var(--color-bg);
-  border-radius: 16rpx;
-  border: 1rpx solid var(--color-line);
-  box-sizing: border-box;
-  transition: border-color 0.2s;
-}
-
-.field__input:focus {
-  border-color: var(--color-primary);
-}
-
-/* ===== Button ===== */
-.btn-primary {
-  width: 100% !important;
-  height: 92rpx;
-  border-radius: 16rpx;
-  background: var(--color-primary);
-  color: #ffffff;
+  height: 96rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-base);
   font-size: 30rpx;
-  font-weight: 600;
-  letter-spacing: 2rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  box-shadow: 0 6rpx 20rpx rgba(120, 136, 122, 0.3);
+  font-weight: 700;
+  transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease;
 }
 
-.btn-primary::after {
-  display: none;
-}
-
-.btn-primary:active {
-  opacity: 0.9;
-  transform: scale(0.98);
-  box-shadow: 0 2rpx 8rpx rgba(120, 136, 122, 0.2);
-}
-
-/* ===== Phone Step ===== */
-.phone-illust {
-  margin: 32rpx 0 40rpx;
-  width: 120rpx;
-  height: 120rpx;
-  border-radius: 50%;
-  background: var(--color-bg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.phone-illust__icon {
-  font-size: 52rpx;
-}
-
-.wechat-mark {
-  width: 112rpx;
-  height: 112rpx;
-  margin: 32rpx 0 40rpx;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #12b965;
+.wechat-btn {
+  margin-top: 44rpx;
+  background: var(--color-primary);
   color: #fff;
-  box-shadow: 0 12rpx 24rpx rgba(18, 185, 101, 0.18);
 }
 
-.wechat-mark text { font-size: 52rpx; font-weight: 700; }
+.wechat-btn:active,
+.account-btn:active,
+.skip-link:active {
+  opacity: 0.8;
+  transform: scale(0.98);
+}
 
-.password-link {
-  margin-top: 28rpx;
-  font-size: 24rpx;
+.wechat-btn[disabled] {
+  opacity: 0.6;
+}
+
+.wechat-btn__icon {
+  width: 38rpx;
+  height: 38rpx;
+  margin-right: 14rpx;
+}
+
+.login-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 64rpx;
+  color: var(--color-muted);
+  font-size: 22rpx;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  height: 1rpx;
+  flex: 1;
+  background: var(--color-line);
+}
+
+.login-divider text {
+  padding: 0 20rpx;
+}
+
+.account-btn {
   color: var(--color-primary-dark);
+  background: var(--color-primary-light);
+  border: 1rpx solid rgba(66, 109, 88, 0.18);
 }
 
 .security-note {
-  margin-top: 20rpx;
+  display: block;
+  margin-top: 28rpx;
+  color: var(--color-muted);
   font-size: 22rpx;
-  color: var(--color-muted);
+  line-height: 1.65;
+  text-align: center;
 }
 
-/* ===== Footer ===== */
 .skip-link {
-  margin-top: 40rpx;
+  display: block;
+  width: 100%;
+  height: 88rpx;
+  margin-top: 28rpx;
+  color: var(--color-primary-dark);
   font-size: 26rpx;
-  color: var(--color-muted);
-  letter-spacing: 1rpx;
 }
 
-.skip-link:active {
-  color: var(--color-primary);
-}
-
-/* ===== Loading ===== */
 .login-loading {
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 200rpx;
-  font-size: 28rpx;
   color: var(--color-muted);
+  font-size: 26rpx;
 }

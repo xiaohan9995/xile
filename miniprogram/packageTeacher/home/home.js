@@ -54,7 +54,7 @@ Page({
           name: t.name || '老师',
           tier: t.tier || 'L1',
           tierName: t.tierName || '认证导师',
-          avatarUrl: t.avatarUrl || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=180&q=80',
+          avatarUrl: t.avatarUrl || '',
           validUntil: t.validUntil || '--',
           daysLeft: t.daysLeft != null ? t.daysLeft : 0,
         },
@@ -101,7 +101,7 @@ Page({
   onLogout() {
     wx.showModal({
       title: '确认退出',
-      content: '退出后需要重新验证手机号',
+      content: '退出后需要重新进行微信登录',
       confirmText: '退出',
       confirmColor: '#c84a4a',
       success: (res) => {

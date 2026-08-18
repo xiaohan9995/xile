@@ -18,11 +18,11 @@ Component({
     },
     goMy() {
       if (this.data.active === 'my') return;
-      if (!auth.isLoggedIn() || !auth.isPhoneBound() || !auth.isTeacher()) {
-        wx.navigateTo({ url: auth.loginUrl('/packageTeacher/home/home') });
+      if (!auth.isLoggedIn()) {
+        wx.navigateTo({ url: auth.loginUrl('/packageTeacher/profile/profile') });
         return;
       }
-      wx.reLaunch({ url: '/packageTeacher/home/home' });
+      wx.reLaunch({ url: '/packageTeacher/profile/profile' });
     },
   },
 });

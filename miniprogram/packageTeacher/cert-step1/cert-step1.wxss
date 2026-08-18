@@ -1,10 +1,9 @@
 /* ===== Cert Step 1 (认证申请 Step1) ===== */
+@import '../common/progress-strip.wxss';
+
 .cert-step-page {
   padding-top: 0;
 }
-
-/* Progress Strip */
-@import '../common/progress-strip.wxss';
 
 /* Form Card */
 .form-card {

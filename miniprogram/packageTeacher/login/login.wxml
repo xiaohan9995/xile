@@ -1,57 +1,29 @@
 <view class="login-page">
-  <!-- Top visual area -->
-  <view class="login-visual">
-    <view class="login-visual__mask"></view>
-    <view class="login-visual__brand">
-      <text class="login-visual__name">喜乐瑜伽</text>
-      <text class="login-visual__tagline">成长 · 修习 · 传承</text>
+  <view class="login-shell" wx:if="{{loginReady}}">
+    <view class="login-brand">
+      <image class="login-brand__avatar" src="/assets/xile-yoga-miniapp-avatar.png" mode="aspectFill" alt="喜乐瑜伽标志" />
+      <text class="login-brand__eyebrow">JOY YOGA</text>
+      <text class="login-brand__name">喜乐瑜伽</text>
+      <text class="login-brand__note">教师认证服务</text>
     </view>
+
+    <view class="login-card">
+      <text class="login-card__eyebrow">欢迎回来</text>
+      <text class="login-card__heading">微信一键登录</text>
+      <text class="login-card__sub">登录后即可浏览认证服务。讲师可继续查看证书、年审与教学记录。</text>
+
+      <button class="wechat-btn" bindtap="onWechatLogin" loading="{{loading}}" disabled="{{loading}}">
+        <image class="wechat-btn__icon" src="/assets/icons/wechat.svg" mode="aspectFit" alt="" />
+        <text>使用微信登录</text>
+      </button>
+
+      <view class="login-divider"><text>或</text></view>
+      <button class="account-btn" bindtap="goPasswordLogin">使用教师账号登录</button>
+      <text class="security-note">手机号不是登录必填项；如需关联教师档案，可在个人设置中自愿绑定。</text>
+    </view>
+
+    <button class="skip-link" bindtap="onSkip">暂时不登录，先逛逛</button>
   </view>
 
-  <!-- Form card overlapping visual -->
-  <view class="login-form-area">
-    <view class="login-card" wx:if="{{loginReady && step === 0}}">
-      <text class="login-card__heading">教师工作台</text>
-      <text class="login-card__sub">使用微信完成身份验证，系统将按手机号匹配教师档案</text>
-      <view class="wechat-mark"><text>微</text></view>
-      <button class="btn-primary" bindtap="onWechatLogin" loading="{{loading}}" disabled="{{loading}}">微信一键登录</button>
-      <text class="security-note">仅用于身份识别，不会代替你发送消息</text>
-      <text class="password-link" bindtap="goPasswordLogin">使用教师账号登录</text>
-    </view>
-
-    <!-- Step 2: Phone Binding -->
-    <view class="login-card" wx:elif="{{loginReady && step === 2}}">
-      <text class="login-card__heading">验证手机号</text>
-      <text class="login-card__sub">用于安全匹配管理员维护的教师档案</text>
-
-      <view class="phone-illust">
-        <text class="phone-illust__icon">☎</text>
-      </view>
-
-      <button
-        class="btn-primary"
-        open-type="getPhoneNumber"
-        bindgetphonenumber="onGetPhoneNumber"
-        loading="{{loading}}"
-        disabled="{{loading}}"
-      >微信手机号验证</button>
-      <text class="security-note">微信授权由你主动确认，平台不会保存验证码</text>
-    </view>
-
-    <view class="login-card" wx:elif="{{loginReady && step === 3}}">
-      <text class="login-card__heading">暂未关联教师档案</text>
-      <text class="login-card__sub">请让管理员在教师资料中填写与你微信一致的手机号，或使用已分配的教师账号登录。</text>
-      <button class="btn-primary" bindtap="goPasswordLogin">使用教师账号登录</button>
-      <text class="password-link" bindtap="onWechatLogin">重新验证微信身份</text>
-    </view>
-
-    <!-- Loading State -->
-    <view class="login-card" wx:elif="{{!loginReady}}">
-      <view class="login-loading">
-        <text>正在登录...</text>
-      </view>
-    </view>
-
-    <text class="skip-link" wx:if="{{loginReady}}" bindtap="onSkip">暂时跳过</text>
-  </view>
+  <view class="login-loading" wx:else><text>正在准备登录…</text></view>
 </view>

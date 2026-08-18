@@ -3,16 +3,15 @@
   <view class="page-header" style="padding-top:{{statusBarHeight}}px;">
     <view class="page-header__back" bindtap="goBack">‹</view>
     <text class="page-header__title">我的认证</text>
-    <view class="page-header__right"></view>
+    <navigator class="page-header__right page-header__home" url="/pages/index/index" open-type="reLaunch">首页</navigator>
   </view>
 
   <view class="home-body">
     <!-- Mine Card -->
     <view class="mine-card">
-      <image class="mine-card__bg" src="https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=600&auto=format&fit=crop" mode="aspectFill" />
-      <view class="mine-card__overlay"></view>
       <view class="mine-card__content">
-        <image class="mine-card__avatar" src="{{teacher.avatarUrl}}" mode="aspectFill" />
+        <image wx:if="{{teacher.avatarUrl}}" class="mine-card__avatar" src="{{teacher.avatarUrl}}" mode="aspectFill" />
+        <view wx:else class="mine-card__avatar mine-card__avatar--fallback">教</view>
         <view class="mine-card__info">
           <text class="mine-card__greeting">您好，{{teacher.name}}老师</text>
           <view class="mine-card__tier-row">
@@ -45,37 +44,37 @@
     <!-- Menu List -->
     <view class="menu-list">
       <view class="menu-item" bindtap="goProfile">
-        <view class="menu-item__icon">👤</view>
+        <view class="menu-item__icon">资料</view>
         <text class="menu-item__label">个人资料</text>
         <text class="menu-item__arrow">›</text>
       </view>
       <view class="menu-item" bindtap="goReviewRecords">
-        <view class="menu-item__icon">📋</view>
+        <view class="menu-item__icon">年审</view>
         <text class="menu-item__label">年审记录</text>
         <text class="menu-item__arrow">›</text>
       </view>
       <view class="menu-item" bindtap="goTeachingRecords">
-        <view class="menu-item__icon">📚</view>
+        <view class="menu-item__icon">教学</view>
         <text class="menu-item__label">教学记录</text>
         <text class="menu-item__arrow">›</text>
       </view>
       <view class="menu-item" bindtap="goCertView">
-        <view class="menu-item__icon">🏅</view>
+        <view class="menu-item__icon">证书</view>
         <text class="menu-item__label">证书查看</text>
         <text class="menu-item__arrow">›</text>
       </view>
       <view class="menu-item" bindtap="goUsageGuide">
-        <view class="menu-item__icon">💡</view>
+        <view class="menu-item__icon">帮助</view>
         <text class="menu-item__label">使用指引</text>
         <text class="menu-item__arrow">›</text>
       </view>
       <view class="menu-item" bindtap="goReviewApply">
-        <view class="menu-item__icon">📝</view>
+        <view class="menu-item__icon">提交</view>
         <text class="menu-item__label">提交年审</text>
         <text class="menu-item__arrow">›</text>
       </view>
       <view class="menu-item menu-item--logout" bindtap="onLogout">
-        <view class="menu-item__icon">🚪</view>
+        <view class="menu-item__icon">退出</view>
         <text class="menu-item__label">退出登录</text>
         <text class="menu-item__arrow">›</text>
       </view>

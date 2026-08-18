@@ -47,7 +47,13 @@ async function submit() {
     await authStore.login(username.value, password.value)
     router.push(route.query.redirect || '/dashboard')
   } catch (err) {
-    error.value = err.message || '登录失败，请检查用户名和密码'
+    if (err.response?.status === 429) {
+      error.value = '操作过于频繁，请在 1 分钟后重试'
+    } else if (err.response?.status === 401) {
+      error.value = '用户名或密码不正确'
+    } else {
+      error.value = err.response?.data?.error || '登录失败，请稍后重试'
+    }
   } finally {
     loading.value = false
   }

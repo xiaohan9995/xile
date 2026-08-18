@@ -1,7 +1,7 @@
 {
   "$schema": "https://framework-1258016615.tcloudbaseapp.com/schema/latest.json",
   "version": "2.0",
-  "envId": "{{env.ENV_ID}}",
+  "envId": "xile-yoga-d4g2za8xi82a16810",
   "framework": {
     "name": "xile-yoga",
     "plugins": {
@@ -26,5 +26,8 @@
         }
       }
     }
+  },
+  "cloudrun": {
+    "name": "xile-yoga"
   }
 }

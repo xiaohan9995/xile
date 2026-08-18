@@ -1,5 +1,5 @@
 <view class="page-shell guide-page">
-  <view class="page-header" style="padding-top:{{statusBarHeight}}px;"><view class="page-header__back" bindtap="goBack">‹</view><text class="page-header__title">使用指引</text><view class="page-header__right"></view></view>
+  <view class="page-header" style="padding-top:{{statusBarHeight}}px;"><view class="page-header__back" bindtap="goBack">‹</view><text class="page-header__title">使用指引</text><navigator class="page-header__right page-header__home" url="/pages/index/index" open-type="reLaunch">首页</navigator></view>
   <view class="guide-body">
     <view class="guide-hero"><text class="section-eyebrow">HOW TO USE</text><text class="guide-hero__title">把年审变成日常的小习惯</text><text class="guide-hero__text">按下面四步完成资料维护、教学记录和本期年审；每个阶段只需要完成当前最重要的一件事。</text></view>
     <view class="guide-list"><view wx:for="{{steps}}" wx:key="number" class="guide-card"><text class="guide-number">{{item.number}}</text><view><text class="guide-title">{{item.title}}</text><text class="guide-text">{{item.text}}</text></view></view></view>

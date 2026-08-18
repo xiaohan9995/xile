@@ -1,5 +1,5 @@
 <view class="page-shell teaching-page">
-  <view class="page-header" style="padding-top:{{statusBarHeight}}px;"><view class="page-header__back" bindtap="goBack">‹</view><text class="page-header__title">教学记录</text><view class="page-header__right"></view></view>
+<view class="page-header" style="padding-top:{{statusBarHeight}}px;"><view class="page-header__back" bindtap="goBack">‹</view><text class="page-header__title">教学记录</text><navigator class="page-header__right page-header__home" url="/pages/index/index" open-type="reLaunch">首页</navigator></view>
   <view class="content">
     <view class="intro"><text class="section-eyebrow">TEACHING LOG</text><text class="intro__title">记录每一次教学</text><text class="intro__text">已提交的记录将在本期年审中作为可追溯的教学佐证。</text><button class="btn-primary" bindtap="toggleForm">{{showForm ? '收起表单' : '＋ 新增教学记录'}}</button></view>
     <picker mode="date" fields="month" value="{{month}}" bindchange="chooseMonth"><view class="field">{{month || '按月份筛选'}}</view></picker>

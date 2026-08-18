@@ -1,7 +1,7 @@
 <view class="home-page">
   <!-- Hero visual -->
   <view class="home-visual">
-    <image class="home-visual__img" src="https://images.unsplash.com/photo-1545389336-cf090694435e?auto=format&fit=crop&w=640&q=80" mode="aspectFill" />
+    <image class="home-visual__img" src="https://images.unsplash.com/photo-1545389336-cf090694435e?auto=format&fit=crop&w=640&q=80" mode="aspectFill" alt="" />
     <view class="home-visual__overlay"></view>
     <view class="home-visual__text">
       <text class="home-visual__eyebrow">JOY YOGA · TEACHER CERTIFICATION</text>
@@ -15,13 +15,13 @@
     <view class="home-intro">
       <text class="section-eyebrow">认证服务</text>
       <text class="section-title">查询、认证与连接</text>
-      <text class="home-intro__note">认证教师、资质查询与场馆服务，一站完成。</text>
+      <text class="home-intro__note">教师资质、认证场馆与练习社群，在这里温柔相遇。</text>
     </view>
 
-    <view class="cta-btn" bindtap="goMyCert">
-      <view class="cta-text-group"><text class="cta-title">进入我的认证</text><text class="cta-subtitle">查看证书、年审状态与教学记录</text></view>
+    <button class="cta-btn" bindtap="goMyCert">
+      <view class="cta-text-group"><text class="cta-title">我的认证</text><text class="cta-subtitle">教师账号可查看证书、年审与教学记录</text></view>
       <text class="cta-arrow">›</text>
-    </view>
+    </button>
     <!-- Announcements -->
     <view class="notice-card" wx:if="{{announcements.length > 0}}">
       <view class="notice-header">
@@ -41,14 +41,14 @@
 
     <!-- Quick grid: 2x2 -->
     <view class="quick-grid">
-      <view class="quick-card" bindtap="goSearch">
+      <button class="quick-card" bindtap="goSearch">
         <text class="quick-card-title">教师查询</text>
         <text class="quick-card-desc">查认证教师信息</text>
-      </view>
-      <view class="quick-card" bindtap="goStudios">
+      </button>
+      <button class="quick-card" bindtap="goStudios">
         <text class="quick-card-title">瑜伽工作室</text>
         <text class="quick-card-desc">查看附近认证场馆</text>
-      </view>
+      </button>
     </view>
 
     <!-- Featured Teachers -->
@@ -76,6 +76,9 @@
         </view>
       </scroll-view>
     </view>
+
+    <view class="homepage-state" wx:if="{{homepageLoading}}"><text>正在加载认证内容</text></view>
+    <view class="homepage-state homepage-state--retry" wx:elif="{{homepageLoadError}}" bindtap="retryHomepage"><text>内容加载失败，轻触重新加载</text></view>
   </view>
 <tab-bar active="home" />
 </view>

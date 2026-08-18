@@ -48,6 +48,53 @@ def ensure_system_defaults():
     db.session.commit()
 
 
+def ensure_initial_admin(username, password):
+    """Create the first production administrator once, without demo credentials."""
+    if AdminUser.query.first():
+        return
+
+    username = (username or "").strip()
+    if not username or not password:
+        raise RuntimeError(
+            "No administrator exists. Set INITIAL_ADMIN_USERNAME and "
+            "INITIAL_ADMIN_PASSWORD before starting the service."
+        )
+    if len(password) < 12:
+        raise RuntimeError("INITIAL_ADMIN_PASSWORD must be at least 12 characters")
+
+    from werkzeug.security import generate_password_hash
+
+    db.session.add(
+        AdminUser(
+            username=username,
+            password_hash=generate_password_hash(password, method="pbkdf2:sha256"),
+            role="super_admin",
+        )
+    )
+    db.session.commit()
+
+
+def reset_admin_password(username, password):
+    """Reset one named administrator only during an explicit release operation."""
+    username = (username or "").strip()
+    if not username or not password:
+        raise RuntimeError(
+            "Set INITIAL_ADMIN_USERNAME and ADMIN_PASSWORD_RESET_PASSWORD "
+            "before requesting an administrator password reset."
+        )
+    if len(password) < 12:
+        raise RuntimeError("ADMIN_PASSWORD_RESET_PASSWORD must be at least 12 characters")
+
+    admin = AdminUser.query.filter_by(username=username).first()
+    if not admin:
+        raise RuntimeError(f"Administrator '{username}' does not exist; password was not changed.")
+
+    from werkzeug.security import generate_password_hash
+
+    admin.password_hash = generate_password_hash(password, method="pbkdf2:sha256")
+    db.session.commit()
+
+
 def seed_demo_data():
     if Teacher.query.first():
         return

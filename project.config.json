@@ -1,37 +1,17 @@
 {
+  "description": "喜乐瑜伽教师认证中心小程序",
+  "packOptions": {
+    "ignore": []
+  },
   "setting": {
     "es6": true,
+    "enhance": true,
     "postcss": true,
     "minified": true,
-    "uglifyFileName": false,
-    "enhance": true,
-    "packNpmRelationList": [],
-    "babelSetting": {
-      "ignore": [],
-      "disablePlugins": [],
-      "outputPath": ""
-    },
-    "useCompilerPlugins": false,
-    "minifyWXML": true,
-    "compileWorklet": false,
-    "uploadWithSourceMap": true,
-    "packNpmManually": false,
-    "minifyWXSS": true,
-    "localPlugins": false,
-    "disableUseStrict": false,
-    "condition": false,
-    "swc": false,
-    "disableSWC": true,
-    "urlCheck": false
+    "urlCheck": true
   },
   "compileType": "miniprogram",
-  "simulatorPluginLibVersion": {},
-  "packOptions": {
-    "ignore": [],
-    "include": []
-  },
-  "miniprogramRoot": "miniprogram/",
   "appid": "wxf34d7e608bc79d85",
-  "editorSetting": {},
-  "isGameTourist": false
+  "projectname": "xile",
+  "miniprogramRoot": "miniprogram/"
 }

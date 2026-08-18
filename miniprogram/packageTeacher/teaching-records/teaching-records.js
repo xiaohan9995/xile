@@ -15,7 +15,7 @@ Page({
   async loadRecords() {
     this.setData({ loading: true });
     try { const suffix = this.data.month ? `?month=${this.data.month}` : ''; const data = await request({ url: `/api/mp/teaching-records${suffix}` }); this.setData({ records: data.items || [] }); }
-    catch (e) { wx.showToast({ title: '教学记录加载失败', icon: 'none' }); }
+    catch (e) { wx.showToast({ title: e.message || '教学记录加载失败', icon: 'none' }); }
     finally { this.setData({ loading: false }); }
   },
   toggleForm() { this.setData({ showForm: !this.data.showForm }); },
@@ -30,7 +30,7 @@ Page({
         const presign = await request({ url: '/api/mp/upload/presign', method: 'POST', data: { filename: file.name } });
         const result = await uploadFile({ url: presign.uploadUrl, filePath: file.path, name: 'file' });
         this.setData({ 'form.evidenceKey': result.fileKey || presign.fileKey, 'form.evidenceName': file.name });
-      } catch (e) { wx.showToast({ title: '佐证上传失败', icon: 'none' }); }
+      } catch (e) { wx.showToast({ title: e.message || '佐证上传失败', icon: 'none' }); }
       finally { wx.hideLoading(); }
     }});
   },
@@ -43,7 +43,7 @@ Page({
       await request({ url: '/api/mp/teaching-records', method: 'POST', data: { ...form, status, durationHours: form.durationHours || null, participantCount: form.participantCount || null } });
       this.setData({ showForm: false, form: { taughtOn: '', platform: '', title: '', durationHours: '', participantCount: '', description: '', evidenceKey: '', evidenceName: '' } });
       await this.loadRecords(); wx.showToast({ title: status === 'draft' ? '草稿已保存' : '教学记录已提交', icon: 'success' });
-    } catch (e) { wx.showToast({ title: '提交失败，请稍后重试', icon: 'none' }); }
+    } catch (e) { wx.showToast({ title: e.message || '提交失败，请稍后重试', icon: 'none' }); }
     finally { this.setData({ saving: false }); }
   },
   saveDraft() { this.submit('draft'); },

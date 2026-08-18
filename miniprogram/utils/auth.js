@@ -9,6 +9,7 @@ const AVATAR_URL_KEY = 'userAvatarUrl';
 const NICKNAME_KEY = 'userNickname';
 
 const applySession = (data) => {
+  if (!data || !data.token) throw new Error('登录响应无效，请重试');
   wx.setStorageSync(TOKEN_KEY, data.token);
   wx.setStorageSync(USER_ID_KEY, data.userId);
   wx.setStorageSync(USER_ROLE_KEY, data.role || 'student');
@@ -30,25 +31,32 @@ const applySession = (data) => {
 
 const loginWithWechat = () => {
   return new Promise((resolve, reject) => {
-    wx.login({
-      success: (loginRes) => {
-        const code = loginRes.code;
-        if (!code) {
-          reject(new Error('wx.login failed'));
+    if (!wx.cloud || !wx.cloud.callFunction) {
+      reject(new Error('当前微信版本不支持云开发登录'));
+      return;
+    }
+    wx.cloud.callFunction({
+      name: 'mp-auth-bridge',
+      data: {},
+      success: (result) => {
+        const assertion = result && result.result;
+        if (!assertion || !assertion.signature) {
+          reject(new Error('微信身份校验失败，请重试'));
           return;
         }
         request({
-          url: '/api/mp/auth/login',
+          url: '/api/mp/auth/cloudbase-login',
           method: 'POST',
-          data: { code },
-        })
-          .then((data) => {
-            applySession(data);
-            resolve(data);
-          })
-          .catch(reject);
+          data: { assertion },
+        }).then((data) => {
+          applySession(data);
+          resolve(data);
+        }).catch(reject);
       },
-      fail: () => reject(new Error('wx.login failed')),
+      fail: (error) => {
+        console.warn('CloudBase auth bridge failed', error && error.errMsg);
+        reject(new Error('微信身份校验暂不可用，请稍后重试'));
+      },
     });
   });
 };
@@ -131,18 +139,34 @@ const setTeacherIdentity = (teacherId, role) => {
 
 const loginUrl = (pagePath) => `/packageTeacher/login/login?returnUrl=${encodeURIComponent(pagePath)}`;
 
+const requireLogin = (pagePath) => {
+  const app = typeof getApp === 'function' ? getApp() : null;
+  if (app && app.globalData && !app.globalData.loginReady) {
+    const promise = app.globalData.loginPromise || Promise.resolve();
+    promise.then(() => {
+      if (!isLoggedIn()) wx.redirectTo({ url: loginUrl(pagePath) });
+    });
+    return false;
+  }
+  if (!isLoggedIn()) {
+    wx.redirectTo({ url: loginUrl(pagePath) });
+    return false;
+  }
+  return true;
+};
+
 const requireAuth = (pagePath) => {
   const app = typeof getApp === 'function' ? getApp() : null;
   if (app && app.globalData && !app.globalData.loginReady) {
     const promise = app.globalData.loginPromise || Promise.resolve();
     promise.then(() => {
-      if (!isLoggedIn() || !isPhoneBound() || !isTeacher()) {
+      if (!isLoggedIn() || !isTeacher()) {
         wx.redirectTo({ url: loginUrl(pagePath) });
       }
     });
     return false;
   }
-  if (!isLoggedIn() || !isPhoneBound() || !isTeacher()) {
+  if (!isLoggedIn() || !isTeacher()) {
     wx.redirectTo({ url: loginUrl(pagePath) });
     return false;
   }
@@ -157,6 +181,14 @@ const logout = () => {
   wx.removeStorageSync(PHONE_BOUND_KEY);
   wx.removeStorageSync(AVATAR_URL_KEY);
   wx.removeStorageSync(NICKNAME_KEY);
+  const app = typeof getApp === 'function' ? getApp() : null;
+  if (app && app.globalData) {
+    app.globalData.teacherId = null;
+    app.globalData.userId = null;
+    app.globalData.phoneBound = false;
+    app.globalData.avatarUrl = '';
+    app.globalData.nickname = '';
+  }
 };
 
 module.exports = {
@@ -175,6 +207,7 @@ module.exports = {
   setPhoneBound,
   setTeacherIdentity,
   loginUrl,
+  requireLogin,
   requireAuth,
   logout,
 };
