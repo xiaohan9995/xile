@@ -48,6 +48,7 @@ def create_studio():
         contact_text=payload.get("contact", "").strip() or None,
         tags=payload.get("tags", "").strip() or None,
         intro=payload.get("intro", "").strip() or None,
+        cover_url=payload.get("coverUrl", "").strip() or None,
         status="open",
     )
     db.session.add(studio)
@@ -95,6 +96,8 @@ def update_studio(studio_id):
         studio.intro = payload["intro"].strip() or None
     if "openingHours" in payload:
         studio.opening_hours = payload["openingHours"].strip() or None
+    if "coverUrl" in payload:
+        studio.cover_url = (payload["coverUrl"] or "").strip() or None
 
     db.session.add(AuditLog(admin_id=1, action="update_studio", target_type="studio", target_id=studio.id))
     db.session.commit()

@@ -4,13 +4,13 @@ const auth = require('../../utils/auth');
 const app = getApp();
 let _searchTimer = null;
 
-const TIER_OPTIONS = ['全部', 'L0', 'L1', 'L2', 'L3', 'L4', 'L5'];
+const TIER_OPTIONS = ['全部登记', 'L0', 'L1', 'L2', 'L3', 'L4', 'L5'];
 
 Page({
   data: {
     statusBarHeight: 20,
     keyword: '',
-    searchMode: 'name',
+    searchMode: 'region',
     searchModes: [
       { id: 'region', label: '按地区' },
       { id: 'name', label: '按姓名/喜乐名' },
@@ -58,7 +58,7 @@ Page({
     const mode = e.currentTarget.dataset.mode;
     if (mode === this.data.searchMode) return;
     this.setData({ searchMode: mode, keyword: '', page: 1, hasMore: true, teachers: [], searched: false, error: '' });
-    if (mode === 'region' && this.data.cityIndex > 0) this.doSearch();
+    this.doSearch();
   },
 
   debounceSearch() {
@@ -80,7 +80,7 @@ Page({
 
   onCityChange(e) {
     this.setData({ cityIndex: e.detail.value, page: 1, hasMore: true, teachers: [] });
-    if (this.data.searchMode === 'region' || this.data.keyword) this.doSearch();
+    this.doSearch();
   },
 
   resetFilters() {
@@ -112,11 +112,6 @@ Page({
   },
 
   async doSearch() {
-    if (this.data.searchMode === 'region' && this.data.cityIndex === 0) {
-      this.setData({ searched: false, teachers: [], error: '' });
-      wx.showToast({ title: '请选择地区后查询', icon: 'none' });
-      return;
-    }
     if (this.data.searchMode !== 'region' && !this.data.keyword.trim()) {
       this.setData({ searched: false, teachers: [], error: '' });
       return;

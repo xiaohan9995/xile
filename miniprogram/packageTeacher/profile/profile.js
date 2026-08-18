@@ -1,4 +1,4 @@
-const { request } = require('../../utils/request');
+const { request, uploadFile } = require('../../utils/request');
 const auth = require('../../utils/auth');
 
 const app = getApp();
@@ -20,6 +20,10 @@ Page({
       nickname: '',
       avatarUrl: '',
     },
+    primaryAction: {},
+    certImageUrl: '',
+    certImageLoading: false,
+    avatarUploading: false,
     menuItems: [],
   },
 
@@ -50,6 +54,14 @@ Page({
           bio: t.bio || '',
           validUntil: t.validUntil || '--',
           daysLeft: t.daysLeft || 0,
+          certificateUrl: t.certificateUrl || '',
+        },
+        primaryAction: {
+          eyebrow: '认证状态',
+          title: '电子认证证书',
+          detail: `有效至 ${t.validUntil || '--'}`,
+          actionText: '查看证书',
+          url: '/packageTeacher/cert-view/cert-view',
         },
         menuItems: [
           { icon: '档', title: '我的文件', subtitle: '讲师资格及资质证明材料', url: '/packageTeacher/review-apply/review-apply' },
@@ -59,11 +71,22 @@ Page({
           { icon: '设', title: '个人设置', subtitle: '更新头像、手机号或昵称', url: '/packageTeacher/settings/settings' },
         ],
       });
+      if (t.certificateUrl) {
+        this.setData({ certImageUrl: t.certificateUrl });
+      } else {
+        this.loadCertificatePreview();
+      }
     } catch (err) {
       this.setData({
         isTeacher: false,
+        primaryAction: {
+          eyebrow: '教师服务',
+          title: '关联教师身份',
+          detail: '输入管理员提供的一次性关联码',
+          actionText: '去关联',
+          url: '/packageTeacher/link-teacher/link-teacher',
+        },
         menuItems: [
-          { icon: '登', title: '关联教师账号', subtitle: '使用管理员提供的教师账号登录', url: '/packageTeacher/account-login/account-login?returnUrl=%2FpackageTeacher%2Fhome%2Fhome' },
           { icon: '服', title: '认证咨询', subtitle: '了解教师档案关联与认证要求', url: '' },
           { icon: '设', title: '个人设置', subtitle: '更新头像、手机号或昵称', url: '/packageTeacher/settings/settings' },
         ],
@@ -80,7 +103,57 @@ Page({
     wx.navigateTo({ url });
   },
 
+  onChooseAvatar(e) {
+    const avatarUrl = e.detail && e.detail.avatarUrl;
+    if (!avatarUrl || this.data.avatarUploading) return;
+
+    this.setData({ avatarUploading: true });
+    uploadFile({
+      url: '/api/mp/auth/update-profile',
+      filePath: avatarUrl,
+      name: 'avatar',
+      formData: { nickname: this.data.user.nickname || '' },
+    })
+      .then((res) => {
+        const savedAvatarUrl = res.avatarUrl || avatarUrl;
+        this.setData({ 'user.avatarUrl': savedAvatarUrl });
+        auth.setAvatarUrl(savedAvatarUrl);
+        wx.showToast({ title: '头像已更新', icon: 'success' });
+      })
+      .catch(() => {
+        wx.showToast({ title: '头像上传失败', icon: 'none' });
+      })
+      .finally(() => {
+        this.setData({ avatarUploading: false });
+      });
+  },
+
+  async loadCertificatePreview() {
+    this.setData({ certImageLoading: true, certImageUrl: '' });
+    try {
+      const baseUrl = app.globalData.apiBaseUrl || 'http://127.0.0.1:5000';
+      const token = auth.getToken();
+      const result = await new Promise((resolve, reject) => {
+        wx.downloadFile({
+          url: `${baseUrl}/api/mp/teachers/me/certificate-image`,
+          header: { Authorization: `Bearer ${token}` },
+          success: (response) => (response.statusCode === 200 ? resolve(response) : reject(response)),
+          fail: reject,
+        });
+      });
+      this.setData({ certImageUrl: result.tempFilePath });
+    } catch (err) {
+      this.setData({ certImageUrl: this.data.teacher.certificateUrl || '' });
+    } finally {
+      this.setData({ certImageLoading: false });
+    }
+  },
+
   goBack() {
-    wx.navigateBack();
+    if (getCurrentPages().length > 1) {
+      wx.navigateBack();
+      return;
+    }
+    wx.reLaunch({ url: '/pages/index/index' });
   },
 });

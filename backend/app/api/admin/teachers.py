@@ -28,6 +28,7 @@ def teacher_list():
             "validUntil": _date_text(t.valid_until),
             "certifiedAt": _date_text(t.first_certified_on),
             "avatarUrl": t.avatar_url,
+            "certificateUrl": t.certificate_url,
             "phone": t.detail.phone if t.detail else None,
             "committeeRemark": t.detail.committee_remark if t.detail else None,
         }
@@ -55,6 +56,7 @@ def get_teacher_detail(teacher_id):
         "validUntil": _date_text(teacher.valid_until),
         "certifiedAt": _date_text(teacher.first_certified_on),
         "avatarUrl": teacher.avatar_url,
+        "certificateUrl": teacher.certificate_url,
         "phone": teacher.detail.phone if teacher.detail else None,
         "specialties": teacher.detail.specialties if teacher.detail else None,
         "teachingSummary": teacher.detail.teaching_summary if teacher.detail else None,
@@ -80,6 +82,10 @@ def update_teacher(teacher_id):
         teacher.city = payload["city"].strip() or None
     if "district" in payload:
         teacher.district = payload["district"].strip() or None
+    if "avatarUrl" in payload:
+        teacher.avatar_url = (payload["avatarUrl"] or "").strip() or None
+    if "certificateUrl" in payload:
+        teacher.certificate_url = (payload["certificateUrl"] or "").strip() or None
 
     if "committeeRemark" in payload or "phone" in payload or "specialties" in payload:
         if not teacher.detail:

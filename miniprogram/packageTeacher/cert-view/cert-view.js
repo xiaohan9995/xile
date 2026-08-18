@@ -35,7 +35,11 @@ Page({
         },
         loading: false,
       });
-      this.loadCertImage();
+      if (t.certificateUrl) {
+        this.setData({ certImageUrl: t.certificateUrl });
+      } else {
+        this.loadCertImage();
+      }
     } catch (err) {
       this.setData({ error: '加载失败', loading: false });
     }

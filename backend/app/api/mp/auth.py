@@ -8,12 +8,15 @@ from werkzeug.utils import secure_filename
 
 from ...extensions import db, limiter
 from ...models import User
+from ...utils.storage import StorageNotConfiguredError, upload_to_cos
 from ...services.auth_service import (
     AuthError,
     cloudbase_login,
     get_phone_number,
+    link_wechat_user_to_teacher_by_code,
     link_user_to_teacher_by_phone,
     password_login,
+    _issue_token,
     wx_login,
 )
 from . import mp_bp
@@ -134,6 +137,37 @@ def bind_phone():
     }
 
 
+@mp_bp.post("/auth/link-teacher")
+@limiter.limit("5 per minute")
+@jwt_required()
+def link_teacher():
+    """Bind the active WeChat session to an administrator-created teacher record."""
+    payload = request.get_json(silent=True) or {}
+    code = (payload.get("code") or "").strip()
+    if not code:
+        return {"error": "关联码不能为空"}, 400
+
+    user = db.session.get(User, int(get_jwt_identity()))
+    if user is None:
+        return {"error": "user not found"}, 404
+    try:
+        linked_user, teacher = link_wechat_user_to_teacher_by_code(user, code)
+        db.session.commit()
+    except AuthError as e:
+        db.session.rollback()
+        return {"error": e.message}, e.status_code
+
+    return {
+        "token": _issue_token(linked_user),
+        "userId": linked_user.id,
+        "teacherId": teacher.id,
+        "role": linked_user.role,
+        "phoneBound": bool(linked_user.phone),
+        "avatarUrl": linked_user.avatar_url,
+        "nickname": linked_user.nickname,
+    }
+
+
 @mp_bp.get("/auth/me")
 @jwt_required()
 def auth_me():
@@ -162,20 +196,12 @@ def _save_avatar(avatar_file):
         return None
     filename = f"{uuid.uuid4().hex}{ext}"
 
-    cos_bucket = os.getenv("COS_BUCKET")
-    cos_region = os.getenv("COS_REGION")
-    cos_secret_id = os.getenv("COS_SECRET_ID")
-    cos_secret_key = os.getenv("COS_SECRET_KEY")
-
-    if cos_bucket and cos_region and cos_secret_id and cos_secret_key:
-        from qcloud_cos import CosConfig, CosS3Client
-
-        config = CosConfig(Region=cos_region, SecretId=cos_secret_id, SecretKey=cos_secret_key)
-        client = CosS3Client(config)
-        key = f"avatars/{filename}"
-        client.put_object(Bucket=cos_bucket, Body=avatar_file.stream, Key=key, ContentType=avatar_file.content_type or "image/jpeg")
-        return f"https://{cos_bucket}.cos.{cos_region}.myqcloud.com/{key}"
-    else:
+    key = f"avatars/{filename}"
+    try:
+        return upload_to_cos(avatar_file.stream, key, avatar_file.content_type or "image/jpeg")
+    except StorageNotConfiguredError:
+        if not (current_app.debug or current_app.testing):
+            raise
         upload_dir = os.path.join(current_app.instance_path, "..", "uploads", "avatars")
         os.makedirs(upload_dir, exist_ok=True)
         avatar_file.save(os.path.join(upload_dir, filename))
@@ -199,7 +225,10 @@ def update_profile():
 
     avatar_file = request.files.get("avatar")
     if avatar_file and avatar_file.filename:
-        avatar_url = _save_avatar(avatar_file)
+        try:
+            avatar_url = _save_avatar(avatar_file)
+        except StorageNotConfiguredError as error:
+            return {"error": str(error)}, 503
         if avatar_url is None:
             return {"error": "avatar must be jpg/png/gif/webp"}, 400
         user.avatar_url = avatar_url

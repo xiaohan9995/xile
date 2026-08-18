@@ -152,6 +152,40 @@ def test_cloudbase_auth_bridge_rejects_tampered_identity(client, monkeypatch):
     assert response.status_code == 401
 
 
+def test_teacher_can_link_wechat_session_with_an_admin_generated_code(client):
+    admin_headers = {"Authorization": "Bearer test-admin-token"}
+    create_code = client.post("/api/admin/teachers/1/link-code", headers=admin_headers)
+    assert create_code.status_code == 201
+    code = create_code.get_json()["code"]
+
+    wechat_login = client.post("/api/mp/auth/login", json={"code": "a-new-wechat-user"})
+    assert wechat_login.status_code == 200
+    wechat_user_id = wechat_login.get_json()["userId"]
+    token = wechat_login.get_json()["token"]
+
+    linked = client.post(
+        "/api/mp/auth/link-teacher",
+        json={"code": code},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert linked.status_code == 200
+    payload = linked.get_json()
+    assert payload["teacherId"] == 1
+    assert payload["role"] == "teacher"
+    assert payload["token"]
+    me = client.get("/api/mp/auth/me", headers={"Authorization": f"Bearer {payload['token']}"})
+    assert me.status_code == 200
+    assert me.get_json()["userId"] == wechat_user_id
+    assert me.get_json()["teacherId"] == 1
+
+    reused = client.post(
+        "/api/mp/auth/link-teacher",
+        json={"code": code},
+        headers={"Authorization": f"Bearer {payload['token']}"},
+    )
+    assert reused.status_code == 410
+
+
 def test_mp_stats_overview_returns_counts(client):
     response = client.get("/api/mp/stats/overview")
 
@@ -168,6 +202,17 @@ def test_mp_homepage_returns_public_content(client):
     payload = response.get_json()
     assert isinstance(payload["announcements"], list)
     assert isinstance(payload["featuredTeachers"], list)
+
+
+def test_featured_teachers_are_loaded_in_small_pages(client):
+    response = client.get("/api/mp/teachers/featured?page=1&pageSize=1")
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert len(payload["items"]) == 1
+    assert payload["page"] == 1
+    assert payload["pageSize"] == 1
+    assert "hasMore" in payload
 
 
 def test_teacher_search_filters_by_name_and_hides_private_fields(client):

@@ -192,6 +192,7 @@ const logout = () => {
 };
 
 module.exports = {
+  applySession,
   loginWithWechat,
   loginWithPassword,
   getToken,

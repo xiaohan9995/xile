@@ -12,6 +12,9 @@ Page({
     },
     announcements: [],
     featuredTeachers: [],
+    featuredPage: 0,
+    featuredHasMore: true,
+    featuredLoading: false,
     homepageLoading: true,
     homepageLoadError: false,
   },
@@ -20,6 +23,7 @@ Page({
     this.setData({ statusBarHeight: app.globalData.statusBarHeight });
     this.loadStats();
     this.loadHomepage();
+    this.loadFeaturedTeachers({ reset: true });
   },
 
   async loadStats() {
@@ -45,7 +49,6 @@ Page({
       if (payload) {
         this.setData({
           announcements: payload.announcements || [],
-          featuredTeachers: payload.featuredTeachers || [],
         });
       }
     } catch (e) {
@@ -56,8 +59,34 @@ Page({
     }
   },
 
+  async loadFeaturedTeachers({ reset = false } = {}) {
+    if (this.data.featuredLoading || (!reset && !this.data.featuredHasMore)) return;
+    const page = reset ? 1 : this.data.featuredPage + 1;
+    this.setData({ featuredLoading: true });
+    try {
+      const payload = await request({
+        url: `/api/mp/teachers/featured?page=${page}&pageSize=4`,
+        silent: true,
+      });
+      const items = payload && Array.isArray(payload.items) ? payload.items : [];
+      this.setData({
+        featuredTeachers: reset ? items : this.data.featuredTeachers.concat(items),
+        featuredPage: page,
+        featuredHasMore: !!(payload && payload.hasMore),
+      });
+    } catch (e) {
+      console.warn('load featured teachers failed', e.code || e.message);
+    } finally {
+      this.setData({ featuredLoading: false });
+    }
+  },
+
   onPullDownRefresh() {
-    Promise.all([this.loadStats(), this.loadHomepage()]).finally(() => wx.stopPullDownRefresh());
+    Promise.all([
+      this.loadStats(),
+      this.loadHomepage(),
+      this.loadFeaturedTeachers({ reset: true }),
+    ]).finally(() => wx.stopPullDownRefresh());
   },
 
   retryHomepage() {
@@ -91,5 +120,9 @@ Page({
   openTeacher(e) {
     const id = e.currentTarget.dataset.id;
     wx.navigateTo({ url: `/pages/teacher-detail/teacher-detail?id=${id}` });
+  },
+
+  loadMoreFeaturedTeachers() {
+    this.loadFeaturedTeachers();
   },
 });

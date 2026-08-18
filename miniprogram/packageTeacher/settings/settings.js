@@ -1,26 +1,13 @@
-const { request, uploadFile } = require('../../utils/request');
+const { request } = require('../../utils/request');
 const auth = require('../../utils/auth');
 
 const app = getApp();
 
-function phoneAuthorizationMessage(detail) {
-  const errMsg = detail.errMsg || '';
-  if (errMsg.includes('user deny') || errMsg.includes('user cancel')) {
-    return '你已取消手机号授权';
-  }
-  if (detail.errno === 102 || errMsg.includes('jsapi has no permission')) {
-    return '当前小程序未开通手机号能力';
-  }
-  return '手机号授权暂不可用，请使用真机重试';
-}
-
 Page({
   data: {
     statusBarHeight: 20,
-    avatarUrl: '',
     nickname: '',
-    phone: '',
-    loading: false,
+    savingNickname: false,
     currentPassword: '',
     newPassword: '',
     changingPassword: false,
@@ -36,39 +23,13 @@ Page({
     try {
       const data = await request({ url: '/api/mp/auth/me' });
       this.setData({
-        avatarUrl: data.avatarUrl || auth.getAvatarUrl() || '',
         nickname: data.nickname || auth.getNickname() || '',
-        phone: data.phone || '',
       });
     } catch (err) {
       this.setData({
-        avatarUrl: auth.getAvatarUrl() || '',
         nickname: auth.getNickname() || '',
       });
     }
-  },
-
-  onChooseAvatar(e) {
-    const { avatarUrl } = e.detail;
-    if (!avatarUrl) return;
-    this.setData({ loading: true });
-    uploadFile({
-      url: '/api/mp/auth/update-profile',
-      filePath: avatarUrl,
-      name: 'avatar',
-      formData: { nickname: this.data.nickname || '' },
-    })
-      .then((res) => {
-        this.setData({ avatarUrl: res.avatarUrl || avatarUrl });
-        auth.setAvatarUrl(res.avatarUrl);
-        wx.showToast({ title: '头像已更新', icon: 'success' });
-      })
-      .catch(() => {
-        wx.showToast({ title: '上传失败', icon: 'none' });
-      })
-      .finally(() => {
-        this.setData({ loading: false });
-      });
   },
 
   onNicknameInput(e) {
@@ -86,73 +47,71 @@ Page({
     }
     this.setData({ changingPassword: true });
     try {
-      await request({ url: '/api/mp/auth/change-password', method: 'POST', data: {
-        currentPassword: this.data.currentPassword,
-        newPassword: this.data.newPassword,
-      } });
+      await request({
+        url: '/api/mp/auth/change-password',
+        method: 'POST',
+        silent: true,
+        data: {
+          currentPassword: this.data.currentPassword,
+          newPassword: this.data.newPassword,
+        },
+      });
       this.setData({ currentPassword: '', newPassword: '' });
       wx.showToast({ title: '密码已更新', icon: 'success' });
     } catch (err) {
-      wx.showToast({ title: '密码更新失败', icon: 'none' });
+      const message = err.statusCode === 404
+        ? '当前微信账号未设置教师登录密码'
+        : (err.message || '密码更新失败');
+      wx.showToast({ title: message, icon: 'none', duration: 2500 });
     } finally {
       this.setData({ changingPassword: false });
     }
   },
 
-  onGetPhoneNumber(e) {
-    const detail = e.detail || {};
-    const code = detail.code;
-    if (detail.errMsg !== 'getPhoneNumber:ok' || !code) {
-      console.warn('getPhoneNumber failed', {
-        errMsg: detail.errMsg,
-        errno: detail.errno,
-      });
-      wx.showToast({ title: phoneAuthorizationMessage(detail), icon: 'none' });
-      return;
-    }
-    this.setData({ loading: true });
-    request({
-      url: '/api/mp/auth/bind-phone',
-      method: 'POST',
-      data: { code },
-    })
-      .then((res) => {
-        this.setData({ phone: res.phone });
-        auth.setPhoneBound(true);
-        auth.setTeacherIdentity(res.teacherId, res.role);
-        wx.showToast({ title: '手机号已更新', icon: 'success' });
-      })
-      .catch(() => {
-        wx.showToast({ title: '更换失败', icon: 'none' });
-      })
-      .finally(() => {
-        this.setData({ loading: false });
-      });
-  },
-
-  async onSave() {
+  async onSaveNickname() {
     const nickname = (this.data.nickname || '').trim();
     if (!nickname) {
       wx.showToast({ title: '请填写昵称', icon: 'none' });
       return;
     }
-    this.setData({ loading: true });
+    this.setData({ savingNickname: true });
     try {
       const res = await request({
         url: '/api/mp/auth/update-profile',
         method: 'POST',
+        silent: true,
         data: { nickname },
       });
       auth.setNickname(res.nickname || nickname);
-      wx.showToast({ title: '已保存', icon: 'success' });
+      this.setData({ nickname: res.nickname || nickname });
+      wx.showToast({ title: '昵称已保存', icon: 'success' });
     } catch (err) {
-      wx.showToast({ title: '保存失败', icon: 'none' });
+      wx.showToast({ title: err.message || '昵称保存失败', icon: 'none' });
     } finally {
-      this.setData({ loading: false });
+      this.setData({ savingNickname: false });
     }
   },
 
+  onLogout() {
+    wx.showModal({
+      title: '退出登录',
+      content: '退出后需要重新使用微信登录，个人资料和认证记录不会被删除。',
+      confirmText: '退出',
+      confirmColor: '#c84b45',
+      cancelText: '取消',
+      success: (result) => {
+        if (!result.confirm) return;
+        auth.logout();
+        wx.reLaunch({ url: '/pages/index/index' });
+      },
+    });
+  },
+
   goBack() {
-    wx.navigateBack();
+    if (getCurrentPages().length > 1) {
+      wx.navigateBack();
+      return;
+    }
+    wx.reLaunch({ url: '/pages/index/index' });
   },
 });

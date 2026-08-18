@@ -1,64 +1,90 @@
 <view class="page-shell profile-page">
-  <!-- Header -->
   <view class="page-header" style="padding-top:{{statusBarHeight}}px;">
     <view class="page-header__back" bindtap="goBack">‹</view>
     <text class="page-header__title">{{isTeacher ? '我的认证' : '我的'}}</text>
-    <navigator class="page-header__right page-header__home" url="/pages/index/index" open-type="reLaunch">首页</navigator>
+    <view class="page-header__right"></view>
   </view>
 
   <view class="profile-body">
-    <!-- Teacher Profile -->
-    <view wx:if="{{isTeacher}}" class="avatar-section">
-      <view class="avatar-wrap">
-        <image wx:if="{{teacher.avatarUrl}}" class="avatar-img" src="{{teacher.avatarUrl}}" mode="aspectFill" alt="{{teacher.name}}的头像" />
-        <view wx:else class="avatar-img avatar-img--placeholder">
-          <text class="avatar-initial">{{teacher.name[0] || '?'}}</text>
+    <view class="identity-card {{isTeacher ? 'identity-card--teacher' : ''}}">
+      <view class="identity-card__top">
+        <button
+          class="avatar-wrap avatar-editor"
+          open-type="chooseAvatar"
+          bindchooseavatar="onChooseAvatar"
+          disabled="{{avatarUploading}}"
+          aria-label="更换头像"
+        >
+          <image wx:if="{{user.avatarUrl || teacher.avatarUrl}}" class="avatar-img" src="{{user.avatarUrl || teacher.avatarUrl}}" mode="aspectFill" alt="{{user.nickname || teacher.name || '微信用户'}}的头像" />
+          <view wx:else class="avatar-img avatar-img--placeholder">
+            <text class="avatar-initial">{{user.nickname[0] || teacher.name[0] || '我'}}</text>
+          </view>
+          <view class="avatar-badge avatar-badge--edit">{{avatarUploading ? '…' : '换'}}</view>
+        </button>
+
+        <view class="identity-info">
+          <text class="identity-name">{{user.nickname || teacher.name || '微信用户'}}</text>
+          <view class="identity-role">
+            <text wx:if="{{isTeacher}}">认证姓名 {{teacher.name}} · {{teacher.tier}} {{teacher.tierName}}</text>
+            <text wx:else>微信用户 · 尚未关联讲师档案</text>
+          </view>
+          <text class="identity-bio" wx:if="{{isTeacher && teacher.bio}}">{{teacher.bio}}</text>
+          <text class="identity-bio" wx:else>{{isTeacher ? '认证信息已同步至喜乐瑜伽教师服务' : '点击头像即可更换个人图像'}}</text>
         </view>
-        <view class="avatar-badge">✓</view>
       </view>
-      <text class="profile-name">{{teacher.name}}</text>
-      <view class="level-badge">
-        <view class="level-dot"></view>
-        <text class="level-text">{{teacher.tier}} {{teacher.tierName}}</text>
-      </view>
-      <text class="profile-bio" wx:if="{{teacher.bio}}">「{{teacher.bio}}」</text>
     </view>
 
-    <!-- Non-Teacher Profile -->
-    <view wx:else class="avatar-section">
-      <view class="avatar-wrap">
-        <image wx:if="{{user.avatarUrl}}" class="avatar-img" src="{{user.avatarUrl}}" mode="aspectFill" alt="{{user.nickname}}的头像" />
-        <view wx:else class="avatar-img avatar-img--placeholder">
-          <text class="avatar-initial">{{user.nickname[0] || '我'}}</text>
+    <button class="primary-status-card {{isTeacher ? 'primary-status-card--teacher' : 'primary-status-card--account'}}" bindtap="onMenuTap" data-url="{{primaryAction.url}}">
+      <view class="primary-status-card__content">
+        <text class="primary-status-card__eyebrow">{{primaryAction.eyebrow}}</text>
+        <text class="primary-status-card__title">{{primaryAction.title}}</text>
+        <text class="primary-status-card__detail">{{primaryAction.detail}}</text>
+      </view>
+      <view class="primary-status-card__action">
+        <text>{{primaryAction.actionText}}</text>
+        <text class="primary-status-card__arrow">›</text>
+      </view>
+    </button>
+
+    <view class="quick-status" wx:if="{{isTeacher}}">
+      <view class="quick-status__item">
+        <text class="quick-status__label">认证有效期</text>
+        <text class="quick-status__value">{{teacher.validUntil}}</text>
+      </view>
+      <view class="quick-status__divider"></view>
+      <view class="quick-status__item">
+        <text class="quick-status__label">剩余有效天数</text>
+        <text class="quick-status__value">{{teacher.daysLeft}} 天</text>
+      </view>
+    </view>
+
+    <button wx:if="{{isTeacher}}" class="certificate-preview" bindtap="onMenuTap" data-url="/packageTeacher/cert-view/cert-view">
+      <view class="certificate-preview__header">
+        <view>
+          <text class="certificate-preview__eyebrow">OFFICIAL CERTIFICATE</text>
+          <text class="certificate-preview__title">我的认证证书</text>
+        </view>
+        <text class="certificate-preview__link">查看详情 ›</text>
+      </view>
+      <view class="certificate-preview__sheet">
+        <image wx:if="{{certImageUrl}}" class="certificate-preview__image" src="{{certImageUrl}}" mode="aspectFill" alt="{{teacher.name}}的电子认证证书" />
+        <view wx:else class="certificate-preview__placeholder">
+          <text class="certificate-preview__seal">喜</text>
+          <text class="certificate-preview__org">喜乐瑜伽教师认证中心</text>
+          <text class="certificate-preview__name">{{teacher.name}}</text>
+          <text class="certificate-preview__tier">{{teacher.tier}} {{teacher.tierName}}</text>
+          <text class="certificate-preview__loading">{{certImageLoading ? '正在生成电子证书' : '点击查看电子证书'}}</text>
         </view>
       </view>
-      <text class="profile-name">{{user.nickname || '用户'}}</text>
-      <view class="level-badge level-badge--student">
-        <text class="level-text">普通用户</text>
-      </view>
+    </button>
+
+    <view class="section-heading">
+      <text class="section-heading__title">{{isTeacher ? '讲师服务' : '账户与服务'}}</text>
+      <text class="section-heading__note">{{isTeacher ? '管理你的认证资料与年度记录' : '管理个人资料，获取认证协助'}}</text>
     </view>
 
-    <!-- Metrics Grid (teacher only) -->
-    <view wx:if="{{isTeacher}}" class="metrics-grid">
-      <view class="metric-card">
-        <text class="metric-label">🗓 认证到期</text>
-        <text class="metric-value">{{teacher.validUntil}}</text>
-      </view>
-      <view class="metric-card">
-        <text class="metric-label">⏱ 认证天数</text>
-        <text class="metric-value">{{teacher.daysLeft}} 天</text>
-      </view>
-    </view>
-
-    <!-- Non-Teacher Prompt -->
-    <view wx:if="{{!isTeacher}}" class="not-teacher-prompt">
-      <text class="prompt-text">尚未关联讲师档案</text>
-      <text class="prompt-hint">可使用管理员提供的教师账号关联档案；手机号可在个人设置中自愿绑定。</text>
-    </view>
-
-    <!-- Menu List -->
     <view class="menu-list">
-      <view
+      <button
         wx:for="{{menuItems}}"
         wx:key="title"
         class="menu-item"
@@ -73,8 +99,8 @@
           </view>
         </view>
         <text class="menu-arrow">›</text>
-      </view>
+      </button>
     </view>
   </view>
-<tab-bar active="my" />
+  <tab-bar active="my" />
 </view>

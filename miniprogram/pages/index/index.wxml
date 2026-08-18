@@ -52,27 +52,32 @@
     </view>
 
     <!-- Featured Teachers -->
-    <view class="featured-card" wx:if="{{featuredTeachers.length > 0}}">
+    <view class="featured-card" wx:if="{{featuredTeachers.length > 0 || featuredLoading}}">
       <view class="featured-header">
         <text class="featured-title">认证讲师</text>
         <text class="featured-more" bindtap="goSearch">查看全部</text>
       </view>
-      <scroll-view scroll-x class="featured-scroll" enhanced show-scrollbar="{{false}}">
-        <view
-          wx:for="{{featuredTeachers}}"
-          wx:key="id"
-          class="featured-teacher"
-          bindtap="openTeacher"
-          data-id="{{item.id}}"
-        >
-          <view class="featured-avatar-wrap">
-            <image wx:if="{{item.avatarUrl}}" class="featured-avatar" src="{{item.avatarUrl}}" mode="aspectFill" />
-            <view wx:else class="featured-avatar featured-avatar--placeholder">
-              <text class="featured-avatar-initial">{{item.name[0]}}</text>
+      <scroll-view scroll-x class="featured-scroll" enhanced show-scrollbar="{{false}}" bindscrolltolower="loadMoreFeaturedTeachers">
+        <view class="featured-scroll__content">
+          <view
+            wx:for="{{featuredTeachers}}"
+            wx:key="id"
+            class="featured-teacher"
+            bindtap="openTeacher"
+            data-id="{{item.id}}"
+          >
+            <view class="featured-avatar-wrap">
+              <image wx:if="{{item.avatarUrl}}" class="featured-avatar" src="{{item.avatarUrl}}" mode="aspectFill" />
+              <view wx:else class="featured-avatar featured-avatar--placeholder">
+                <text class="featured-avatar-initial">{{item.name[0]}}</text>
+              </view>
             </view>
+            <text class="featured-name">{{item.xileName || item.name}}</text>
+            <text class="featured-tier">{{item.tier}} {{item.tierName}}</text>
           </view>
-          <text class="featured-name">{{item.xileName || item.name}}</text>
-          <text class="featured-tier">{{item.tier}} {{item.tierName}}</text>
+          <view class="featured-load-more" wx:if="{{featuredLoading}}"><text>加载中</text></view>
+          <view class="featured-load-more" wx:elif="{{featuredHasMore}}" bindtap="loadMoreFeaturedTeachers"><text>滑动查看更多</text></view>
+          <view class="featured-load-more" wx:else><text>已展示全部</text></view>
         </view>
       </scroll-view>
     </view>
