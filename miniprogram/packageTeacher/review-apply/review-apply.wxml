@@ -3,7 +3,7 @@
   <view class="page-header" style="padding-top:{{statusBarHeight}}px;">
     <view class="page-header__back" bindtap="goBack">‹</view>
     <text class="page-header__title">材料上传</text>
-    <view class="page-header__right"></view>
+    <navigator class="page-header__right page-header__home" url="/pages/index/index" open-type="reLaunch">首页</navigator>
   </view>
 
   <!-- Submission context -->

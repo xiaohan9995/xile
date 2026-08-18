@@ -1,0 +1,19 @@
+{
+  "$schema": "https://static.cloudbase.net/cli/cloudbaserc.schema.json",
+  "envId": "xile-yoga-d4g2za8xi82a16810",
+  "functionRoot": ".",
+  "functions": [
+    {
+      "name": "mp-auth-bridge",
+      "handler": "index.main",
+      "runtime": "Nodejs18.15",
+      "timeout": 10,
+      "memorySize": 128,
+      "installDependency": true,
+      "envVariables": {
+        "CLOUDBASE_AUTH_BRIDGE_SECRET": "{{env.CLOUDBASE_AUTH_BRIDGE_SECRET}}"
+      },
+      "ignore": ["node_modules/**", ".git/**"]
+    }
+  ]
+}

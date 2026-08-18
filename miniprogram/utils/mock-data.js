@@ -153,11 +153,18 @@ const mockResponse = (url, options = {}) => {
       role: 'teacher',
       phoneBound: false,
       teacherId: 2,
+      avatarUrl: '',
+      nickname: '',
     };
   }
 
+  if (method === 'POST' && path === '/api/mp/auth/update-profile') {
+    const data = options.data || {};
+    return { avatarUrl: '', nickname: data.nickname || '微信用户' };
+  }
+
   if (method === 'POST' && path === '/api/mp/auth/bind-phone') {
-    return { phone: '13800001111' };
+    return { phone: '13800001111', teacherId: 2, role: 'teacher', matchedTeacher: true };
   }
 
   if (path === '/api/mp/stats/overview') {

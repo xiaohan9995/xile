@@ -2,15 +2,15 @@
   <!-- Header -->
   <view class="page-header" style="padding-top:{{statusBarHeight}}px;">
     <view class="page-header__back" bindtap="goBack">‹</view>
-    <text class="page-header__title">{{isTeacher ? '讲师简介' : '我的'}}</text>
-    <view class="page-header__right"></view>
+    <text class="page-header__title">{{isTeacher ? '我的认证' : '我的'}}</text>
+    <navigator class="page-header__right page-header__home" url="/pages/index/index" open-type="reLaunch">首页</navigator>
   </view>
 
   <view class="profile-body">
     <!-- Teacher Profile -->
     <view wx:if="{{isTeacher}}" class="avatar-section">
       <view class="avatar-wrap">
-        <image wx:if="{{teacher.avatarUrl}}" class="avatar-img" src="{{teacher.avatarUrl}}" mode="aspectFill" />
+        <image wx:if="{{teacher.avatarUrl}}" class="avatar-img" src="{{teacher.avatarUrl}}" mode="aspectFill" alt="{{teacher.name}}的头像" />
         <view wx:else class="avatar-img avatar-img--placeholder">
           <text class="avatar-initial">{{teacher.name[0] || '?'}}</text>
         </view>
@@ -27,7 +27,7 @@
     <!-- Non-Teacher Profile -->
     <view wx:else class="avatar-section">
       <view class="avatar-wrap">
-        <image wx:if="{{user.avatarUrl}}" class="avatar-img" src="{{user.avatarUrl}}" mode="aspectFill" />
+        <image wx:if="{{user.avatarUrl}}" class="avatar-img" src="{{user.avatarUrl}}" mode="aspectFill" alt="{{user.nickname}}的头像" />
         <view wx:else class="avatar-img avatar-img--placeholder">
           <text class="avatar-initial">{{user.nickname[0] || '我'}}</text>
         </view>
@@ -52,8 +52,8 @@
 
     <!-- Non-Teacher Prompt -->
     <view wx:if="{{!isTeacher}}" class="not-teacher-prompt">
-      <text class="prompt-text">您尚未完成教师认证</text>
-      <text class="prompt-hint">完成认证后可查看证书、年审记录等专属功能</text>
+      <text class="prompt-text">尚未关联讲师档案</text>
+      <text class="prompt-hint">可使用管理员提供的教师账号关联档案；手机号可在个人设置中自愿绑定。</text>
     </view>
 
     <!-- Menu List -->

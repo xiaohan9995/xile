@@ -3,6 +3,17 @@ const auth = require('../../utils/auth');
 
 const app = getApp();
 
+function phoneAuthorizationMessage(detail) {
+  const errMsg = detail.errMsg || '';
+  if (errMsg.includes('user deny') || errMsg.includes('user cancel')) {
+    return '你已取消手机号授权';
+  }
+  if (detail.errno === 102 || errMsg.includes('jsapi has no permission')) {
+    return '当前小程序未开通手机号能力';
+  }
+  return '手机号授权暂不可用，请使用真机重试';
+}
+
 Page({
   data: {
     statusBarHeight: 20,
@@ -16,7 +27,7 @@ Page({
   },
 
   onLoad() {
-    if (!auth.requireAuth('/packageTeacher/settings/settings')) return;
+    if (!auth.requireLogin('/packageTeacher/settings/settings')) return;
     this.setData({ statusBarHeight: app.globalData.statusBarHeight });
     this.loadUserInfo();
   },
@@ -89,11 +100,16 @@ Page({
   },
 
   onGetPhoneNumber(e) {
-    if (e.detail.errMsg !== 'getPhoneNumber:ok') {
-      wx.showToast({ title: '已取消', icon: 'none' });
+    const detail = e.detail || {};
+    const code = detail.code;
+    if (detail.errMsg !== 'getPhoneNumber:ok' || !code) {
+      console.warn('getPhoneNumber failed', {
+        errMsg: detail.errMsg,
+        errno: detail.errno,
+      });
+      wx.showToast({ title: phoneAuthorizationMessage(detail), icon: 'none' });
       return;
     }
-    const code = e.detail.code;
     this.setData({ loading: true });
     request({
       url: '/api/mp/auth/bind-phone',

@@ -10,6 +10,7 @@ from ...extensions import db, limiter
 from ...models import User
 from ...services.auth_service import (
     AuthError,
+    cloudbase_login,
     get_phone_number,
     link_user_to_teacher_by_phone,
     password_login,
@@ -28,6 +29,27 @@ def mp_login():
 
     try:
         token, user = wx_login(code)
+    except AuthError as e:
+        return {"error": e.message}, e.status_code
+
+    return {
+        "token": token,
+        "userId": user.id,
+        "teacherId": user.teacher_id,
+        "role": user.role,
+        "phoneBound": bool(user.phone),
+        "avatarUrl": user.avatar_url,
+        "nickname": user.nickname,
+    }
+
+
+@mp_bp.post("/auth/cloudbase-login")
+@limiter.limit("10 per minute")
+def mp_cloudbase_login():
+    """Exchange the verified identity returned by the CloudBase bridge function."""
+    payload = request.get_json(silent=True) or {}
+    try:
+        token, user = cloudbase_login(payload.get("assertion"))
     except AuthError as e:
         return {"error": e.message}, e.status_code
 

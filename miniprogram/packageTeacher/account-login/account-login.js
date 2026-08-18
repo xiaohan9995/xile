@@ -1,8 +1,14 @@
 const auth = require('../../utils/auth');
+const app = getApp();
 
 Page({
-  data: { username: '', password: '', loading: false, returnUrl: '/packageTeacher/home/home' },
-  onLoad(options) { this.setData({ returnUrl: decodeURIComponent(options.returnUrl || '/packageTeacher/home/home') }); },
+  data: { username: '', password: '', loading: false, returnUrl: '/packageTeacher/home/home', statusBarHeight: 20 },
+  onLoad(options) {
+    this.setData({
+      returnUrl: decodeURIComponent(options.returnUrl || '/packageTeacher/home/home'),
+      statusBarHeight: app.globalData.statusBarHeight || 20,
+    });
+  },
   input(e) { this.setData({ [e.currentTarget.dataset.field]: e.detail.value }); },
   async submit() {
     const { username, password, returnUrl } = this.data;

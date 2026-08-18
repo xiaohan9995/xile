@@ -1,9 +1,14 @@
+import hashlib
+import hmac
+import time
+
 import pytest
 
 from backend.app import create_app
 from backend.app.extensions import db
-from backend.app.models import SystemConfig, TeacherTier
-from backend.app.seed import ensure_system_defaults
+from backend.app.models import AdminUser, SystemConfig, TeacherTier
+from backend.app.seed import ensure_initial_admin, ensure_system_defaults, reset_admin_password
+from backend.app.services.auth_service import AuthError, wx_login
 
 
 @pytest.fixture()
@@ -53,6 +58,100 @@ def test_production_reference_data_initialization_is_idempotent():
         assert TeacherTier.query.filter_by(code="L1").first().review_cycle_years == 4
 
 
+def test_initial_admin_is_created_once_without_overwriting_an_existing_admin():
+    app = create_app(
+        {
+            "TESTING": True,
+            "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
+            "ADMIN_DEV_TOKEN": "test-admin-token",
+        }
+    )
+    with app.app_context():
+        db.create_all()
+        ensure_initial_admin("xile_admin", "a-secure-initial-password")
+
+        admin = AdminUser.query.one()
+        assert admin.username == "xile_admin"
+        assert admin.role == "super_admin"
+
+        ensure_initial_admin("another_admin", "another-secure-password")
+        assert AdminUser.query.count() == 1
+
+        reset_admin_password("xile_admin", "a-new-secure-admin-password")
+        client = app.test_client()
+        response = client.post(
+            "/api/admin/login",
+            json={"username": "xile_admin", "password": "a-new-secure-admin-password"},
+        )
+        assert response.status_code == 200
+
+        with pytest.raises(RuntimeError, match="does not exist"):
+            reset_admin_password("missing_admin", "another-secure-password")
+
+
+def test_wechat_login_requires_credentials_outside_development(monkeypatch):
+    monkeypatch.delenv("WECHAT_APPID", raising=False)
+    monkeypatch.delenv("WECHAT_SECRET", raising=False)
+    app = create_app(
+        {
+            "TESTING": False,
+            "DEBUG": False,
+            "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
+            "JWT_SECRET_KEY": "x" * 32,
+        }
+    )
+    with app.app_context(), pytest.raises(AuthError, match="微信登录尚未配置"):
+        wx_login("real-wechat-login-code")
+
+
+def test_cloudbase_auth_bridge_exchanges_verified_identity_for_app_session(client, monkeypatch):
+    secret = "cloudbase-bridge-test-secret-at-least-32-bytes"
+    timestamp = int(time.time())
+    nonce = "a" * 32
+    monkeypatch.setenv("WECHAT_APPID", "wxf34d7e608bc79d85")
+    client.application.config["CLOUDBASE_AUTH_BRIDGE_SECRET"] = secret
+    message = f"cloudbase-openid-1\nwxf34d7e608bc79d85\n{timestamp}\n{nonce}".encode("utf-8")
+    signature = hmac.new(secret.encode("utf-8"), message, hashlib.sha256).hexdigest()
+
+    response = client.post(
+        "/api/mp/auth/cloudbase-login",
+        json={
+            "assertion": {
+                "openid": "cloudbase-openid-1",
+                "appid": "wxf34d7e608bc79d85",
+                "timestamp": timestamp,
+                "nonce": nonce,
+                "signature": signature,
+            }
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert payload["token"]
+    assert payload["phoneBound"] is False
+
+
+def test_cloudbase_auth_bridge_rejects_tampered_identity(client, monkeypatch):
+    monkeypatch.setenv("WECHAT_APPID", "wxf34d7e608bc79d85")
+    client.application.config["CLOUDBASE_AUTH_BRIDGE_SECRET"] = "cloudbase-bridge-test-secret-at-least-32-bytes"
+
+    response = client.post(
+        "/api/mp/auth/cloudbase-login",
+        json={
+            "assertion": {
+                "openid": "cloudbase-openid-1",
+                "appid": "wxf34d7e608bc79d85",
+                "timestamp": int(time.time()),
+                "nonce": "a" * 32,
+                "signature": "not-a-valid-signature",
+            }
+        },
+    )
+
+    assert response.status_code == 401
+
+
 def test_mp_stats_overview_returns_counts(client):
     response = client.get("/api/mp/stats/overview")
 
@@ -60,6 +159,15 @@ def test_mp_stats_overview_returns_counts(client):
     payload = response.get_json()
     assert payload["totalTeachers"] >= 2
     assert payload["totalStudios"] >= 2
+
+
+def test_mp_homepage_returns_public_content(client):
+    response = client.get("/api/mp/homepage")
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert isinstance(payload["announcements"], list)
+    assert isinstance(payload["featuredTeachers"], list)
 
 
 def test_teacher_search_filters_by_name_and_hides_private_fields(client):

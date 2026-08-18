@@ -12,6 +12,8 @@ Page({
     },
     announcements: [],
     featuredTeachers: [],
+    homepageLoading: true,
+    homepageLoadError: false,
   },
 
   onLoad() {
@@ -31,10 +33,13 @@ Page({
           },
         });
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn('load overview stats failed', e.code || e.message);
+    }
   },
 
   async loadHomepage() {
+    this.setData({ homepageLoading: true, homepageLoadError: false });
     try {
       const payload = await request({ url: '/api/mp/homepage', silent: true });
       if (payload) {
@@ -43,7 +48,20 @@ Page({
           featuredTeachers: payload.featuredTeachers || [],
         });
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn('load homepage failed', e.code || e.message);
+      this.setData({ homepageLoadError: true });
+    } finally {
+      this.setData({ homepageLoading: false });
+    }
+  },
+
+  onPullDownRefresh() {
+    Promise.all([this.loadStats(), this.loadHomepage()]).finally(() => wx.stopPullDownRefresh());
+  },
+
+  retryHomepage() {
+    this.loadHomepage();
   },
 
   formatNumber(num) {
@@ -55,8 +73,12 @@ Page({
   },
 
   goMyCert() {
-    if (!auth.isLoggedIn() || !auth.isPhoneBound() || !auth.isTeacher()) {
+    if (!auth.isLoggedIn()) {
       wx.navigateTo({ url: auth.loginUrl('/packageTeacher/home/home') });
+      return;
+    }
+    if (!auth.isTeacher()) {
+      wx.navigateTo({ url: '/packageTeacher/profile/profile' });
       return;
     }
     wx.navigateTo({ url: '/packageTeacher/home/home' });

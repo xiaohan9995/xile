@@ -30,9 +30,11 @@ def homepage_data():
         .limit(5)
         .all()
     )
+    # MySQL uses RAND(), whereas SQLite (used by local tests) uses random().
+    random_order = func.rand() if db.engine.dialect.name in {"mysql", "mariadb"} else func.random()
     featured_teachers = (
         Teacher.query.filter(Teacher.status == "active")
-        .order_by(func.random())
+        .order_by(random_order)
         .limit(3)
         .all()
     )

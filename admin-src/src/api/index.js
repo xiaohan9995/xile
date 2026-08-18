@@ -17,8 +17,12 @@ instance.interceptors.request.use((config) => {
 instance.interceptors.response.use(
   (res) => res.data,
   (err) => {
-    if (err.response?.status === 401) {
+    // A failed login is expected to be shown on the login page. Redirecting it
+    // immediately hides the actual reason and makes the page appear to reload.
+    const isLoginRequest = err.config?.url === '/login'
+    if (err.response?.status === 401 && !isLoginRequest) {
       localStorage.removeItem('admin_token')
+      localStorage.removeItem('admin_profile')
       window.location.href = '/admin/login'
     }
     return Promise.reject(err)

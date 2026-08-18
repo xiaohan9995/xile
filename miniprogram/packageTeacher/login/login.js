@@ -1,4 +1,3 @@
-const { request } = require('../../utils/request');
 const auth = require('../../utils/auth');
 
 Page({
@@ -6,71 +5,28 @@ Page({
     loading: false,
     loginReady: false,
     returnUrl: '',
-    step: 0,
   },
 
   onLoad(options) {
-    this.setData({
-      returnUrl: decodeURIComponent(options.returnUrl || '/packageTeacher/home/home'),
-    });
-    this.setData({ loginReady: true });
-    if (auth.isLoggedIn() && auth.isPhoneBound() && auth.isTeacher()) {
-      wx.reLaunch({ url: this.data.returnUrl });
-    } else if (auth.isLoggedIn() && !auth.isPhoneBound()) {
-      this.setData({ step: 2 });
-    } else if (auth.isLoggedIn()) {
-      this.setData({ step: 3 });
+    const returnUrl = decodeURIComponent(options.returnUrl || '/packageTeacher/home/home');
+    this.setData({ returnUrl, loginReady: true });
+
+    if (auth.isLoggedIn()) {
+      wx.reLaunch({ url: auth.isTeacher() ? returnUrl : '/packageTeacher/profile/profile' });
     }
   },
 
   async onWechatLogin() {
+    if (this.data.loading) return;
     this.setData({ loading: true });
     try {
       const data = await auth.loginWithWechat();
-      if (data.phoneBound && data.teacherId) {
-        wx.reLaunch({ url: this.data.returnUrl });
-        return;
-      }
-      this.setData({ step: data.phoneBound ? 3 : 2 });
+      wx.reLaunch({ url: data.teacherId ? this.data.returnUrl : '/packageTeacher/profile/profile' });
     } catch (err) {
-      wx.showToast({ title: '微信登录失败，请重试', icon: 'none' });
+      wx.showToast({ title: err.message || '微信登录失败，请重试', icon: 'none' });
     } finally {
       this.setData({ loading: false });
     }
-  },
-
-  onGetPhoneNumber(e) {
-    if (e.detail.errMsg !== 'getPhoneNumber:ok') {
-      wx.showToast({ title: '已取消验证', icon: 'none' });
-      return;
-    }
-    const code = e.detail.code;
-    this.setData({ loading: true });
-
-    request({
-      url: '/api/mp/auth/bind-phone',
-      method: 'POST',
-      data: { code },
-    })
-      .then((data) => {
-        auth.setPhoneBound(true);
-        auth.setTeacherIdentity(data.teacherId, data.role);
-        if (!data.matchedTeacher) {
-          this.setData({ step: 3 });
-          wx.showToast({ title: '未匹配到教师档案', icon: 'none' });
-          return;
-        }
-        wx.showToast({ title: '验证成功', icon: 'success' });
-        setTimeout(() => {
-          wx.reLaunch({ url: this.data.returnUrl });
-        }, 500);
-      })
-      .catch(() => {
-        wx.showToast({ title: '验证失败，请重试', icon: 'none' });
-      })
-      .finally(() => {
-        this.setData({ loading: false });
-      });
   },
 
   onSkip() {

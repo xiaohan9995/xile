@@ -35,6 +35,7 @@ Page({
         teachingRecords: (records.items || []).filter((item) => item.status === 'submitted').map((item) => ({ ...item, selected: selectedIds.includes(item.id) })),
       });
     } catch (err) {
+      console.warn('load review preparation failed', err.code || err.message);
       // The application remains usable when there are no historical records yet.
     }
   },

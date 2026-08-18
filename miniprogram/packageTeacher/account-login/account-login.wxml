@@ -1,10 +1,15 @@
 <view class="login-page">
-  <view class="page-header"><view class="page-header__back" bindtap="goBack">‹</view><text class="page-header__title">教师登录</text><view class="page-header__right"></view></view>
+  <view class="login-nav" style="padding-top:{{statusBarHeight}}px;"><view class="login-nav__back" bindtap="goBack">‹</view></view>
+  <view class="login-intro">
+    <image class="login-intro__avatar" src="/assets/xile-yoga-miniapp-avatar.png" mode="aspectFill" />
+    <text class="login-intro__title">教师账号登录</text>
+    <text class="login-intro__note">使用管理员提供的账号进入教师工作台</text>
+  </view>
   <view class="login-card">
-    <text class="title">教师工作台</text><text class="hint">使用管理员提供的教师编号或账号登录</text>
-    <input class="field" placeholder="教师编号 / 登录账号" value="{{username}}" bindinput="input" data-field="username" />
-    <input class="field" password placeholder="登录密码" value="{{password}}" bindinput="input" data-field="password" />
+    <view class="form-cell"><text class="form-cell__label">账号</text><input class="field" placeholder="教师编号或登录账号" value="{{username}}" bindinput="input" data-field="username" /></view>
+    <view class="form-cell"><text class="form-cell__label">密码</text><input class="field" password placeholder="请输入登录密码" value="{{password}}" bindinput="input" data-field="password" /></view>
     <button class="primary" bindtap="submit" loading="{{loading}}" disabled="{{loading}}">登录</button>
     <text class="help">首次登录请使用管理员提供的初始密码；登录后请修改密码。</text>
   </view>
+  <text class="wechat-link" bindtap="goBack">返回微信登录</text>
 </view>
