@@ -188,7 +188,7 @@ image {
   justify-content: center;
   font-size: 42rpx;
   color: var(--color-text);
-  line-height: 1;
+  line-height: normal;
 }
 
 .page-header__back:active {

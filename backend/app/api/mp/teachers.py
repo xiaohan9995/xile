@@ -1,13 +1,13 @@
 from datetime import date
 import os
 
-from flask import request, send_file
+from flask import current_app, redirect, request, send_file
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from sqlalchemy import extract
-from sqlalchemy.sql.expression import func
 
 from ...extensions import db, limiter
 from ...models import Announcement, AnnualReview, Studio, Teacher, TeacherTier, User
+from ...utils.storage import StorageNotConfiguredError, cos_is_configured, upload_to_cos
 from .helpers import (
     _certification_status,
     _date_text,
@@ -30,14 +30,6 @@ def homepage_data():
         .limit(5)
         .all()
     )
-    # MySQL uses RAND(), whereas SQLite (used by local tests) uses random().
-    random_order = func.rand() if db.engine.dialect.name in {"mysql", "mariadb"} else func.random()
-    featured_teachers = (
-        Teacher.query.filter(Teacher.status == "active")
-        .order_by(random_order)
-        .limit(3)
-        .all()
-    )
     return {
         "announcements": [
             {
@@ -48,7 +40,39 @@ def homepage_data():
             }
             for a in announcements
         ],
-        "featuredTeachers": [_teacher_summary(t) for t in featured_teachers],
+        # Teacher cards are loaded separately through the paginated endpoint.
+        # Keeping the homepage payload small prevents a horizontal carousel from
+        # growing the initial request as the teacher directory grows.
+        "featuredTeachers": [],
+    }
+
+
+@mp_bp.get("/teachers/featured")
+@limiter.limit("60 per minute")
+def featured_teachers():
+    """Return one lightweight page for the homepage teacher carousel."""
+    try:
+        page = max(int(request.args.get("page", 1)), 1)
+    except (ValueError, TypeError):
+        page = 1
+    try:
+        page_size = max(min(int(request.args.get("pageSize", 4)), 10), 1)
+    except (ValueError, TypeError):
+        page_size = 4
+
+    query = Teacher.query.filter(Teacher.status == "active")
+    total = query.count()
+    teachers = (
+        query.order_by(Teacher.updated_at.desc(), Teacher.id.desc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+        .all()
+    )
+    return {
+        "items": [_teacher_summary(teacher) for teacher in teachers],
+        "page": page,
+        "pageSize": page_size,
+        "hasMore": page * page_size < total,
     }
 
 
@@ -193,10 +217,7 @@ def generate_certificate_image():
         return {"error": "teacher not found"}, 404
 
     if teacher.certificate_url:
-        cos_bucket = os.getenv("COS_BUCKET")
-        cos_region = os.getenv("COS_REGION")
-        if cos_bucket and cos_region and teacher.certificate_url.startswith("http"):
-            return {"certificateUrl": teacher.certificate_url}
+        return redirect(teacher.certificate_url, code=302)
 
     from PIL import Image, ImageDraw, ImageFont
 
@@ -249,5 +270,19 @@ def generate_certificate_image():
     buffer = BytesIO()
     img.save(buffer, format="PNG", quality=95)
     buffer.seek(0)
+
+    if cos_is_configured():
+        try:
+            teacher.certificate_url = upload_to_cos(
+                buffer,
+                f"teacher-certificates/generated/{teacher.teacher_no}.png",
+                "image/png",
+            )
+            db.session.commit()
+            return redirect(teacher.certificate_url, code=302)
+        except StorageNotConfiguredError:
+            pass
+    if not (current_app.debug or current_app.testing):
+        return {"error": "对象存储未配置，无法生成电子证书"}, 503
 
     return send_file(buffer, mimetype="image/png", download_name=f"cert_{teacher.teacher_no}.png")

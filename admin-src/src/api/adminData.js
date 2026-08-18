@@ -187,6 +187,17 @@ export async function createTeacherAccount(data) {
   return api.post('/teacher-accounts', data)
 }
 
+export async function createTeacherLinkCode(teacherId) {
+  return api.post(`/teachers/${teacherId}/link-code`)
+}
+
+export async function uploadAdminAsset(file, assetType) {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('assetType', assetType)
+  return api.upload('/assets/upload', formData)
+}
+
 export async function fetchReviewCycles() {
   const payload = await api.get('/review-cycles')
   return payload.items || []

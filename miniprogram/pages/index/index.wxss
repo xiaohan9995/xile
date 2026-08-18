@@ -314,6 +314,12 @@
   white-space: nowrap;
 }
 
+.featured-scroll__content {
+  display: inline-flex;
+  align-items: center;
+  min-width: 100%;
+}
+
 .featured-teacher {
   display: inline-flex;
   flex-direction: column;
@@ -368,6 +374,20 @@
   font-size: 22rpx;
   color: var(--color-gold);
   font-weight: 600;
+}
+
+.featured-load-more {
+  display: inline-flex;
+  align-items: center;
+  min-width: 138rpx;
+  height: 132rpx;
+  padding: 0 18rpx;
+  box-sizing: border-box;
+  color: var(--color-muted);
+  font-size: 21rpx;
+  line-height: 1.5;
+  text-align: center;
+  white-space: normal;
 }
 
 .homepage-state { padding: 34rpx 0 12rpx; color: var(--color-muted); font-size: 24rpx; text-align: center; }

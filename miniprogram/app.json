@@ -13,6 +13,7 @@
         "home/home",
         "login/login",
         "account-login/account-login",
+        "link-teacher/link-teacher",
         "profile/profile",
         "settings/settings",
         "cert-step1/cert-step1",

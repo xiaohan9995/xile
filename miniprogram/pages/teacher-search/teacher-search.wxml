@@ -22,7 +22,7 @@
         bindinput="onInput"
         bindconfirm="doSearch"
       />
-      <view wx:else class="region-search-prompt">选择地区后查看当地认证教师</view>
+      <view wx:else class="region-search-prompt">浏览全部地区认证教师</view>
       <view class="search-btn" bindtap="doSearch">
         <text class="search-btn-icon">🔍</text>
       </view>
@@ -32,7 +32,7 @@
     <view class="filter-row">
       <picker wx:if="{{searchMode !== 'certificate'}}" mode="selector" range="{{tierOptions}}" value="{{tierIndex}}" bindchange="onTierChange">
         <view class="filter-pill {{tierIndex > 0 ? 'filter-pill--active' : ''}}">
-          {{tierIndex > 0 ? tierOptions[tierIndex] : '全部等级'}}
+          {{tierIndex > 0 ? tierOptions[tierIndex] : '全部登记'}}
         </view>
       </picker>
       <picker mode="selector" range="{{cityOptions}}" value="{{cityIndex}}" bindchange="onCityChange">
@@ -59,10 +59,6 @@
   </view>
 
   <!-- Empty state -->
-  <view wx:if="{{!loading && !searched && searchMode === 'region'}}" class="empty-state">
-    <text class="empty-text">选择地区，查看当地认证教师</text>
-    <text class="empty-hint">可按省市筛选；姓名和证书编号支持精准核验</text>
-  </view>
   <view wx:if="{{!loading && searched && teachers.length === 0}}" class="empty-state">
     <text class="empty-text">未找到匹配教师</text>
     <text class="empty-hint">请尝试更换关键词或调整筛选条件</text>

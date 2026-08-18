@@ -7,6 +7,7 @@ from werkzeug.utils import secure_filename
 
 from ...extensions import db, limiter
 from ...models import User
+from ...utils.storage import cos_is_configured, object_url
 from . import mp_bp
 
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".pdf"}
@@ -40,7 +41,7 @@ def get_upload_presign():
         return {"error": f"file type not allowed, accepted: {', '.join(sorted(ALLOWED_EXTENSIONS))}"}, 400
     key = f"reviews/{user.teacher_id}/{uuid.uuid4().hex}{ext}"
 
-    if cos_bucket and cos_region and cos_secret_id and cos_secret_key:
+    if cos_is_configured():
         from qcloud_cos import CosConfig, CosS3Client
 
         config = CosConfig(Region=cos_region, SecretId=cos_secret_id, SecretKey=cos_secret_key)
@@ -53,20 +54,23 @@ def get_upload_presign():
             "uploadUrl": presigned_url,
             "fileKey": key,
             "maxSize": 10485760,
-            "publicUrl": f"https://{cos_bucket}.cos.{cos_region}.myqcloud.com/{key}",
+            "publicUrl": object_url(key),
         }
-    else:
+    if current_app.debug or current_app.testing:
         return {
             "uploadUrl": "/api/mp/upload/file",
             "fileKey": key,
             "publicUrl": f"/uploads/reviews/{key.split('/')[-1]}",
         }
+    return {"error": "对象存储未配置，无法上传年审材料"}, 503
 
 
 @mp_bp.post("/upload/file")
 @limiter.limit("10 per minute")
 @jwt_required()
 def upload_file_dev():
+    if not (current_app.debug or current_app.testing):
+        return {"error": "生产环境仅支持对象存储直传"}, 403
     uploaded = request.files.get("file")
     if not uploaded or not uploaded.filename:
         return {"error": "file required"}, 400

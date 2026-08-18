@@ -8,6 +8,7 @@
     { "action": "allow", "page": "packageTeacher/home/home" },
     { "action": "allow", "page": "packageTeacher/login/login" },
     { "action": "allow", "page": "packageTeacher/account-login/account-login" },
+    { "action": "allow", "page": "packageTeacher/link-teacher/link-teacher" },
     { "action": "allow", "page": "packageTeacher/profile/profile" },
     { "action": "allow", "page": "packageTeacher/cert-step1/cert-step1" },
     { "action": "allow", "page": "packageTeacher/cert-view/cert-view" },

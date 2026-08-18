@@ -17,6 +17,7 @@ from .review_group_member import ReviewGroupMember
 from .review_opinion import ReviewOpinion
 from .teaching_record import TeachingRecord
 from .review_teaching_record import ReviewTeachingRecord
+from .teacher_link_code import TeacherLinkCode
 
 __all__ = [
     "TeacherTier",
@@ -38,4 +39,5 @@ __all__ = [
     "ReviewOpinion",
     "TeachingRecord",
     "ReviewTeachingRecord",
+    "TeacherLinkCode",
 ]

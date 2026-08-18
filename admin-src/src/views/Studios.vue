@@ -91,6 +91,11 @@
           简介
           <input v-model="createDraft.intro" placeholder="请输入工作室简介" />
         </label>
+        <label>
+          工作室封面
+          <input type="file" accept="image/jpeg,image/png,image/webp" @change="uploadStudioAsset($event, createDraft)" />
+          <img v-if="createDraft.coverUrl" class="asset-preview" :src="createDraft.coverUrl" alt="工作室封面预览" />
+        </label>
         <div class="modal-actions">
           <button type="button" class="sync-btn" @click="showCreate = false">取消</button>
           <button type="submit" class="primary-btn">确认添加</button>
@@ -139,6 +144,11 @@
           简介
           <input v-model="editDraft.intro" placeholder="工作室简介" />
         </label>
+        <label>
+          工作室封面
+          <input type="file" accept="image/jpeg,image/png,image/webp" @change="uploadStudioAsset($event, editDraft)" />
+          <img v-if="editDraft.coverUrl" class="asset-preview" :src="editDraft.coverUrl" alt="工作室封面预览" />
+        </label>
         <div class="modal-actions">
           <button type="button" class="sync-btn" @click="showEdit = false">取消</button>
           <button type="submit" class="primary-btn">保存修改</button>
@@ -150,7 +160,7 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { fetchAdminStudios, createStudio, updateStudio, deleteStudio } from '../api/adminData'
+import { fetchAdminStudios, createStudio, updateStudio, deleteStudio, uploadAdminAsset } from '../api/adminData'
 import { useToast } from '../composables/useToast'
 
 const { show: toast } = useToast()
@@ -168,6 +178,7 @@ const createDraft = reactive({
   address: '',
   intro: '',
   openingHours: '',
+  coverUrl: '',
 })
 
 const editDraft = reactive({
@@ -180,6 +191,7 @@ const editDraft = reactive({
   address: '',
   intro: '',
   openingHours: '',
+  coverUrl: '',
 })
 
 async function loadStudios() {
@@ -210,6 +222,7 @@ function openCreate() {
   createDraft.address = ''
   createDraft.intro = ''
   createDraft.openingHours = ''
+  createDraft.coverUrl = ''
   showCreate.value = true
 }
 
@@ -223,6 +236,7 @@ function openEdit(studio) {
   editDraft.address = studio.address || ''
   editDraft.intro = studio.intro || ''
   editDraft.openingHours = studio.openingHours || ''
+  editDraft.coverUrl = studio.coverUrl || ''
   showEdit.value = true
 }
 
@@ -236,6 +250,7 @@ async function handleCreate() {
     address: createDraft.address,
     intro: createDraft.intro,
     openingHours: createDraft.openingHours,
+    coverUrl: createDraft.coverUrl,
   })
   showCreate.value = false
   toast('工作室添加成功')
@@ -252,6 +267,7 @@ async function handleUpdate() {
     address: editDraft.address,
     intro: editDraft.intro,
     openingHours: editDraft.openingHours,
+    coverUrl: editDraft.coverUrl,
   })
   showEdit.value = false
   toast('工作室信息已更新')
@@ -264,7 +280,30 @@ async function handleDelete(studio) {
   toast('工作室已删除', 'info')
   await loadStudios()
 }
+
+async function uploadStudioAsset(event, draft) {
+  const file = event.target.files && event.target.files[0]
+  if (!file) return
+  try {
+    const result = await uploadAdminAsset(file, 'studio-cover')
+    draft.coverUrl = result.url
+    toast('封面已上传到对象存储')
+  } catch (e) {
+    toast(e?.response?.data?.error || e?.message || '图片上传失败，请检查对象存储配置', 'info')
+  } finally {
+    event.target.value = ''
+  }
+}
 </script>
 
 <style scoped>
+.asset-preview {
+  display: block;
+  width: 180px;
+  height: 96px;
+  margin-top: 8px;
+  border: 1px solid #e3e9e3;
+  border-radius: 8px;
+  object-fit: cover;
+}
 </style>

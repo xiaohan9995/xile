@@ -2,8 +2,10 @@ import hashlib
 import hmac
 import os
 import re
+import secrets
 import time
 import uuid
+from datetime import datetime, timedelta
 
 import requests as http_requests
 from flask import current_app
@@ -11,7 +13,7 @@ from flask_jwt_extended import create_access_token
 from werkzeug.security import check_password_hash
 
 from ..extensions import db
-from ..models import Teacher, TeacherDetail, User
+from ..models import Teacher, TeacherDetail, TeacherLinkCode, User
 
 _wx_token_cache = {"token": None, "expires_at": 0}
 
@@ -180,6 +182,86 @@ def link_user_to_teacher_by_phone(user, phone_number):
     user.teacher_id = teacher.id
     user.role = "teacher"
     return teacher
+
+
+_LINK_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+_LINK_CODE_TTL_MINUTES = 30
+
+
+def _normalise_link_code(code):
+    return "".join(str(code or "").upper().replace("-", "").split())
+
+
+def _link_code_hash(code):
+    return hashlib.sha256(_normalise_link_code(code).encode("utf-8")).hexdigest()
+
+
+def create_teacher_link_code(teacher, created_by_id=None):
+    """Invalidate outstanding codes and create a new code without storing it in plaintext."""
+    now = datetime.utcnow()
+    TeacherLinkCode.query.filter_by(teacher_id=teacher.id, used_at=None).update(
+        {TeacherLinkCode.used_at: now}, synchronize_session=False
+    )
+    for _ in range(5):
+        code = "".join(secrets.choice(_LINK_CODE_ALPHABET) for _ in range(8))
+        if TeacherLinkCode.query.filter_by(code_hash=_link_code_hash(code)).first() is None:
+            record = TeacherLinkCode(
+                teacher_id=teacher.id,
+                code_hash=_link_code_hash(code),
+                expires_at=now + timedelta(minutes=_LINK_CODE_TTL_MINUTES),
+                created_by_id=created_by_id,
+            )
+            db.session.add(record)
+            db.session.flush()
+            return f"{code[:4]}-{code[4:]}", record
+    raise RuntimeError("could not generate a unique teacher link code")
+
+
+def link_wechat_user_to_teacher_by_code(user, code):
+    """Bind a verified WeChat account to a teacher, preserving a legacy password account.
+
+    A prior password account is merged into rather than leaving two user rows
+    linked to one teacher.  This keeps its password usable while making future
+    WeChat logins resolve to the same teacher identity.
+    """
+    if not user or not user.openid:
+        raise AuthError("请先使用微信登录再关联教师身份", 403)
+
+    record = TeacherLinkCode.query.filter_by(code_hash=_link_code_hash(code)).first()
+    if record is None:
+        raise AuthError("关联码无效，请向管理员重新获取", 400)
+    if record.used_at is not None:
+        raise AuthError("关联码已使用，请向管理员重新获取", 410)
+    if record.expires_at <= datetime.utcnow():
+        raise AuthError("关联码已过期，请向管理员重新获取", 410)
+
+    teacher = db.session.get(Teacher, record.teacher_id)
+    if teacher is None:
+        raise AuthError("关联的教师档案不存在，请联系管理员", 404)
+    if user.teacher_id and user.teacher_id != teacher.id:
+        raise AuthError("当前微信账号已关联其他教师档案", 409)
+
+    existing_user = User.query.filter(User.teacher_id == teacher.id, User.id != user.id).first()
+    linked_user = user
+    if existing_user:
+        if existing_user.openid and existing_user.openid != user.openid:
+            raise AuthError("该教师档案已关联其他微信账号，请联系管理员", 409)
+        existing_user.openid = user.openid
+        existing_user.role = "teacher"
+        if not existing_user.nickname:
+            existing_user.nickname = user.nickname
+        if not existing_user.avatar_url:
+            existing_user.avatar_url = user.avatar_url
+        if not existing_user.phone:
+            existing_user.phone = user.phone
+        linked_user = existing_user
+        db.session.delete(user)
+    else:
+        user.teacher_id = teacher.id
+        user.role = "teacher"
+
+    record.used_at = datetime.utcnow()
+    return linked_user, teacher
 
 
 def _get_or_create_user(openid):

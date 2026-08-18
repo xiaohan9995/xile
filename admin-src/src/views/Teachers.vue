@@ -43,6 +43,8 @@
             <td>{{ teacher.expiryDate }}</td>
             <td class="table-actions">
               <button class="table-action" @click="openEdit(teacher)">编辑</button>
+              <button class="table-action table-action--primary" @click="generateLinkCode(teacher)">生成关联码</button>
+              <button class="table-action" @click="openAccount(teacher)">设置密码</button>
               <button class="danger-action" @click="handleDelete(teacher)">删除</button>
             </td>
           </tr>
@@ -141,6 +143,16 @@
             管委会备注
             <input v-model="editDraft.committeeRemark" placeholder="仅管委会可见" />
           </label>
+          <label>
+            教师头像
+            <input type="file" accept="image/jpeg,image/png,image/webp" @change="uploadTeacherAsset($event, 'teacher-avatar', 'avatarUrl')" />
+            <img v-if="editDraft.avatarUrl" class="asset-preview" :src="editDraft.avatarUrl" alt="教师头像预览" />
+          </label>
+          <label>
+            认证证书图片
+            <input type="file" accept="image/jpeg,image/png,image/webp" @change="uploadTeacherAsset($event, 'teacher-certificate', 'certificateUrl')" />
+            <img v-if="editDraft.certificateUrl" class="asset-preview asset-preview--certificate" :src="editDraft.certificateUrl" alt="认证证书预览" />
+          </label>
         </div>
         <div class="modal-actions">
           <button type="button" class="sync-btn" @click="showEdit = false">取消</button>
@@ -148,12 +160,58 @@
         </div>
       </form>
     </div>
+    <!-- Account Modal -->
+    <div v-if="showAccount" class="modal-backdrop" @click.self="showAccount = false">
+      <form class="admin-modal" @submit.prevent="handleAssignAccount">
+        <div class="modal-head">
+          <h2>设置教师密码 — {{ accountDraft.name }}</h2>
+          <button type="button" @click="showAccount = false">×</button>
+        </div>
+        <div class="form-grid two">
+          <label>
+            <span class="field-label">登录用户名 <em>*</em></span>
+            <input v-model="accountDraft.username" required placeholder="教师在小程序登录用的用户名" />
+          </label>
+          <label>
+            <span class="field-label">初始密码 <em>*</em></span>
+            <span class="account-password-row">
+              <input v-model="accountDraft.password" required minlength="8" placeholder="至少 8 位" />
+              <button type="button" class="sync-btn" @click="regenPassword">换一个</button>
+            </span>
+          </label>
+        </div>
+        <p class="account-hint">
+          微信登录后，建议优先使用「我的 → 关联教师身份」输入管理员生成的关联码。
+          此处仅为需要账号密码登录的教师设置兼容密码；重复设置将重置密码。
+        </p>
+        <div class="modal-actions">
+          <button type="button" class="sync-btn" @click="showAccount = false">取消</button>
+          <button type="submit" class="primary-btn">确认分配</button>
+        </div>
+      </form>
+    </div>
+    <!-- Link Code Modal -->
+    <div v-if="showLinkCode" class="modal-backdrop" @click.self="showLinkCode = false">
+      <div class="admin-modal link-code-modal">
+        <div class="modal-head">
+          <h2>关联教师身份 — {{ linkCodeDraft.name }}</h2>
+          <button type="button" @click="showLinkCode = false">×</button>
+        </div>
+        <p class="account-hint">请让教师先在小程序使用微信登录，再在「我的 → 关联教师身份」中输入此码。生成新码会使旧码失效。</p>
+        <div class="link-code-value">{{ linkCodeDraft.code }}</div>
+        <p class="link-code-expiry">有效期至：{{ linkCodeDraft.expiresAt }}</p>
+        <div class="modal-actions">
+          <button type="button" class="sync-btn" @click="copyLinkCode">复制关联码</button>
+          <button type="button" class="primary-btn" @click="showLinkCode = false">完成</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { fetchAdminTeachers, createTeacher, updateTeacher, deleteTeacher } from '../api/adminData'
+import { fetchAdminTeachers, createTeacher, updateTeacher, deleteTeacher, createTeacherAccount, createTeacherLinkCode, uploadAdminAsset } from '../api/adminData'
 import { useToast } from '../composables/useToast'
 
 const { show: toast } = useToast()
@@ -183,6 +241,8 @@ const editDraft = reactive({
   city: '',
   district: '',
   committeeRemark: '',
+  avatarUrl: '',
+  certificateUrl: '',
 })
 
 async function loadTeachers() {
@@ -241,6 +301,8 @@ function openEdit(teacher) {
   editDraft.city = teacher.city || ''
   editDraft.district = teacher.district || ''
   editDraft.committeeRemark = teacher.committeeRemark || ''
+  editDraft.avatarUrl = teacher.avatarUrl || ''
+  editDraft.certificateUrl = teacher.certificateUrl || ''
   showEdit.value = true
 }
 
@@ -266,6 +328,8 @@ async function handleUpdate() {
     city: editDraft.city,
     district: editDraft.district,
     committeeRemark: editDraft.committeeRemark,
+    avatarUrl: editDraft.avatarUrl,
+    certificateUrl: editDraft.certificateUrl,
   })
   showEdit.value = false
   toast('教师信息已更新')
@@ -278,7 +342,137 @@ async function handleDelete(teacher) {
   toast('教师已删除', 'info')
   await loadTeachers()
 }
+
+const showAccount = ref(false)
+const showLinkCode = ref(false)
+const accountDraft = reactive({ teacherId: null, name: '', username: '', password: '' })
+const linkCodeDraft = reactive({ name: '', code: '', expiresAt: '' })
+
+function genPassword() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789'
+  let pwd = ''
+  for (let i = 0; i < 12; i++) pwd += chars[Math.floor(Math.random() * chars.length)]
+  return pwd
+}
+
+function openAccount(teacher) {
+  accountDraft.teacherId = teacher.id
+  accountDraft.name = teacher.name
+  accountDraft.username = ''
+  accountDraft.password = genPassword()
+  showAccount.value = true
+}
+
+function regenPassword() {
+  accountDraft.password = genPassword()
+}
+
+async function handleAssignAccount() {
+  const username = accountDraft.username.trim()
+  try {
+    await createTeacherAccount({
+      teacherId: accountDraft.teacherId,
+      username,
+      password: accountDraft.password,
+    })
+    showAccount.value = false
+    toast(`账号已分配：${username} / ${accountDraft.password}，请及时告知教师`)
+  } catch (e) {
+    const message = e?.response?.data?.error || e?.message || '分配失败，请重试'
+    toast(message, 'info')
+  }
+}
+
+async function generateLinkCode(teacher) {
+  try {
+    const result = await createTeacherLinkCode(teacher.id)
+    linkCodeDraft.name = teacher.name
+    linkCodeDraft.code = result.code
+    linkCodeDraft.expiresAt = (result.expiresAt || '').replace('T', ' ').replace('Z', '')
+    showLinkCode.value = true
+  } catch (e) {
+    toast(e?.response?.data?.error || e?.message || '关联码生成失败，请重试', 'info')
+  }
+}
+
+async function copyLinkCode() {
+  try {
+    await navigator.clipboard.writeText(linkCodeDraft.code)
+    toast('关联码已复制')
+  } catch (e) {
+    toast(`请手动复制：${linkCodeDraft.code}`, 'info')
+  }
+}
+
+async function uploadTeacherAsset(event, assetType, targetField) {
+  const file = event.target.files && event.target.files[0]
+  if (!file) return
+  try {
+    const result = await uploadAdminAsset(file, assetType)
+    editDraft[targetField] = result.url
+    toast('图片已上传到对象存储')
+  } catch (e) {
+    toast(e?.response?.data?.error || e?.message || '图片上传失败，请检查对象存储配置', 'info')
+  } finally {
+    event.target.value = ''
+  }
+}
 </script>
 
 <style scoped>
+.account-password-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.account-password-row input {
+  flex: 1;
+}
+
+.account-hint {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #8a9386;
+}
+
+.table-action--primary {
+  color: #356c4e;
+  font-weight: 600;
+}
+
+.link-code-value {
+  margin: 22px 0 8px;
+  padding: 18px;
+  border-radius: 10px;
+  background: #f2f7f2;
+  color: #284b36;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-align: center;
+}
+
+.link-code-expiry {
+  color: #8a9386;
+  font-size: 12px;
+  text-align: center;
+}
+
+.asset-preview {
+  display: block;
+  width: 56px;
+  height: 56px;
+  margin-top: 8px;
+  border: 1px solid #e3e9e3;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.asset-preview--certificate {
+  width: 96px;
+  object-fit: contain;
+}
 </style>

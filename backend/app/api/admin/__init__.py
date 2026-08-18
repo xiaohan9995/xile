@@ -9,3 +9,4 @@ from . import studios  # noqa: F401, E402
 from . import reviews  # noqa: F401, E402
 from . import system  # noqa: F401, E402
 from . import collaboration  # noqa: F401, E402
+from . import assets  # noqa: F401, E402

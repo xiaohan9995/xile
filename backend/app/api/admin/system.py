@@ -269,6 +269,32 @@ def create_teacher_account():
     return {"id": user.id, "teacherId": teacher_id, "username": username, "mustChangePassword": True}, 201
 
 
+@admin_bp.post("/teachers/<int:teacher_id>/link-code")
+@require_admin_token
+@require_admin_roles("admin", "super_admin")
+def create_teacher_link_code(teacher_id):
+    """Create the code a teacher enters after signing in with WeChat."""
+    from ...services.auth_service import create_teacher_link_code as create_code
+
+    teacher = db.session.get(Teacher, teacher_id)
+    if teacher is None:
+        return {"error": "teacher not found"}, 404
+
+    code, record = create_code(teacher, current_admin_id())
+    db.session.add(AuditLog(
+        admin_id=current_admin_id() or 1,
+        action="create_teacher_link_code",
+        target_type="teacher",
+        target_id=teacher.id,
+    ))
+    db.session.commit()
+    return {
+        "teacherId": teacher.id,
+        "code": code,
+        "expiresAt": record.expires_at.isoformat(timespec="minutes") + "Z",
+    }, 201
+
+
 # ─── Users (Mini Program) ───────────────────────────────────────────────────
 
 

@@ -1,0 +1,32 @@
+<view class="link-page">
+  <view class="page-header" style="padding-top:{{statusBarHeight}}px;">
+    <view class="page-header__back" bindtap="goBack">‹</view>
+    <text class="page-header__title">关联教师身份</text>
+    <view class="page-header__right"></view>
+  </view>
+
+  <view class="link-body">
+    <view class="link-icon">证</view>
+    <text class="link-title">关联你的教师档案</text>
+    <text class="link-description">请先使用微信登录，再输入管理员为你生成的一次性关联码。关联后即可查看证书、年审和教学记录。</text>
+
+    <view class="code-card">
+      <text class="code-label">一次性关联码</text>
+      <input
+        class="code-input"
+        value="{{code}}"
+        maxlength="9"
+        placeholder="例如 ABCD-EFGH"
+        placeholder-class="code-placeholder"
+        bindinput="onCodeInput"
+      />
+      <text class="code-note">关联码有效期为 30 分钟；生成新码后旧码将失效。</text>
+      <button class="link-button" bindtap="submit" loading="{{submitting}}" disabled="{{submitting}}">确认关联</button>
+    </view>
+
+    <view class="support-row">
+      <text>已有账号密码？</text>
+      <text class="support-link" bindtap="usePasswordLogin">使用兼容密码登录</text>
+    </view>
+  </view>
+</view>
