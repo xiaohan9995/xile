@@ -9,6 +9,7 @@ Page({
     isTeacher: false,
     teacher: {
       name: '',
+      xileName: '',
       tier: '',
       tierName: '',
       avatarUrl: '',
@@ -58,6 +59,7 @@ Page({
         reviewBlockedReason,
         teacher: {
           name: t.name || '',
+          xileName: t.xileName || '',
           tier: t.tier || '',
           tierName: t.tierName || '',
           avatarUrl: t.avatarUrl || '',

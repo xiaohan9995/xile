@@ -30,7 +30,7 @@
           <tr v-for="teacher in pagedList" :key="teacher.id">
             <td>
               <div class="cell-person">
-                <img :src="teacher.avatar" :alt="teacher.name" />
+                <ImagePreview :src="teacher.avatar" :alt="teacher.name" image-class="teacher-avatar" />
                 <div>
                   <strong>{{ teacher.name }}</strong>
                   <span>{{ teacher.phone }}</span>
@@ -211,6 +211,7 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
+import ImagePreview from '../components/ImagePreview.vue'
 import { fetchAdminTeachers, createTeacher, updateTeacher, deleteTeacher, createTeacherAccount, createTeacherLinkCode, uploadAdminAsset } from '../api/adminData'
 import { useToast } from '../composables/useToast'
 

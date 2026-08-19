@@ -24,7 +24,7 @@
           <tr v-for="member in pagedMembers" :key="member.id">
             <td>
               <div class="cell-person">
-                <img v-if="member.avatarUrl" class="member-avatar user-avatar user-avatar-image" :src="member.avatarUrl" alt="管理员头像" @error="member.avatarUrl = ''" />
+                <ImagePreview v-if="member.avatarUrl" :image-class="'member-avatar user-avatar user-avatar-image'" :src="member.avatarUrl" alt="管理员头像" />
                 <div v-else class="member-avatar">{{ member.username.charAt(0).toUpperCase() }}</div>
                 <div>
                   <strong>{{ member.username }}</strong>
@@ -60,6 +60,7 @@
       <table class="data-table">
         <thead>
           <tr>
+            <th>用户</th>
             <th>喜乐名</th>
             <th>手机号</th>
             <th>角色</th>
@@ -72,14 +73,15 @@
           <tr v-for="user in pagedUsers" :key="user.id">
             <td>
               <div class="cell-person">
-                <img v-if="user.avatarUrl" class="member-avatar user-avatar user-avatar-image" :src="user.avatarUrl" alt="小程序用户头像" @error="user.avatarUrl = ''" />
+                <ImagePreview v-if="user.avatarUrl" :image-class="'member-avatar user-avatar user-avatar-image'" :src="user.avatarUrl" alt="小程序用户头像" />
                 <div v-else class="member-avatar user-avatar">{{ user.id }}</div>
                 <div>
-                  <strong>{{ user.nickname || user.nickName || user.weixinName || '微信用户' }}</strong>
+                  <strong>{{ user.wechatName || user.nickname || user.nickName || '微信用户' }}</strong>
                   <code>{{ user.openid }}</code>
                 </div>
               </div>
             </td>
+            <td>{{ user.xileName || '—' }}</td>
             <td>{{ user.phone || '未绑定' }}</td>
             <td>
               <span class="status-pill" :class="user.role === 'teacher' ? 'blue' : 'gray'">
@@ -93,7 +95,7 @@
             </td>
           </tr>
           <tr v-if="!users.length">
-            <td colspan="6" class="empty-cell">暂无注册用户</td>
+            <td colspan="7" class="empty-cell">暂无注册用户</td>
           </tr>
         </tbody>
       </table>
@@ -170,6 +172,7 @@
 
 <script setup>
 import { computed, ref, onMounted } from 'vue'
+import ImagePreview from '../components/ImagePreview.vue'
 import { createTeacherAccount, fetchPermissions, inviteAdmin, fetchUsers, updateAdminRole, updateUserRole, fetchAdminTeachers } from '../api/adminData'
 import { useAuthStore } from '../stores/auth'
 import Pagination from '../components/Pagination.vue'

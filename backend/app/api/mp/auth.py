@@ -43,6 +43,7 @@ def mp_login():
         "phoneBound": bool(user.phone),
         "avatarUrl": _file_url(user.avatar_url),
         "nickname": user.nickname,
+        "xileName": (db.session.get(Teacher, user.teacher_id).xile_name if user.teacher_id else None),
     }
 
 
@@ -183,6 +184,7 @@ def auth_me():
         "phone": user.phone,
         "avatarUrl": _file_url(user.avatar_url),
         "nickname": user.nickname,
+        "xileName": (db.session.get(Teacher, user.teacher_id).xile_name if user.teacher_id else None),
         "mustChangePassword": user.must_change_password,
     }
 
@@ -222,6 +224,7 @@ def update_profile():
         return {"error": "user not found"}, 404
 
     nickname = (request.form.get("nickname") or "").strip()
+    xile_name = (request.form.get("xileName") or "").strip()
     if not nickname:
         json_body = request.get_json(silent=True) or {}
         nickname = (json_body.get("nickname") or "").strip()
@@ -244,12 +247,21 @@ def update_profile():
                 teacher.avatar_url = avatar_url
                 teacher_avatar_url = avatar_url
 
+    if xile_name:
+        if not user.teacher_id:
+            return {"error": "关联教师后才能设置喜乐名"}, 403
+        teacher = db.session.get(Teacher, user.teacher_id)
+        if not teacher:
+            return {"error": "关联教师档案不存在"}, 404
+        teacher.xile_name = xile_name
+
     db.session.commit()
 
     return {
         "avatarUrl": _file_url(user.avatar_url),
         "teacherAvatarUrl": _file_url(teacher_avatar_url),
         "nickname": user.nickname,
+        "xileName": (db.session.get(Teacher, user.teacher_id).xile_name if user.teacher_id else None),
     }
 
 
