@@ -113,7 +113,7 @@
 
     <!-- Edit Modal -->
     <div v-if="showEdit" class="modal-backdrop" @click.self="showEdit = false">
-      <form class="admin-modal" @submit.prevent="handleUpdate">
+      <form class="admin-modal admin-modal--edit" @submit.prevent="handleUpdate">
         <div class="modal-head">
           <h2>编辑教师 — {{ editDraft.certNo }}</h2>
           <button type="button" @click="showEdit = false">×</button>

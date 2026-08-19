@@ -896,12 +896,19 @@ button {
 }
 
 .admin-modal {
-  width: 420px;
+  box-sizing: border-box;
+  width: min(420px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
   padding: 24px;
   border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: 24px;
   background: #fff;
   box-shadow: 0 30px 80px rgba(31, 37, 33, 0.2);
+}
+
+.admin-modal--edit {
+  width: min(680px, calc(100vw - 32px));
 }
 
 .admin-modal.wide {
@@ -957,6 +964,9 @@ button {
 
 .admin-modal input,
 .admin-modal select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
   height: 40px;
   border: 1px solid #e7ebe8;
   border-radius: 13px;
@@ -972,11 +982,36 @@ button {
   gap: 14px;
 }
 
+.form-grid.two > label {
+  min-width: 0;
+}
+
+.admin-modal input[type="file"] {
+  min-width: 0;
+  padding: 7px 10px;
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
   margin-top: 10px;
+}
+
+@media (max-width: 720px) {
+  .admin-modal--edit {
+    width: min(560px, calc(100vw - 24px));
+    padding: 20px;
+  }
+
+  .admin-modal--edit .form-grid.two {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
 }
 
 .rank-bars {
