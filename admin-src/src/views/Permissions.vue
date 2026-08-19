@@ -10,6 +10,10 @@
 
     <!-- Admin accounts -->
     <h2 class="section-title">管理员账号</h2>
+    <div class="toolbar compact-toolbar">
+      <input v-model="memberFilters.username" placeholder="管理员账号" />
+      <input v-model="memberFilters.role" placeholder="角色" />
+    </div>
     <div class="data-table-wrap">
       <table class="data-table">
         <thead>
@@ -41,7 +45,7 @@
           </tr>
         </tbody>
       </table>
-      <Pagination v-model:current-page="memberPage" :total-pages="memberTotalPages" :total-items="members.length" />
+      <Pagination v-model:current-page="memberPage" :total-pages="memberTotalPages" :total-items="filteredMembers.length" />
     </div>
 
     <div v-if="showAdminRoleModal" class="modal-backdrop" @click.self="showAdminRoleModal = false">
@@ -56,6 +60,12 @@
 
     <!-- Mini program users -->
     <h2 class="section-title">小程序用户</h2>
+    <div class="toolbar compact-toolbar">
+      <input v-model="userFilters.wechatName" placeholder="微信名" />
+      <input v-model="userFilters.xileName" placeholder="喜乐名" />
+      <input v-model="userFilters.phone" placeholder="手机号" />
+      <input v-model="userFilters.teacherName" placeholder="关联教师" />
+    </div>
     <div class="data-table-wrap">
       <table class="data-table">
         <thead>
@@ -92,14 +102,15 @@
             <td>{{ user.createdAt || '—' }}</td>
             <td>
               <button class="text-btn" @click="openRoleModal(user)">设置角色</button>
+              <button class="danger-text-btn" @click="handleDeleteUser(user)">删除</button>
             </td>
           </tr>
-          <tr v-if="!users.length">
+          <tr v-if="!filteredUsers.length">
             <td colspan="7" class="empty-cell">暂无注册用户</td>
           </tr>
         </tbody>
       </table>
-      <Pagination v-model:current-page="userPage" :total-pages="userTotalPages" :total-items="users.length" />
+      <Pagination v-model:current-page="userPage" :total-pages="userTotalPages" :total-items="filteredUsers.length" />
     </div>
 
     <!-- Invite admin modal -->
@@ -171,15 +182,17 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import ImagePreview from '../components/ImagePreview.vue'
-import { createTeacherAccount, fetchPermissions, inviteAdmin, fetchUsers, updateAdminRole, updateUserRole, fetchAdminTeachers } from '../api/adminData'
+import { createTeacherAccount, fetchPermissions, inviteAdmin, fetchUsers, updateAdminRole, updateUserRole, deleteUser, fetchAdminTeachers } from '../api/adminData'
 import { useAuthStore } from '../stores/auth'
 import Pagination from '../components/Pagination.vue'
 
 const members = ref([])
 const users = ref([])
 const teacherOptions = ref([])
+const memberFilters = ref({ username: '', role: '' })
+const userFilters = ref({ wechatName: '', xileName: '', phone: '', teacherName: '' })
 const showInvite = ref(false)
 const showRoleModal = ref(false)
 const showAdminRoleModal = ref(false)
@@ -194,10 +207,29 @@ const isSuperAdmin = computed(() => auth.admin?.role === 'super_admin')
 
 const adminRoleLabel = (role) => ({ super_admin: '超级管理员', admin: '普通管理员', reviewer: '审核成员', group_leader: '审核组长' }[role] || role)
 const canEditAdmin = (member) => isSuperAdmin.value && member.id !== auth.admin?.id
-const memberTotalPages = computed(() => Math.ceil(members.value.length / pageSize))
-const userTotalPages = computed(() => Math.ceil(users.value.length / pageSize))
-const pagedMembers = computed(() => members.value.slice((memberPage.value - 1) * pageSize, memberPage.value * pageSize))
-const pagedUsers = computed(() => users.value.slice((userPage.value - 1) * pageSize, userPage.value * pageSize))
+const filteredMembers = computed(() => {
+  const matches = (value, query) => !query || String(value || '').toLowerCase().includes(query)
+  const username = memberFilters.value.username.trim().toLowerCase()
+  const role = memberFilters.value.role.trim().toLowerCase()
+  return members.value.filter((member) => matches(member.username, username) && (matches(member.role, role) || matches(adminRoleLabel(member.role), role)))
+})
+const filteredUsers = computed(() => {
+  const matches = (value, query) => !query || String(value || '').toLowerCase().includes(query)
+  const wechatName = userFilters.value.wechatName.trim().toLowerCase()
+  const xileName = userFilters.value.xileName.trim().toLowerCase()
+  const phone = userFilters.value.phone.trim().toLowerCase()
+  const teacherName = userFilters.value.teacherName.trim().toLowerCase()
+  return users.value.filter((user) => matches(user.wechatName || user.nickname, wechatName) && matches(user.xileName, xileName) && matches(user.phone, phone) && matches(user.teacherName, teacherName))
+})
+const memberTotalPages = computed(() => Math.ceil(filteredMembers.value.length / pageSize))
+const userTotalPages = computed(() => Math.ceil(filteredUsers.value.length / pageSize))
+const pagedMembers = computed(() => filteredMembers.value.slice((memberPage.value - 1) * pageSize, memberPage.value * pageSize))
+const pagedUsers = computed(() => filteredUsers.value.slice((userPage.value - 1) * pageSize, userPage.value * pageSize))
+
+watch(memberFilters, () => { memberPage.value = 1 }, { deep: true })
+watch(userFilters, () => { userPage.value = 1 }, { deep: true })
+watch(memberTotalPages, (total) => { if (memberPage.value > total) memberPage.value = Math.max(1, total) })
+watch(userTotalPages, (total) => { if (userPage.value > total) userPage.value = Math.max(1, total) })
 
 onMounted(async () => {
   await Promise.all([loadMembers(), loadUsers(), loadTeachers()])
@@ -271,6 +303,18 @@ async function handleSetRole() {
   }
 }
 
+async function handleDeleteUser(user) {
+  const displayName = user.wechatName || user.nickname || user.nickName || user.openid || `用户 ${user.id}`
+  if (!window.confirm(`确认删除小程序用户“${displayName}”吗？删除后不可恢复。`)) return
+  try {
+    await deleteUser(user.id)
+    await loadUsers()
+    if (userPage.value > userTotalPages.value) userPage.value = Math.max(1, userTotalPages.value)
+  } catch (e) {
+    alert(e.response?.data?.error || '删除用户失败')
+  }
+}
+
 async function handleInvite() {
   if (!inviteForm.value.username) return
   try {
@@ -327,6 +371,21 @@ async function handleInvite() {
 
 .text-btn:hover {
   background: var(--brand-green-light);
+}
+
+.danger-text-btn {
+  margin-left: 4px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 4px;
+  color: #c0392b;
+  background: transparent;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.danger-text-btn:hover {
+  background: #fff0ee;
 }
 
 .empty-cell {

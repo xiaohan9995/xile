@@ -25,6 +25,9 @@
           <p>年审周期从证书生效日开始计算。</p>
         </div>
       </div>
+      <div v-if="!isLoading && tiers.length" class="toolbar">
+        <input v-model="tierFilter" placeholder="认证等级或名称" />
+      </div>
 
       <div v-if="isLoading" class="rules-state">正在加载认证规则…</div>
       <div v-else-if="loadError" class="rules-state rules-state--error" role="alert">
@@ -48,7 +51,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="tier in tiers" :key="tier.code">
+            <tr v-for="tier in filteredTiers" :key="tier.code">
               <td>
                 <strong>{{ tier.code }}</strong>
                 <span>{{ tier.name }}</span>
@@ -65,6 +68,7 @@
               </td>
               <td class="rule-note">{{ tier.reviewRequired ? `证书生效后 ${tier.reviewCycleYears || '—'} 年进入年审` : '不生成年审任务' }}</td>
             </tr>
+            <tr v-if="!filteredTiers.length"><td colspan="4" class="rules-empty">暂无符合筛选条件的认证等级</td></tr>
           </tbody>
         </table>
       </div>
@@ -75,14 +79,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { fetchSettings, saveSettings } from '../api/adminData'
 
 const tiers = ref([])
+const tierFilter = ref('')
 const saveMsg = ref('')
 const loadError = ref('')
 const isLoading = ref(true)
 const isSaving = ref(false)
+const filteredTiers = computed(() => {
+  const query = tierFilter.value.trim().toLowerCase()
+  if (!query) return tiers.value
+  return tiers.value.filter((tier) => [tier.code, tier.name].some((value) => String(value || '').toLowerCase().includes(query)))
+})
 
 async function loadRules() {
   isLoading.value = true
@@ -149,6 +159,7 @@ async function handleSave() {
 .rules-table th:last-child { border-radius: 0 10px 10px 0; }
 .rules-table td { padding: 16px 14px; border-bottom: 1px solid #edf0ed; color: #4a5650; font-size: 13px; }
 .rules-table tbody tr:last-child td { border-bottom: 0; }
+.rules-empty { color: #7b877e; text-align: center; }
 .rules-table td:first-child strong { display: inline-block; min-width: 30px; color: #5d7261; font-family: "JetBrains Mono", monospace; }
 .rules-table td:first-child span { margin-left: 8px; color: #25322a; font-weight: 700; }
 .rule-tag { display: inline-flex; padding: 4px 8px; border-radius: 999px; font-size: 11px; font-weight: 800; }

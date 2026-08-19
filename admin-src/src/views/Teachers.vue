@@ -8,7 +8,10 @@
     </div>
 
     <div class="toolbar">
-      <input v-model="keyword" placeholder="搜索姓名、证书编号、手机号..." />
+      <input v-model="filters.name" placeholder="姓名" />
+      <input v-model="filters.xileName" placeholder="喜乐名" />
+      <input v-model="filters.certNo" placeholder="证书编号" />
+      <input v-model="filters.city" placeholder="城市" />
     </div>
 
     <div class="data-table-wrap">
@@ -25,7 +28,7 @@
         </thead>
         <tbody>
           <tr v-if="pagedList.length === 0">
-            <td colspan="6" class="empty-row">{{ keyword ? '无匹配结果，请调整搜索条件' : '暂无教师数据' }}</td>
+            <td colspan="6" class="empty-row">{{ hasFilters ? '无匹配结果，请调整筛选条件' : '暂无教师数据' }}</td>
           </tr>
           <tr v-for="teacher in pagedList" :key="teacher.id">
             <td>
@@ -218,7 +221,7 @@ import { useToast } from '../composables/useToast'
 
 const { show: toast } = useToast()
 
-const keyword = ref('')
+const filters = ref({ name: '', xileName: '', certNo: '', city: '' })
 const showCreate = ref(false)
 const showEdit = ref(false)
 const teachers = ref([])
@@ -258,12 +261,15 @@ async function loadTeachers() {
 onMounted(loadTeachers)
 
 const filteredList = computed(() => {
-  const text = keyword.value.trim().toLowerCase()
-  if (!text) return teachers.value
-  return teachers.value.filter((t) =>
-    [t.name, t.certNo, t.phone, t.city].some((field) => (field || '').toLowerCase().includes(text))
-  )
+  const matches = (value, query) => !query || String(value || '').toLowerCase().includes(query)
+  const name = filters.value.name.trim().toLowerCase()
+  const xileName = filters.value.xileName.trim().toLowerCase()
+  const certNo = filters.value.certNo.trim().toLowerCase()
+  const city = filters.value.city.trim().toLowerCase()
+  return teachers.value.filter((t) => matches(t.name, name) && matches(t.xileName, xileName) && matches(t.certNo, certNo) && matches(t.city, city))
 })
+
+const hasFilters = computed(() => Object.values(filters.value).some((value) => value.trim()))
 
 const totalPages = computed(() => Math.ceil(filteredList.value.length / pageSize))
 
@@ -282,7 +288,7 @@ const pagedList = computed(() => {
   return filteredList.value.slice(start, start + pageSize)
 })
 
-watch(keyword, () => { currentPage.value = 1 })
+watch(filters, () => { currentPage.value = 1 }, { deep: true })
 
 function openCreate() {
   createDraft.name = ''

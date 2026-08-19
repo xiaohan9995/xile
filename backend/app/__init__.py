@@ -1,10 +1,22 @@
 import os
+import re
 
-from flask import Flask, jsonify
+from flask import Flask, current_app, g, jsonify, request
+from werkzeug.exceptions import HTTPException
 
 from .config import get_config
 from .extensions import db, jwt, migrate, limiter
 from .logging import init_logging, init_request_id, RequestIdFilter
+
+
+_SENSITIVE_ERROR_TEXT = re.compile(r"(?i)(password|secret|token|authorization)\s*([=:])\s*[^\s,;]+")
+
+
+def _public_error_detail(error):
+    """Return actionable diagnostics without disclosing credentials."""
+    detail = str(error).strip() or error.__class__.__name__
+    detail = _SENSITIVE_ERROR_TEXT.sub(r"\1\2[已隐藏]", detail)
+    return detail[:300]
 
 
 def create_app(config=None):
@@ -30,32 +42,49 @@ def create_app(config=None):
     # --- global error handlers ---
     @app.errorhandler(400)
     def bad_request(e):
-        return jsonify(error=str(e.description) if hasattr(e, "description") else "bad request"), 400
+        return jsonify(error=str(e.description) if hasattr(e, "description") else "bad request", requestId=getattr(g, "request_id", None)), 400
 
     @app.errorhandler(404)
     def not_found(e):
-        return jsonify(error="not found"), 404
+        return jsonify(error="not found", requestId=getattr(g, "request_id", None)), 404
 
     @app.errorhandler(405)
     def method_not_allowed(e):
-        return jsonify(error="method not allowed"), 405
+        return jsonify(error="method not allowed", requestId=getattr(g, "request_id", None)), 405
 
     @app.errorhandler(413)
     def request_entity_too_large(e):
-        return jsonify(error="file too large"), 413
+        return jsonify(error="file too large", requestId=getattr(g, "request_id", None)), 413
 
     @app.errorhandler(429)
     def rate_limit_exceeded(e):
-        return jsonify(error="rate limit exceeded, please slow down"), 429
+        return jsonify(error="rate limit exceeded, please slow down", requestId=getattr(g, "request_id", None)), 429
 
-    @app.errorhandler(500)
-    def internal_error(e):
-        app.logger.exception("Unhandled exception")
-        return jsonify(error="internal server error"), 500
+    @app.errorhandler(Exception)
+    def unhandled_exception(error):
+        if isinstance(error, HTTPException):
+            return error
+        request_id = getattr(g, "request_id", "-")
+        app.logger.exception(
+            "Unhandled request exception method=%s path=%s requestId=%s",
+            request.method,
+            request.path,
+            request_id,
+        )
+        return jsonify(
+            error="请求处理失败",
+            reason=_public_error_detail(error),
+            requestId=request_id,
+        ), 500
 
     # --- security response headers ---
     @app.after_request
     def set_security_headers(response):
+        if response.status_code >= 400 and response.is_json:
+            payload = response.get_json(silent=True)
+            if isinstance(payload, dict) and "requestId" not in payload:
+                payload["requestId"] = getattr(g, "request_id", None)
+                response.set_data(current_app.json.dumps(payload))
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"

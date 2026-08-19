@@ -92,8 +92,14 @@ def file_url(file_key):
     if file_key.startswith(("/uploads/", "/static/")):
         return file_key
     settings = _cos_settings()
-    if settings["bucket"] and settings["region"] and (not file_key.startswith(("https://", "http://")) or _cos_key(file_key, settings)):
-        return signed_object_url(file_key)
+    if all(settings.values()) and (not file_key.startswith(("https://", "http://")) or _cos_key(file_key, settings)):
+        try:
+            return signed_object_url(file_key)
+        except Exception:
+            # A storage outage or incomplete COS credentials must not make
+            # admin list APIs fail. The browser can handle an unavailable
+            # image URL while the record itself remains visible.
+            return file_key
     if file_key.startswith(("https://", "http://")):
         return file_key
     filename = file_key.split("/")[-1] if "/" in file_key else file_key

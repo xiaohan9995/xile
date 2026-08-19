@@ -20,9 +20,11 @@
     </section>
 
     <section class="panel workflow-panel workflow-panel--muted">
-      <div class="workflow-queue__meta"><h2>02 · {{ queueTitle }}</h2><span>共 {{ reviews.length }} 份年审记录</span></div>
+      <div class="workflow-queue__meta"><h2>02 · {{ queueTitle }}</h2><span>共 {{ filteredReviews.length }} 份年审记录</span></div>
+      <div class="toolbar workflow-filters"><input v-model="filters.name" placeholder="教师姓名" /><input v-model="filters.certNo" placeholder="证书编号" /><input v-model="filters.status" placeholder="审核状态" /><input v-model="filters.groupName" placeholder="审核组" /></div>
       <div class="data-table-wrap"><table class="data-table"><thead><tr><th>教师</th><th>状态</th><th>审核组</th><th>操作</th></tr></thead><tbody>
-        <tr v-for="review in reviews" :key="review.id"><td>{{ review.name }}<small>{{ review.certNo }}</small></td><td>{{ label(review.status) }}</td><td>{{ review.groupName || '未分配' }}</td><td><button class="table-action" @click="openReview(review)">处理</button></td></tr>
+        <tr v-if="!filteredReviews.length"><td colspan="4" class="empty-cell">暂无符合筛选条件的年审记录</td></tr>
+        <tr v-for="review in filteredReviews" :key="review.id"><td>{{ review.name }}<small>{{ review.certNo }}</small></td><td>{{ label(review.status) }}</td><td>{{ review.groupName || '未分配' }}</td><td><button class="table-action" @click="openReview(review)">处理</button></td></tr>
       </tbody></table></div>
     </section>
 
@@ -77,6 +79,7 @@ import { assignReview, createReviewCycle, createReviewGroup, fetchPermissions, f
 import { useToast } from '../composables/useToast'
 const { show: toast } = useToast()
 const cycles = ref([]); const groups = ref([]); const admins = ref([]); const reviews = ref([]); const selected = ref(null); const workflow = ref(null); const showSetup = ref(false)
+const filters = ref({ name: '', certNo: '', status: '', groupName: '' })
 const cycleForm = ref({ name: '', startDate: '', submissionDeadline: '' }); const groupForm = ref({ name: '', leaderId: null, memberIds: [] }); const assignment = ref({ groupId: null, cycleId: null }); const opinion = ref({ conclusion: 'approved', comment: '' }); const decision = ref({ conclusion: 'approved', text: '' })
 const label = (status) => ({ pending: '已提交', submitted: '已提交', in_review: '审核中', pending_publication: '待发布', pending_publication_rejected: '待发布', approved: '已通过', rejected: '未通过', published_approved: '已发布（通过）', published_rejected: '已发布（未通过）' }[status] || status)
 const reviewStage = computed(() => {
@@ -94,6 +97,14 @@ const decisionReady = computed(() => (workflow.value?.opinionProgress?.required 
 const queueTitle = computed(() => currentRole.value === 'reviewer' ? '我的审核' : currentRole.value === 'group_leader' ? '审核小组' : '审核队列')
 const nextStepText = computed(() => ({ review: decisionReady.value ? '成员意见已齐全，组长可以形成集体决议。' : '下一步：成员完成核验意见后，由组长提交集体决议。', publication: '下一步：管理员确认后正式发布，教师端将同步结果。', published: '结果已同步至教师端，本条记录仅供查看。' }[reviewStage.value]))
 const setupNeeded = computed(() => cycles.value.length === 0 || groups.value.length === 0)
+const filteredReviews = computed(() => {
+  const matches = (value, query) => !query || String(value || '').toLowerCase().includes(query)
+  const name = filters.value.name.trim().toLowerCase()
+  const certNo = filters.value.certNo.trim().toLowerCase()
+  const status = filters.value.status.trim().toLowerCase()
+  const groupName = filters.value.groupName.trim().toLowerCase()
+  return reviews.value.filter((review) => matches(review.name, name) && matches(review.certNo, certNo) && (matches(review.status, status) || matches(label(review.status), status)) && matches(review.groupName, groupName))
+})
 async function load() { [cycles.value, groups.value, admins.value, reviews.value] = await Promise.all([fetchReviewCycles(), fetchReviewGroups(), fetchPermissions(), fetchAdminReviews()]) }
 async function saveCycle() { try { await createReviewCycle(cycleForm.value); cycleForm.value = { name: '', startDate: '', submissionDeadline: '' }; await load(); toast('年审批次已创建') } catch (e) { toast('创建批次失败', 'error') } }
 async function saveGroup() { try { await createReviewGroup({ name: groupForm.value.name, leaderId: groupForm.value.leaderId, memberIds: groupForm.value.memberIds, tierScope: [] }); groupForm.value = { name: '', leaderId: null, memberIds: [] }; await load(); toast('本期审核人已保存') } catch (e) { toast('保存审核人失败', 'error') } }

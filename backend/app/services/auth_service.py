@@ -69,7 +69,7 @@ def wx_login(code):
     return _issue_token(user), user
 
 
-def cloudbase_login(assertion):
+def cloudbase_login(assertion, profile=None):
     """Exchange a short-lived, CloudBase-signed WeChat identity for the app JWT."""
     if not isinstance(assertion, dict):
         raise AuthError("CloudBase 登录凭证无效", 400)
@@ -106,6 +106,25 @@ def cloudbase_login(assertion):
         raise AuthError("CloudBase 登录凭证校验失败，请重新登录", 401)
 
     user = _get_or_create_user(openid)
+    # WeChat profile data is optional and only supplied after the user grants
+    # the profile permission from the login button. Do not overwrite an avatar
+    # or nickname that the user has explicitly configured in the app.
+    profile = profile if isinstance(profile, dict) else {}
+    nickname = (profile.get("nickname") or "").strip()
+    avatar_url = (profile.get("avatarUrl") or "").strip()
+    profile_changed = False
+    if nickname and not user.nickname:
+        user.nickname = nickname
+        profile_changed = True
+    if avatar_url and not user.avatar_url:
+        user.avatar_url = avatar_url
+        profile_changed = True
+        if user.teacher_id:
+            teacher = db.session.get(Teacher, user.teacher_id)
+            if teacher and not teacher.avatar_url:
+                teacher.avatar_url = avatar_url
+    if profile_changed:
+        db.session.commit()
     return _issue_token(user), user
 
 

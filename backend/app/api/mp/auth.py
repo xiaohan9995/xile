@@ -53,7 +53,7 @@ def mp_cloudbase_login():
     """Exchange the verified identity returned by the CloudBase bridge function."""
     payload = request.get_json(silent=True) or {}
     try:
-        token, user = cloudbase_login(payload.get("assertion"))
+        token, user = cloudbase_login(payload.get("assertion"), payload.get("profile"))
     except AuthError as e:
         return {"error": e.message}, e.status_code
 
