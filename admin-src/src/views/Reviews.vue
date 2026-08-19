@@ -48,7 +48,7 @@
             <tr v-for="review in pagedReviews" :key="review.id">
               <td>
                 <div class="cell-person compact">
-                  <img :src="review.avatar" :alt="review.name" />
+                  <ImagePreview :src="review.avatar" :alt="review.name" image-class="review-avatar" />
                   <div>
                     <strong>{{ review.name }}</strong>
                     <span>喜乐名：{{ review.xileName }}</span>
@@ -69,7 +69,7 @@
 
     <section v-else class="review-detail">
       <aside class="profile-panel">
-        <img :src="selected.avatar" :alt="selected.name" />
+        <ImagePreview :src="selected.avatar" :alt="selected.name" image-class="review-avatar-large" />
         <h2>{{ selected.name }}</h2>
         <p>证书编号：{{ selected.certNo }}</p>
         <p>喜乐名：{{ selected.xileName }}</p>
@@ -124,6 +124,7 @@
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
+import ImagePreview from '../components/ImagePreview.vue'
 import { RouterLink } from 'vue-router'
 import { fetchAdminReviews } from '../api/adminData'
 import { useToast } from '../composables/useToast'

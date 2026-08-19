@@ -30,7 +30,7 @@
           <tr v-for="studio in pagedList" :key="studio.id">
             <td>
               <div class="studio-cell">
-                <img :src="studio.image" :alt="studio.name" />
+                <ImagePreview :src="studio.image" :alt="studio.name" image-class="studio-cover" />
                 <div>
                   <strong>{{ studio.name }}</strong>
                   <span>{{ Array.isArray(studio.tags) ? studio.tags.join(', ') : studio.tags }}</span>
@@ -161,6 +161,7 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
+import ImagePreview from '../components/ImagePreview.vue'
 import { fetchAdminStudios, createStudio, updateStudio, deleteStudio, uploadAdminAsset } from '../api/adminData'
 import { useToast } from '../composables/useToast'
 import Pagination from '../components/Pagination.vue'

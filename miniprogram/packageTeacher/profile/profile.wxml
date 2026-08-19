@@ -17,13 +17,13 @@
         >
           <image wx:if="{{user.avatarUrl || teacher.avatarUrl}}" class="avatar-img" src="{{user.avatarUrl || teacher.avatarUrl}}" mode="aspectFill" alt="{{user.nickname || teacher.name || '微信用户'}}的头像" />
           <view wx:else class="avatar-img avatar-img--placeholder">
-            <text class="avatar-initial">{{user.nickname[0] || teacher.name[0] || '我'}}</text>
+            <text class="avatar-initial">{{teacher.xileName[0] || user.nickname[0] || teacher.name[0] || '我'}}</text>
           </view>
           <view class="avatar-badge avatar-badge--edit">{{avatarUploading ? '…' : '换'}}</view>
         </button>
 
         <view class="identity-info">
-          <text class="identity-name">{{user.nickname || teacher.name || '微信用户'}}</text>
+          <text class="identity-name">{{teacher.xileName || user.nickname || teacher.name || '微信用户'}}</text>
           <view class="identity-role">
             <text wx:if="{{isTeacher}}">认证姓名 {{teacher.name}} · {{teacher.tier}} {{teacher.tierName}}</text>
             <text wx:else>微信用户 · 尚未关联讲师档案</text>

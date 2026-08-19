@@ -7,6 +7,8 @@ Page({
   data: {
     statusBarHeight: 20,
     nickname: '',
+    xileName: '',
+    isTeacher: false,
     savingNickname: false,
     currentPassword: '',
     newPassword: '',
@@ -23,11 +25,15 @@ Page({
     try {
       const data = await request({ url: '/api/mp/auth/me' });
       this.setData({
-        nickname: data.nickname || auth.getNickname() || '',
+        nickname: data.xileName || '',
+        xileName: data.xileName || '',
+        isTeacher: !!data.teacherId,
       });
     } catch (err) {
       this.setData({
-        nickname: auth.getNickname() || '',
+        nickname: '',
+        xileName: '',
+        isTeacher: false,
       });
     }
   },
@@ -69,6 +75,7 @@ Page({
   },
 
   async onSaveNickname() {
+    if (!this.data.isTeacher) return;
     const nickname = (this.data.nickname || '').trim();
     if (!nickname) {
       wx.showToast({ title: '请填写喜乐名', icon: 'none' });
@@ -80,10 +87,9 @@ Page({
         url: '/api/mp/auth/update-profile',
         method: 'POST',
         silent: true,
-        data: { nickname },
+        data: { xileName: nickname },
       });
-      auth.setNickname(res.nickname || nickname);
-      this.setData({ nickname: res.nickname || nickname });
+      this.setData({ nickname: res.xileName || nickname, xileName: res.xileName || nickname });
       wx.showToast({ title: '喜乐名已保存', icon: 'none' });
     } catch (err) {
       wx.showToast({ title: err.message || '喜乐名保存失败', icon: 'none' });

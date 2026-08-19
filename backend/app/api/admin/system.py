@@ -312,7 +312,9 @@ def user_list():
         items.append({
             "id": user.id,
             "openid": user.openid[:8] + "..." if user.openid and len(user.openid) > 8 else user.openid,
+            "wechatName": user.nickname,
             "nickname": user.nickname,
+            "xileName": teacher.xile_name if teacher else None,
             "phone": user.phone,
             # Linked teacher accounts may predate avatar sync. Use the
             # teacher avatar as a display fallback while keeping the user's

@@ -12,11 +12,11 @@
       <text class="settings-intro__description">管理公开喜乐名与教师账号密码</text>
     </view>
 
-    <view class="section-heading">
+    <view wx:if="{{isTeacher}}" class="section-heading">
       <text class="section-heading__title">个人资料</text>
       <text class="section-heading__note">喜乐名会展示在“我的”页面</text>
     </view>
-    <view class="settings-group">
+    <view wx:if="{{isTeacher}}" class="settings-group">
       <view class="field-block">
         <text class="field-label">喜乐名</text>
         <input
