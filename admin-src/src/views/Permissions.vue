@@ -83,7 +83,7 @@
           <tr v-for="user in pagedUsers" :key="user.id">
             <td>
               <div class="cell-person">
-                <ImagePreview v-if="user.avatarUrl" :image-class="'member-avatar user-avatar user-avatar-image'" :src="user.avatarUrl" alt="小程序用户头像" @error="user.avatarUrl = ''" />
+                <ImagePreview v-if="user.avatarUrl" :image-class="'member-avatar user-avatar user-avatar-image'" :src="user.avatarUrl" alt="小程序用户头像" @error="user.avatarUrl = DEFAULT_USER_AVATAR" />
                 <div v-else class="member-avatar user-avatar">{{ user.id }}</div>
                 <div>
                   <strong>{{ user.wechatName || user.nickname || user.nickName || '微信用户' }}</strong>
@@ -188,6 +188,7 @@ import { createTeacherAccount, fetchPermissions, inviteAdmin, fetchUsers, update
 import { useAuthStore } from '../stores/auth'
 import Pagination from '../components/Pagination.vue'
 
+const DEFAULT_USER_AVATAR = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop'
 const members = ref([])
 const users = ref([])
 const teacherOptions = ref([])
