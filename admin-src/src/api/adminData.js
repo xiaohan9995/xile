@@ -155,6 +155,16 @@ export async function uploadImportPreview(file) {
   return api.upload('/import/teachers/preview', formData)
 }
 
+export async function downloadImportTemplate() {
+  const response = await api.raw.get('/import/teachers/template', { responseType: 'blob' })
+  const url = URL.createObjectURL(response)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = '教师批量导入模板.xlsx'
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
 export async function commitImport(batchId, file) {
   const formData = new FormData()
   formData.append('file', file)
