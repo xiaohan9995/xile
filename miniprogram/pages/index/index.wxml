@@ -57,7 +57,7 @@
         <text class="featured-title">认证讲师</text>
         <text class="featured-more" bindtap="goSearch">查看全部</text>
       </view>
-      <scroll-view scroll-x class="featured-scroll" enhanced show-scrollbar="{{false}}" bindscrolltolower="loadMoreFeaturedTeachers">
+      <scroll-view scroll-x class="featured-scroll" enhanced show-scrollbar="{{false}}">
         <view class="featured-scroll__content">
           <view
             wx:for="{{featuredTeachers}}"
@@ -75,9 +75,6 @@
             <text class="featured-name">{{item.xileName || item.name}}</text>
             <text class="featured-tier">{{item.tier}} {{item.tierName}}</text>
           </view>
-          <view class="featured-load-more" wx:if="{{featuredLoading}}"><text>加载中</text></view>
-          <view class="featured-load-more" wx:elif="{{featuredHasMore}}" bindtap="loadMoreFeaturedTeachers"><text>滑动查看更多</text></view>
-          <view class="featured-load-more" wx:else><text>已展示全部</text></view>
         </view>
       </scroll-view>
     </view>

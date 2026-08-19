@@ -10,7 +10,6 @@
     {
       "root": "packageTeacher",
       "pages": [
-        "home/home",
         "login/login",
         "account-login/account-login",
         "link-teacher/link-teacher",

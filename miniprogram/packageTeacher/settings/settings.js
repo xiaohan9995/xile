@@ -57,7 +57,7 @@ Page({
         },
       });
       this.setData({ currentPassword: '', newPassword: '' });
-      wx.showToast({ title: '密码已更新', icon: 'success' });
+      wx.showToast({ title: '密码已更新', icon: 'none' });
     } catch (err) {
       const message = err.statusCode === 404
         ? '当前微信账号未设置教师登录密码'
@@ -71,7 +71,7 @@ Page({
   async onSaveNickname() {
     const nickname = (this.data.nickname || '').trim();
     if (!nickname) {
-      wx.showToast({ title: '请填写昵称', icon: 'none' });
+      wx.showToast({ title: '请填写喜乐名', icon: 'none' });
       return;
     }
     this.setData({ savingNickname: true });
@@ -84,9 +84,9 @@ Page({
       });
       auth.setNickname(res.nickname || nickname);
       this.setData({ nickname: res.nickname || nickname });
-      wx.showToast({ title: '昵称已保存', icon: 'success' });
+      wx.showToast({ title: '喜乐名已保存', icon: 'none' });
     } catch (err) {
-      wx.showToast({ title: err.message || '昵称保存失败', icon: 'none' });
+      wx.showToast({ title: err.message || '喜乐名保存失败', icon: 'none' });
     } finally {
       this.setData({ savingNickname: false });
     }

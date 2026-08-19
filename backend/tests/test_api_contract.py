@@ -1,12 +1,13 @@
 import hashlib
 import hmac
 import time
+from io import BytesIO
 
 import pytest
 
 from backend.app import create_app
 from backend.app.extensions import db
-from backend.app.models import AdminUser, SystemConfig, TeacherTier
+from backend.app.models import AdminUser, SystemConfig, Teacher, TeacherTier, User
 from backend.app.seed import ensure_initial_admin, ensure_system_defaults, reset_admin_password
 from backend.app.services.auth_service import AuthError, wx_login
 
@@ -204,14 +205,15 @@ def test_mp_homepage_returns_public_content(client):
     assert isinstance(payload["featuredTeachers"], list)
 
 
-def test_featured_teachers_are_loaded_in_small_pages(client):
-    response = client.get("/api/mp/teachers/featured?page=1&pageSize=1")
+def test_featured_teachers_show_up_to_ten_and_sort_by_tier_desc(client):
+    response = client.get("/api/mp/teachers/featured?page=1&pageSize=10")
 
     assert response.status_code == 200
     payload = response.get_json()
-    assert len(payload["items"]) == 1
+    assert len(payload["items"]) <= 10
     assert payload["page"] == 1
-    assert payload["pageSize"] == 1
+    assert payload["pageSize"] == 10
+    assert [item["tier"] for item in payload["items"]] == ["L5", "L4", "L3", "L2"]
     assert "hasMore" in payload
 
 
@@ -725,6 +727,8 @@ def test_admin_user_list_and_role_update(client):
     user = payload["items"][0]
     assert user["role"] == "teacher"
     assert user["teacherId"] == 1
+    assert "avatarUrl" in user
+    assert "nickname" in user
 
     update_response = client.put(
         f"/api/admin/users/{user['id']}/role",
@@ -778,6 +782,20 @@ def test_mp_update_profile_sets_nickname(client):
         headers={"Authorization": f"Bearer {token}"},
     )
     assert me_response.get_json()["nickname"] == "瑜伽老师"
+
+    avatar_response = client.post(
+        "/api/mp/auth/update-profile",
+        headers={"Authorization": f"Bearer {token}"},
+        data={"avatar": (BytesIO(b"test-avatar"), "avatar.png")},
+        content_type="multipart/form-data",
+    )
+    assert avatar_response.status_code == 200
+    assert avatar_response.get_json()["teacherAvatarUrl"]
+    with client.application.app_context():
+        teacher_avatar = Teacher.query.get(1).avatar_url
+        user_avatar = User.query.get(1).avatar_url
+        assert teacher_avatar.startswith("/uploads/avatars/")
+        assert teacher_avatar == user_avatar
 
 
 def test_mp_login_response_includes_avatar_fields(client):

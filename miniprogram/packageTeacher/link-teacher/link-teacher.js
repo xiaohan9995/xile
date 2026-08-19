@@ -36,8 +36,8 @@ Page({
         silent: true,
       });
       auth.applySession(data);
-      wx.showToast({ title: '教师身份已关联', icon: 'success' });
-      setTimeout(() => wx.reLaunch({ url: '/packageTeacher/home/home' }), 700);
+      wx.showToast({ title: '教师身份已关联', icon: 'none' });
+      setTimeout(() => wx.reLaunch({ url: '/packageTeacher/profile/profile' }), 700);
     } catch (error) {
       wx.showToast({ title: error.message || '关联失败，请重试', icon: 'none', duration: 2500 });
     } finally {
@@ -46,7 +46,7 @@ Page({
   },
 
   usePasswordLogin() {
-    wx.navigateTo({ url: '/packageTeacher/account-login/account-login?returnUrl=%2FpackageTeacher%2Fhome%2Fhome' });
+    wx.navigateTo({ url: '/packageTeacher/account-login/account-login?returnUrl=%2FpackageTeacher%2Fprofile%2Fprofile' });
   },
 
   goBack() {

@@ -12,8 +12,6 @@ Page({
     },
     announcements: [],
     featuredTeachers: [],
-    featuredPage: 0,
-    featuredHasMore: true,
     featuredLoading: false,
     homepageLoading: true,
     homepageLoadError: false,
@@ -23,7 +21,7 @@ Page({
     this.setData({ statusBarHeight: app.globalData.statusBarHeight });
     this.loadStats();
     this.loadHomepage();
-    this.loadFeaturedTeachers({ reset: true });
+    this.loadFeaturedTeachers();
   },
 
   async loadStats() {
@@ -59,20 +57,17 @@ Page({
     }
   },
 
-  async loadFeaturedTeachers({ reset = false } = {}) {
-    if (this.data.featuredLoading || (!reset && !this.data.featuredHasMore)) return;
-    const page = reset ? 1 : this.data.featuredPage + 1;
+  async loadFeaturedTeachers() {
+    if (this.data.featuredLoading) return;
     this.setData({ featuredLoading: true });
     try {
       const payload = await request({
-        url: `/api/mp/teachers/featured?page=${page}&pageSize=4`,
+        url: '/api/mp/teachers/featured?page=1&pageSize=10',
         silent: true,
       });
       const items = payload && Array.isArray(payload.items) ? payload.items : [];
       this.setData({
-        featuredTeachers: reset ? items : this.data.featuredTeachers.concat(items),
-        featuredPage: page,
-        featuredHasMore: !!(payload && payload.hasMore),
+        featuredTeachers: items,
       });
     } catch (e) {
       console.warn('load featured teachers failed', e.code || e.message);
@@ -85,7 +80,7 @@ Page({
     Promise.all([
       this.loadStats(),
       this.loadHomepage(),
-      this.loadFeaturedTeachers({ reset: true }),
+      this.loadFeaturedTeachers(),
     ]).finally(() => wx.stopPullDownRefresh());
   },
 
@@ -103,14 +98,14 @@ Page({
 
   goMyCert() {
     if (!auth.isLoggedIn()) {
-      wx.navigateTo({ url: auth.loginUrl('/packageTeacher/home/home') });
+      wx.navigateTo({ url: auth.loginUrl('/packageTeacher/profile/profile') });
       return;
     }
     if (!auth.isTeacher()) {
       wx.navigateTo({ url: '/packageTeacher/profile/profile' });
       return;
     }
-    wx.navigateTo({ url: '/packageTeacher/home/home' });
+    wx.navigateTo({ url: '/packageTeacher/profile/profile' });
   },
 
   goStudios() {
@@ -120,9 +115,5 @@ Page({
   openTeacher(e) {
     const id = e.currentTarget.dataset.id;
     wx.navigateTo({ url: `/pages/teacher-detail/teacher-detail?id=${id}` });
-  },
-
-  loadMoreFeaturedTeachers() {
-    this.loadFeaturedTeachers();
   },
 });

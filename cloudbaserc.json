@@ -1,32 +1,5 @@
 {
-  "$schema": "https://framework-1258016615.tcloudbaseapp.com/schema/latest.json",
-  "version": "2.0",
   "envId": "xile-yoga-d4g2za8xi82a16810",
-  "framework": {
-    "name": "xile-yoga",
-    "plugins": {
-      "server": {
-        "use": "@cloudbase/framework-plugin-container",
-        "inputs": {
-          "serviceName": "xile-yoga",
-          "servicePath": "/",
-          "containerPort": 80,
-          "uploadType": "image",
-          "isPublic": false,
-          "flowRatio": 100,
-          "cpu": 0.5,
-          "mem": 1,
-          "minNum": 0,
-          "maxNum": 5,
-          "policyType": "cpu",
-          "policyThreshold": 60,
-          "envVariables": {},
-          "customLogs": "stdout",
-          "initialDelaySeconds": 2
-        }
-      }
-    }
-  },
   "cloudrun": {
     "name": "xile-yoga"
   }

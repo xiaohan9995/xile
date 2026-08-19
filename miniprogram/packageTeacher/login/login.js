@@ -8,7 +8,7 @@ Page({
   },
 
   onLoad(options) {
-    const returnUrl = decodeURIComponent(options.returnUrl || '/packageTeacher/home/home');
+    const returnUrl = decodeURIComponent(options.returnUrl || '/packageTeacher/profile/profile');
     this.setData({ returnUrl, loginReady: true });
 
     if (auth.isLoggedIn()) {

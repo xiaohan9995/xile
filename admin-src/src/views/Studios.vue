@@ -27,7 +27,7 @@
           <tr v-if="filteredList.length === 0">
             <td colspan="6" class="empty-row">{{ keyword ? '无匹配结果，请调整搜索条件' : '暂无工作室数据' }}</td>
           </tr>
-          <tr v-for="studio in filteredList" :key="studio.id">
+          <tr v-for="studio in pagedList" :key="studio.id">
             <td>
               <div class="studio-cell">
                 <img :src="studio.image" :alt="studio.name" />
@@ -48,6 +48,7 @@
           </tr>
         </tbody>
       </table>
+      <Pagination v-model:current-page="currentPage" :total-pages="totalPages" :total-items="filteredList.length" />
     </div>
 
     <!-- Create Modal -->
@@ -159,15 +160,18 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { fetchAdminStudios, createStudio, updateStudio, deleteStudio, uploadAdminAsset } from '../api/adminData'
 import { useToast } from '../composables/useToast'
+import Pagination from '../components/Pagination.vue'
 
 const { show: toast } = useToast()
 const keyword = ref('')
 const showCreate = ref(false)
 const showEdit = ref(false)
 const studios = ref([])
+const currentPage = ref(1)
+const pageSize = 15
 
 const createDraft = reactive({
   name: '',
@@ -211,6 +215,13 @@ const filteredList = computed(() => {
     const tagsStr = Array.isArray(s.tags) ? s.tags.join(' ') : (s.tags || '')
     return [s.name, s.city, s.address, tagsStr].some((field) => (field || '').toLowerCase().includes(text))
   })
+})
+
+const totalPages = computed(() => Math.ceil(filteredList.value.length / pageSize))
+const pagedList = computed(() => filteredList.value.slice((currentPage.value - 1) * pageSize, currentPage.value * pageSize))
+watch(keyword, () => { currentPage.value = 1 })
+watch(totalPages, (total) => {
+  if (total > 0 && currentPage.value > total) currentPage.value = total
 })
 
 function openCreate() {
@@ -289,7 +300,8 @@ async function uploadStudioAsset(event, draft) {
     draft.coverUrl = result.url
     toast('封面已上传到对象存储')
   } catch (e) {
-    toast(e?.response?.data?.error || e?.message || '图片上传失败，请检查对象存储配置', 'info')
+    const message = e?.response?.data?.error || e?.message || '图片上传失败，请检查对象存储配置'
+    toast(message === 'image too large, max 8MB' ? '图片大小不能超过 8MB' : message, 'error')
   } finally {
     event.target.value = ''
   }

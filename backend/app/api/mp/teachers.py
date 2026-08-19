@@ -6,7 +6,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 from sqlalchemy import extract
 
 from ...extensions import db, limiter
-from ...models import Announcement, AnnualReview, Studio, Teacher, TeacherTier, User
+from ...models import Announcement, AnnualReview, ReviewCycle, Studio, Teacher, TeacherTier, User
 from ...utils.storage import StorageNotConfiguredError, cos_is_configured, upload_to_cos
 from .helpers import (
     _certification_status,
@@ -56,14 +56,18 @@ def featured_teachers():
     except (ValueError, TypeError):
         page = 1
     try:
-        page_size = max(min(int(request.args.get("pageSize", 4)), 10), 1)
+        page_size = max(min(int(request.args.get("pageSize", 10)), 10), 1)
     except (ValueError, TypeError):
-        page_size = 4
+        page_size = 10
 
-    query = Teacher.query.filter(Teacher.status == "active")
+    query = Teacher.query.join(Teacher.tier).filter(Teacher.status == "active")
     total = query.count()
     teachers = (
-        query.order_by(Teacher.updated_at.desc(), Teacher.id.desc())
+        query.order_by(
+            TeacherTier.sort_order.desc(),
+            Teacher.updated_at.desc(),
+            Teacher.id.desc(),
+        )
         .offset((page - 1) * page_size)
         .limit(page_size)
         .all()
@@ -151,6 +155,7 @@ def get_teacher_summary(teacher_id):
 def _certification_payload(teacher, include_reviews=True):
     today = date.today()
     days_left = (teacher.valid_until - today).days if teacher.valid_until else None
+    review_cycle = ReviewCycle.query.filter_by(status="open").order_by(ReviewCycle.start_date.desc()).first()
     result = {
         "teacher": {
             **_teacher_summary(teacher),
@@ -162,6 +167,11 @@ def _certification_payload(teacher, include_reviews=True):
             "certificateUrl": teacher.certificate_url,
             "teachingSummary": teacher.detail.teaching_summary if teacher.detail else None,
             "phone": teacher.detail.phone if teacher.detail else None,
+        },
+        "reviewWindow": {
+            "isOpen": bool(review_cycle and review_cycle.start_date <= today <= review_cycle.submission_deadline),
+            "startDate": _date_text(review_cycle.start_date) if review_cycle else None,
+            "submissionDeadline": _date_text(review_cycle.submission_deadline) if review_cycle else None,
         },
     }
     if include_reviews:

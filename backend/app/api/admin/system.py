@@ -15,6 +15,7 @@ from ...models import (
     User,
 )
 from .helpers import current_admin_id, require_admin_roles, require_admin_token, _date_text, _datetime_text
+from ...utils.storage import file_url as _file_url
 from . import admin_bp
 
 
@@ -311,7 +312,12 @@ def user_list():
         items.append({
             "id": user.id,
             "openid": user.openid[:8] + "..." if user.openid and len(user.openid) > 8 else user.openid,
+            "nickname": user.nickname,
             "phone": user.phone,
+            # Linked teacher accounts may predate avatar sync. Use the
+            # teacher avatar as a display fallback while keeping the user's
+            # own avatar as the primary source.
+            "avatarUrl": _file_url(user.avatar_url or (teacher.avatar_url if teacher else None)),
             "role": user.role,
             "teacherId": user.teacher_id,
             "teacherName": teacher_name,

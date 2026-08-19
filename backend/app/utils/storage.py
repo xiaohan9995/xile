@@ -1,4 +1,5 @@
 import os
+from urllib.parse import unquote, urlparse
 
 
 class StorageNotConfiguredError(RuntimeError):
@@ -26,24 +27,60 @@ def object_url(file_key):
     return f"https://{settings['bucket']}.cos.{settings['region']}.myqcloud.com/{file_key}"
 
 
-def upload_to_cos(file_stream, file_key, content_type=None):
-    """Store an uploaded object in COS and return its public delivery URL."""
-    settings = _cos_settings()
-    if not all(settings.values()):
-        raise StorageNotConfiguredError("对象存储未配置，请设置 COS_BUCKET、COS_REGION、COS_SECRET_ID 和 COS_SECRET_KEY")
-
+def _cos_client(settings):
     from qcloud_cos import CosConfig, CosS3Client
 
-    client = CosS3Client(CosConfig(
+    return CosS3Client(CosConfig(
         Region=settings["region"],
         SecretId=settings["secret_id"],
         SecretKey=settings["secret_key"],
     ))
+
+
+def _cos_key(file_ref, settings):
+    if not file_ref.startswith(("https://", "http://")):
+        return file_ref
+    parsed = urlparse(file_ref)
+    expected_host = f"{settings['bucket']}.cos.{settings['region']}.myqcloud.com"
+    if parsed.netloc != expected_host:
+        return None
+    return unquote(parsed.path.lstrip("/"))
+
+
+def signed_object_url(file_ref, expires=3600):
+    """Create a temporary GET URL for a private COS object."""
+    settings = _cos_settings()
+    if not all(settings.values()):
+        raise StorageNotConfiguredError("对象存储未配置")
+    key = _cos_key(file_ref, settings)
+    if not key:
+        return file_ref
+    return _cos_client(settings).get_presigned_url(
+        Method="GET", Bucket=settings["bucket"], Key=key, Expired=expires,
+    )
+
+
+def upload_to_cos(file_stream, file_key, content_type=None, public_read=False):
+    """Store an object in COS and return its delivery URL.
+
+    Public-read ACLs are opt-in because certificates and review materials may
+    contain sensitive information.
+    """
+    settings = _cos_settings()
+    if not all(settings.values()):
+        raise StorageNotConfiguredError("对象存储未配置，请设置 COS_BUCKET、COS_REGION、COS_SECRET_ID 和 COS_SECRET_KEY")
+
+    client = _cos_client(settings)
+    put_options = {
+        "Bucket": settings["bucket"],
+        "Body": file_stream,
+        "Key": file_key,
+        "ContentType": content_type or "application/octet-stream",
+    }
+    if public_read:
+        put_options["ACL"] = "public-read"
     client.put_object(
-        Bucket=settings["bucket"],
-        Body=file_stream,
-        Key=file_key,
-        ContentType=content_type or "application/octet-stream",
+        **put_options,
     )
     return object_url(file_key)
 
@@ -52,11 +89,13 @@ def file_url(file_key):
     """Convert a file_key to an accessible URL based on storage mode (COS or local)."""
     if not file_key:
         return None
-    if file_key.startswith(("https://", "http://", "/uploads/", "/static/")):
+    if file_key.startswith(("/uploads/", "/static/")):
         return file_key
     settings = _cos_settings()
-    if settings["bucket"] and settings["region"]:
-        return object_url(file_key)
+    if settings["bucket"] and settings["region"] and (not file_key.startswith(("https://", "http://")) or _cos_key(file_key, settings)):
+        return signed_object_url(file_key)
+    if file_key.startswith(("https://", "http://")):
+        return file_key
     filename = file_key.split("/")[-1] if "/" in file_key else file_key
     if file_key.startswith("reviews/"):
         return f"/uploads/reviews/{filename}"

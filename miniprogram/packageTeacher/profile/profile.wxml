@@ -90,6 +90,7 @@
         class="menu-item"
         bindtap="onMenuTap"
         data-url="{{item.url}}"
+        data-action="{{item.action}}"
       >
         <view class="menu-item-left">
           <text class="menu-icon">{{item.icon}}</text>

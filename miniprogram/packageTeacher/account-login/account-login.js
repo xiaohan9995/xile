@@ -2,10 +2,10 @@ const auth = require('../../utils/auth');
 const app = getApp();
 
 Page({
-  data: { username: '', password: '', loading: false, returnUrl: '/packageTeacher/home/home', statusBarHeight: 20 },
+  data: { username: '', password: '', loading: false, returnUrl: '/packageTeacher/profile/profile', statusBarHeight: 20 },
   onLoad(options) {
     this.setData({
-      returnUrl: decodeURIComponent(options.returnUrl || '/packageTeacher/home/home'),
+      returnUrl: decodeURIComponent(options.returnUrl || '/packageTeacher/profile/profile'),
       statusBarHeight: app.globalData.statusBarHeight || 20,
     });
   },

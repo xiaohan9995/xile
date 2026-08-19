@@ -12,6 +12,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # app code
 COPY . .
 
+# Serve the built Vue administration console from the same CloudRun service.
+# The deployment context is backend/, so admin-dist is staged there before
+# building the image.
+RUN mkdir -p /var/www/admin && cp -R /app/admin-dist/. /var/www/admin/
+
 # nginx config
 COPY nginx.conf /etc/nginx/sites-available/default
 
