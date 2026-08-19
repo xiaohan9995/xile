@@ -192,6 +192,11 @@ def get_my_certification():
     if not user or not user.teacher_id:
         return {"error": "not a teacher"}, 403
     teacher = Teacher.query.filter(Teacher.id == user.teacher_id, Teacher.status != "hidden").first_or_404()
+    # Reconcile legacy records where the mini-program user and linked teacher
+    # still point at different avatar objects.
+    if user.avatar_url and teacher.avatar_url != user.avatar_url:
+        teacher.avatar_url = user.avatar_url
+        db.session.commit()
     return _certification_payload(teacher, include_reviews=True)
 
 

@@ -1,5 +1,5 @@
 <template>
-  <div v-if="totalPages > 1" class="pagination" aria-label="分页">
+  <div class="pagination" aria-label="分页">
     <button class="pagination-btn" :disabled="currentPage <= 1" @click="$emit('update:currentPage', currentPage - 1)">‹</button>
     <button
       v-for="page in displayPages"
@@ -26,7 +26,7 @@ defineEmits(['update:currentPage'])
 
 const displayPages = computed(() => {
   const start = Math.max(1, props.currentPage - 2)
-  const end = Math.min(props.totalPages, props.currentPage + 2)
+  const end = Math.max(1, Math.min(props.totalPages, props.currentPage + 2))
   return Array.from({ length: end - start + 1 }, (_, index) => start + index)
 })
 </script>
