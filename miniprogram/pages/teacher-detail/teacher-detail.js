@@ -13,6 +13,7 @@ Page({
   },
 
   onLoad(options) {
+    if (!auth.requireLogin(`/pages/teacher-detail/teacher-detail?id=${options.id || ''}`)) return;
     this.setData({ statusBarHeight: app.globalData.statusBarHeight });
     if (options.id) {
       this.loadTeacher(options.id);

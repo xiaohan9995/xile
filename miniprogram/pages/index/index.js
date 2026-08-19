@@ -18,6 +18,7 @@ Page({
   },
 
   onLoad() {
+    if (!auth.requireLogin('/pages/index/index')) return;
     this.setData({ statusBarHeight: app.globalData.statusBarHeight });
     this.loadStats();
     this.loadHomepage();

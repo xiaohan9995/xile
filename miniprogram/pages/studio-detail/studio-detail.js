@@ -12,6 +12,7 @@ Page({
   },
 
   onLoad(options) {
+    if (!auth.requireLogin(`/pages/studio-detail/studio-detail?id=${options.id || ''}`)) return;
     this.setData({ statusBarHeight: app.globalData.statusBarHeight });
     if (options.id) {
       this.loadStudio(options.id);
