@@ -33,6 +33,7 @@ Page({
   },
 
   onLoad() {
+    if (!auth.requireLogin('/pages/teacher-search/teacher-search')) return;
     this.setData({ statusBarHeight: app.globalData.statusBarHeight });
     this.loadCityOptions();
     this.doSearch();

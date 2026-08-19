@@ -25,6 +25,7 @@ Page({
   },
 
   onLoad() {
+    if (!auth.requireLogin('/pages/studios/studios')) return;
     this.setData({ statusBarHeight: app.globalData.statusBarHeight });
     this.loadStudios();
   },
