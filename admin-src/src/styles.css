@@ -482,6 +482,7 @@ button {
 
 .toolbar {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 18px;
 }
@@ -497,7 +498,7 @@ button {
 }
 
 .toolbar input {
-  min-width: 280px;
+  min-width: 160px;
 }
 
 .admin-searchline {

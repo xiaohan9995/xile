@@ -8,7 +8,10 @@
     </div>
 
     <div class="toolbar">
-      <input v-model="keyword" placeholder="搜索名称、城市、地址、标签..." />
+      <input v-model="filters.name" placeholder="工作室名称" />
+      <input v-model="filters.city" placeholder="城市" />
+      <input v-model="filters.address" placeholder="地址" />
+      <input v-model="filters.tags" placeholder="标签" />
     </div>
 
     <div class="data-table-wrap">
@@ -25,7 +28,7 @@
         </thead>
         <tbody>
           <tr v-if="filteredList.length === 0">
-            <td colspan="6" class="empty-row">{{ keyword ? '无匹配结果，请调整搜索条件' : '暂无工作室数据' }}</td>
+            <td colspan="6" class="empty-row">{{ hasFilters ? '无匹配结果，请调整筛选条件' : '暂无工作室数据' }}</td>
           </tr>
           <tr v-for="studio in pagedList" :key="studio.id">
             <td>
@@ -167,7 +170,7 @@ import { useToast } from '../composables/useToast'
 import Pagination from '../components/Pagination.vue'
 
 const { show: toast } = useToast()
-const keyword = ref('')
+const filters = ref({ name: '', city: '', address: '', tags: '' })
 const showCreate = ref(false)
 const showEdit = ref(false)
 const studios = ref([])
@@ -210,17 +213,22 @@ async function loadStudios() {
 onMounted(loadStudios)
 
 const filteredList = computed(() => {
-  const text = keyword.value.trim().toLowerCase()
-  if (!text) return studios.value
+  const matches = (value, query) => !query || String(value || '').toLowerCase().includes(query)
+  const name = filters.value.name.trim().toLowerCase()
+  const city = filters.value.city.trim().toLowerCase()
+  const address = filters.value.address.trim().toLowerCase()
+  const tags = filters.value.tags.trim().toLowerCase()
   return studios.value.filter((s) => {
-    const tagsStr = Array.isArray(s.tags) ? s.tags.join(' ') : (s.tags || '')
-    return [s.name, s.city, s.address, tagsStr].some((field) => (field || '').toLowerCase().includes(text))
+    const tagsText = Array.isArray(s.tags) ? s.tags.join(' ') : s.tags
+    return matches(s.name, name) && matches(s.city, city) && matches(s.address, address) && matches(tagsText, tags)
   })
 })
 
+const hasFilters = computed(() => Object.values(filters.value).some((value) => value.trim()))
+
 const totalPages = computed(() => Math.ceil(filteredList.value.length / pageSize))
 const pagedList = computed(() => filteredList.value.slice((currentPage.value - 1) * pageSize, currentPage.value * pageSize))
-watch(keyword, () => { currentPage.value = 1 })
+watch(filters, () => { currentPage.value = 1 }, { deep: true })
 watch(totalPages, (total) => {
   if (total > 0 && currentPage.value > total) currentPage.value = total
 })

@@ -51,4 +51,9 @@ def upload_asset():
         )
     except StorageNotConfiguredError as error:
         return {"error": str(error)}, 503
-    return {"key": key, "url": file_url(url)}, 201
+    # Public admin images are stored as their stable COS URL. Returning a
+    # presigned URL here can exceed the database's legacy 256-char cover/avatar
+    # columns and makes a subsequent edit fail with a 500. Private assets use
+    # a temporary URL for immediate preview as before.
+    preview_url = url if asset_type in {"teacher-avatar", "studio-cover"} else file_url(url)
+    return {"key": key, "url": preview_url}, 201

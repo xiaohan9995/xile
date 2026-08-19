@@ -1,4 +1,5 @@
 import logging
+from contextlib import suppress
 import uuid
 
 from flask import g, request
@@ -8,9 +9,10 @@ from pythonjsonlogger import jsonlogger
 def init_logging(app):
     handler = logging.StreamHandler()
     formatter = jsonlogger.JsonFormatter(
-        "%(asctime)s %(levelname)s %(name)s %(message)s",
+        "%(asctime)s %(levelname)s %(name)s %(request_id)s %(message)s",
         rename_fields={"asctime": "timestamp", "levelname": "level", "name": "logger"},
     )
+    handler.addFilter(RequestIdFilter())
     handler.setFormatter(formatter)
 
     app.logger.handlers = [handler]
@@ -34,5 +36,8 @@ def init_request_id(app):
 
 class RequestIdFilter(logging.Filter):
     def filter(self, record):
-        record.request_id = getattr(g, "request_id", "-")
+        with suppress(RuntimeError):
+            record.request_id = getattr(g, "request_id", "-")
+            return True
+        record.request_id = "-"
         return True

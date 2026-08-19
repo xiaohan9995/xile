@@ -503,6 +503,21 @@ def test_admin_create_studio(client):
     assert response.get_json()["name"] == "新馆测试"
 
 
+def test_unhandled_api_error_returns_reason_and_request_id(client):
+    response = client.post(
+        "/api/admin/studios",
+        headers={"Authorization": "Bearer test-admin-token"},
+        json={"name": "错误请求", "city": []},
+    )
+
+    assert response.status_code == 500
+    payload = response.get_json()
+    assert payload["error"] == "请求处理失败"
+    assert "reason" in payload
+    assert payload["requestId"]
+    assert response.headers["X-Request-Id"] == payload["requestId"]
+
+
 def test_admin_delete_studio(client):
     response = client.delete(
         "/api/admin/studios/1",
@@ -738,6 +753,15 @@ def test_admin_user_list_and_role_update(client):
     assert update_response.status_code == 200
     assert update_response.get_json()["role"] == "student"
     assert update_response.get_json()["teacherId"] is None
+
+    # A regular mini-program user has no linked teacher; listing it must not
+    # dereference a missing teacher record.
+    student_list = client.get(
+        "/api/admin/users",
+        headers={"Authorization": "Bearer test-admin-token"},
+    )
+    assert student_list.status_code == 200
+    assert student_list.get_json()["items"][0]["teacherId"] is None
 
     restore_response = client.put(
         f"/api/admin/users/{user['id']}/role",

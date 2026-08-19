@@ -39,6 +39,7 @@ export function mapAdminStudio(studio) {
     intro: studio.intro || '',
     openingHours: studio.openingHours || '',
     image: studio.coverUrl || DEFAULT_STUDIO,
+    coverUrl: studio.coverUrl || '',
     status: studio.status,
     ownerTeacherName: studio.ownerTeacherName,
   }
@@ -191,6 +192,10 @@ export async function fetchUsers() {
 
 export async function updateUserRole(userId, role, teacherId) {
   return api.put(`/users/${userId}/role`, { role, teacherId: teacherId || undefined })
+}
+
+export async function deleteUser(userId) {
+  return api.delete(`/users/${userId}`)
 }
 
 export async function createTeacherAccount(data) {

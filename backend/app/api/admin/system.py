@@ -305,6 +305,7 @@ def user_list():
     users = User.query.order_by(User.created_at.desc()).all()
     items = []
     for user in users:
+        teacher = None
         teacher_name = None
         if user.teacher_id:
             teacher = db.session.get(Teacher, user.teacher_id)
@@ -351,7 +352,7 @@ def update_user_role(user_id):
             return {"error": "teacher not found"}, 404
         existing_link = User.query.filter(User.teacher_id == teacher_id, User.id != user_id).first()
         if existing_link:
-            return {"error": "teacher already linked to another user"}, 409
+            return {"error": "该教师已关联其他小程序用户"}, 409
         user.teacher_id = teacher_id
     else:
         user.teacher_id = None
@@ -364,3 +365,26 @@ def update_user_role(user_id):
         "role": user.role,
         "teacherId": user.teacher_id,
     }
+
+
+@admin_bp.delete("/users/<int:user_id>")
+@require_admin_token
+@require_admin_roles("admin", "super_admin")
+def delete_user(user_id):
+    """Delete a mini-program user without deleting their linked teacher profile."""
+    user = db.session.get(User, user_id)
+    if user is None:
+        return {"error": "user not found"}, 404
+
+    admin_id = current_admin_id()
+    if admin_id:
+        db.session.add(AuditLog(
+            admin_id=admin_id,
+            action="delete_mp_user",
+            target_type="user",
+            target_id=user.id,
+        ))
+    user.teacher_id = None
+    db.session.delete(user)
+    db.session.commit()
+    return {"id": user_id, "deleted": True}

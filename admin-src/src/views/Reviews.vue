@@ -8,7 +8,7 @@
       <button v-if="selected" class="sync-btn" @click="clearSelection">返回队列</button>
     </div>
 
-    <section v-if="!selected && filteredReviews.length === 0 && activeTab === 'pending'" class="empty-review-card">
+    <section v-if="!selected && pendingCount === 0 && activeTab === 'pending'" class="empty-review-card">
       <div class="empty-check">✓</div>
       <h2>当前无任何挂起的导师审核申请</h2>
       <p>所有本年度教师认证及年审材料已处理完毕。新的小程序提交材料会进入这里等待管委会专人审核。</p>
@@ -27,9 +27,11 @@
         </button>
       </div>
 
-      <div class="admin-searchline">
-        <span>⌕</span>
-        <input v-model="keyword" placeholder="输入姓名 / 喜乐名 / 证书编号" />
+      <div class="toolbar">
+        <input v-model="filters.name" placeholder="教师姓名" />
+        <input v-model="filters.xileName" placeholder="喜乐名" />
+        <input v-model="filters.certNo" placeholder="证书编号" />
+        <input v-model="filters.city" placeholder="城市" />
       </div>
 
       <div class="data-table-wrap roster-wrap">
@@ -45,6 +47,7 @@
             </tr>
           </thead>
           <tbody>
+            <tr v-if="!pagedReviews.length"><td colspan="6" class="empty-cell">暂无符合筛选条件的年审记录</td></tr>
             <tr v-for="review in pagedReviews" :key="review.id">
               <td>
                 <div class="cell-person compact">
@@ -133,7 +136,7 @@ import Pagination from '../components/Pagination.vue'
 const { show: toast } = useToast()
 const reviews = ref([])
 const activeTab = ref('pending')
-const keyword = ref('')
+const filters = ref({ name: '', xileName: '', certNo: '', city: '' })
 const selectedId = ref(null)
 const currentPage = ref(1)
 const pageSize = 15
@@ -156,16 +159,17 @@ const rejectedCount = computed(() => reviews.value.filter((r) => r.status === 'r
 
 const filteredReviews = computed(() => {
   const list = reviews.value.filter((r) => r.status === activeTab.value)
-  const text = keyword.value.trim().toLowerCase()
-  if (!text) return list
-  return list.filter((r) =>
-    [r.name, r.xileName, r.certNo].some((field) => (field || '').toLowerCase().includes(text))
-  )
+  const matches = (value, query) => !query || String(value || '').toLowerCase().includes(query)
+  const name = filters.value.name.trim().toLowerCase()
+  const xileName = filters.value.xileName.trim().toLowerCase()
+  const certNo = filters.value.certNo.trim().toLowerCase()
+  const city = filters.value.city.trim().toLowerCase()
+  return list.filter((r) => matches(r.name, name) && matches(r.xileName, xileName) && matches(r.certNo, certNo) && matches(r.city, city))
 })
 
 const totalPages = computed(() => Math.ceil(filteredReviews.value.length / pageSize))
 const pagedReviews = computed(() => filteredReviews.value.slice((currentPage.value - 1) * pageSize, currentPage.value * pageSize))
-watch([activeTab, keyword], () => { currentPage.value = 1 })
+watch([activeTab, filters], () => { currentPage.value = 1 }, { deep: true })
 watch(totalPages, (total) => {
   if (total > 0 && currentPage.value > total) currentPage.value = total
 })

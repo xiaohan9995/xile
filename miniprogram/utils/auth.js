@@ -29,7 +29,23 @@ const applySession = (data) => {
   }
 };
 
-const loginWithWechat = () => {
+const getWechatProfile = () => new Promise((resolve) => {
+  if (!wx.getUserProfile) {
+    resolve(null);
+    return;
+  }
+  wx.getUserProfile({
+    desc: '用于展示微信头像和昵称',
+    success: (result) => resolve(result && result.userInfo ? result.userInfo : null),
+    fail: () => resolve(null),
+  });
+});
+
+const loginWithWechat = async () => {
+  // getUserProfile must be called from the login button tap. If the user
+  // declines, identity login still proceeds and the profile can be filled in
+  // later from the settings page.
+  const profile = await getWechatProfile();
   return new Promise((resolve, reject) => {
     if (!wx.cloud || !wx.cloud.callFunction) {
       reject(new Error('当前微信版本不支持云开发登录'));
@@ -47,7 +63,13 @@ const loginWithWechat = () => {
         request({
           url: '/api/mp/auth/cloudbase-login',
           method: 'POST',
-          data: { assertion },
+          data: {
+            assertion,
+            profile: profile ? {
+              nickname: profile.nickName || '',
+              avatarUrl: profile.avatarUrl || '',
+            } : undefined,
+          },
         }).then((data) => {
           applySession(data);
           resolve(data);
