@@ -30,7 +30,8 @@
           <tr v-for="teacher in pagedList" :key="teacher.id">
             <td>
               <div class="cell-person">
-                <ImagePreview :src="teacher.avatar" :alt="teacher.name" image-class="teacher-avatar" />
+                <ImagePreview v-if="teacher.avatar" :src="teacher.avatar" :alt="teacher.name" image-class="teacher-avatar" @error="teacher.avatar = ''" />
+                <div v-else class="teacher-avatar-fallback">{{ (teacher.name || '教').slice(0, 1) }}</div>
                 <div>
                   <strong>{{ teacher.name }}</strong>
                   <span>{{ teacher.phone }}</span>
@@ -50,7 +51,7 @@
           </tr>
         </tbody>
       </table>
-      <div v-if="totalPages > 1" class="pagination">
+      <div class="pagination">
         <button class="pagination-btn" :disabled="currentPage <= 1" @click="currentPage--">‹</button>
         <button
           v-for="p in displayPages"
@@ -436,6 +437,17 @@ async function uploadTeacherAsset(event, assetType, targetField) {
 </script>
 
 <style scoped>
+.teacher-avatar-fallback {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  border-radius: 50%;
+  background: var(--brand-green-light);
+  color: var(--brand-green);
+  font-weight: 800;
+}
 .account-password-row {
   display: flex;
   gap: 8px;

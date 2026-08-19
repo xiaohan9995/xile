@@ -1,7 +1,7 @@
 <template>
   <template>
   <>
-    <img :src="src" :alt="alt" :class="imageClass" class="preview-trigger" @click.stop="open = true" />
+    <img :src="src" :alt="alt" :class="imageClass" class="preview-trigger" @click.stop="open = true" @error="emit('error')" />
     <div v-if="open" class="image-preview-backdrop" @click="open = false">
       <div class="image-preview-dialog" @click.stop>
         <button class="image-preview-close" type="button" aria-label="关闭预览" @click="open = false">×</button>
@@ -21,6 +21,7 @@ defineProps({
 })
 
 const open = ref(false)
+const emit = defineEmits(['error'])
 </script>
 
 <style scoped>

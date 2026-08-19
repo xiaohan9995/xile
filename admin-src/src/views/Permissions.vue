@@ -24,7 +24,7 @@
           <tr v-for="member in pagedMembers" :key="member.id">
             <td>
               <div class="cell-person">
-                <ImagePreview v-if="member.avatarUrl" :image-class="'member-avatar user-avatar user-avatar-image'" :src="member.avatarUrl" alt="管理员头像" />
+                <ImagePreview v-if="member.avatarUrl" :image-class="'member-avatar user-avatar user-avatar-image'" :src="member.avatarUrl" alt="管理员头像" @error="member.avatarUrl = ''" />
                 <div v-else class="member-avatar">{{ member.username.charAt(0).toUpperCase() }}</div>
                 <div>
                   <strong>{{ member.username }}</strong>
@@ -73,7 +73,7 @@
           <tr v-for="user in pagedUsers" :key="user.id">
             <td>
               <div class="cell-person">
-                <ImagePreview v-if="user.avatarUrl" :image-class="'member-avatar user-avatar user-avatar-image'" :src="user.avatarUrl" alt="小程序用户头像" />
+                <ImagePreview v-if="user.avatarUrl" :image-class="'member-avatar user-avatar user-avatar-image'" :src="user.avatarUrl" alt="小程序用户头像" @error="user.avatarUrl = ''" />
                 <div v-else class="member-avatar user-avatar">{{ user.id }}</div>
                 <div>
                   <strong>{{ user.wechatName || user.nickname || user.nickName || '微信用户' }}</strong>
