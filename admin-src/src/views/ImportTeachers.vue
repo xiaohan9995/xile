@@ -5,6 +5,7 @@
         <h1>教师批量导入</h1>
         <p>上传 Excel 后进行字段预检、重复编号校验和导入批次记录。</p>
       </div>
+      <button class="sync-btn" @click="downloadTemplate">下载导入模板</button>
     </div>
 
     <div class="dashboard-grid">
@@ -100,7 +101,7 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { uploadImportPreview, commitImport } from '../api/adminData'
+import { uploadImportPreview, commitImport, downloadImportTemplate } from '../api/adminData'
 
 const state = ref('idle') // idle | uploading | preview | committing | done
 const isDragging = ref(false)
@@ -120,6 +121,14 @@ const stateLabel = computed(() => {
   }
   return labels[state.value] || ''
 })
+
+async function downloadTemplate() {
+  try {
+    await downloadImportTemplate()
+  } catch (error) {
+    console.warn('导入模板下载失败', error)
+  }
+}
 
 function triggerFileInput() {
   if (state.value !== 'idle') return

@@ -1,7 +1,8 @@
 import calendar
+from io import BytesIO
 from datetime import date, datetime
 
-from flask import request
+from flask import request, send_file
 
 from ...extensions import db
 from ...models import AuditLog, ImportBatch, ImportError, Teacher, TeacherDetail, TeacherTier
@@ -212,6 +213,31 @@ def _parse_import_row(row):
         "xileName": _cell_str(row, 7),
         "teacherNo": _cell_str(row, 8),
     }
+
+
+@admin_bp.get("/import/teachers/template")
+@require_admin_token
+def import_template():
+    """Download the canonical teacher import workbook."""
+    try:
+        import openpyxl
+        from openpyxl.styles import Font
+        workbook = openpyxl.Workbook()
+        sheet = workbook.active
+        sheet.title = "教师资料"
+        headers = ["姓名", "手机号", "认证等级", "城市", "地区", "首次认证日期", "有效期至", "喜乐名", "教师编号"]
+        sheet.append(headers)
+        sheet.append(["张三", "13800000000", "L1", "上海", "浦东新区", "2024-01-01", "2026-12-31", "张三老师", ""])
+        for cell in sheet[1]:
+            cell.font = Font(bold=True)
+        for index, width in enumerate([16, 16, 12, 14, 16, 18, 16, 16, 16], start=1):
+            sheet.column_dimensions[openpyxl.utils.get_column_letter(index)].width = width
+        output = BytesIO()
+        workbook.save(output)
+        output.seek(0)
+        return send_file(output, as_attachment=True, download_name="教师批量导入模板.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    except Exception:
+        return {"error": "导入模板生成失败"}, 500
 
 
 @admin_bp.post("/import/teachers/preview")
