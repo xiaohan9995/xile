@@ -1,14 +1,11 @@
 <template>
-  <template>
-  <>
-    <img :src="src" :alt="alt" :class="imageClass" class="preview-trigger" @click.stop="open = true" @error="emit('error')" />
-    <div v-if="open" class="image-preview-backdrop" @click="open = false">
-      <div class="image-preview-dialog" @click.stop>
-        <button class="image-preview-close" type="button" aria-label="关闭预览" @click="open = false">×</button>
-        <img :src="src" :alt="alt" class="image-preview-large" />
-      </div>
+  <img :src="src" :alt="alt" :class="imageClass" class="preview-trigger" @click.stop="open = true" @error="emit('error')" />
+  <div v-if="open" class="image-preview-backdrop" @click="open = false">
+    <div class="image-preview-dialog" @click.stop>
+      <button class="image-preview-close" type="button" aria-label="关闭预览" @click="open = false">×</button>
+      <img :src="src" :alt="alt" class="image-preview-large" />
     </div>
-  </template>
+  </div>
 </template>
 
 <script setup>
