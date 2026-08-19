@@ -9,22 +9,22 @@
     <view class="settings-intro">
       <text class="settings-intro__eyebrow">ACCOUNT SETTINGS</text>
       <text class="settings-intro__title">个人资料与安全</text>
-      <text class="settings-intro__description">管理公开昵称与教师账号密码</text>
+      <text class="settings-intro__description">管理公开喜乐名与教师账号密码</text>
     </view>
 
     <view class="section-heading">
       <text class="section-heading__title">个人资料</text>
-      <text class="section-heading__note">昵称会展示在“我的”页面</text>
+      <text class="section-heading__note">喜乐名会展示在“我的”页面</text>
     </view>
     <view class="settings-group">
       <view class="field-block">
-        <text class="field-label">昵称</text>
+        <text class="field-label">喜乐名</text>
         <input
           class="settings-input"
           type="nickname"
           maxlength="20"
           confirm-type="done"
-          placeholder="请输入昵称"
+          placeholder="请输入喜乐名"
           value="{{nickname}}"
           bindinput="onNicknameInput"
         />
@@ -34,7 +34,7 @@
         bindtap="onSaveNickname"
         loading="{{savingNickname}}"
         disabled="{{savingNickname}}"
-      >保存昵称</button>
+      >保存喜乐名</button>
     </view>
 
     <view class="section-heading section-heading--spaced">

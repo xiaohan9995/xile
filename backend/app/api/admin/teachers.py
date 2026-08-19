@@ -6,7 +6,8 @@ from flask import request
 from ...extensions import db
 from ...models import AuditLog, ImportBatch, ImportError, Teacher, TeacherDetail, TeacherTier
 from ...services.teacher_service import create_teacher as svc_create_teacher, generate_teacher_no
-from .helpers import require_admin_roles, require_admin_token, _date_text
+from ...utils.storage import file_url as _file_url
+from .helpers import current_admin_id, require_admin_roles, require_admin_token, _date_text
 from . import admin_bp
 
 
@@ -27,7 +28,7 @@ def teacher_list():
             "status": t.status,
             "validUntil": _date_text(t.valid_until),
             "certifiedAt": _date_text(t.first_certified_on),
-            "avatarUrl": t.avatar_url,
+            "avatarUrl": _file_url(t.avatar_url),
             "certificateUrl": t.certificate_url,
             "phone": t.detail.phone if t.detail else None,
             "committeeRemark": t.detail.committee_remark if t.detail else None,
@@ -55,7 +56,7 @@ def get_teacher_detail(teacher_id):
         "status": teacher.status,
         "validUntil": _date_text(teacher.valid_until),
         "certifiedAt": _date_text(teacher.first_certified_on),
-        "avatarUrl": teacher.avatar_url,
+        "avatarUrl": _file_url(teacher.avatar_url),
         "certificateUrl": teacher.certificate_url,
         "phone": teacher.detail.phone if teacher.detail else None,
         "specialties": teacher.detail.specialties if teacher.detail else None,
@@ -75,13 +76,13 @@ def update_teacher(teacher_id):
     payload = request.get_json(silent=True) or {}
 
     if "name" in payload:
-        teacher.real_name = payload["name"].strip()
+        teacher.real_name = str(payload["name"] or "").strip()
     if "xileName" in payload:
-        teacher.xile_name = payload["xileName"].strip() or None
+        teacher.xile_name = str(payload["xileName"] or "").strip() or None
     if "city" in payload:
-        teacher.city = payload["city"].strip() or None
+        teacher.city = str(payload["city"] or "").strip() or None
     if "district" in payload:
-        teacher.district = payload["district"].strip() or None
+        teacher.district = str(payload["district"] or "").strip() or None
     if "avatarUrl" in payload:
         teacher.avatar_url = (payload["avatarUrl"] or "").strip() or None
     if "certificateUrl" in payload:
@@ -93,14 +94,14 @@ def update_teacher(teacher_id):
             db.session.add(detail)
             db.session.flush()
         if "committeeRemark" in payload:
-            teacher.detail.committee_remark = payload["committeeRemark"]
+            teacher.detail.committee_remark = str(payload["committeeRemark"] or "").strip() or None
         if "phone" in payload:
-            teacher.detail.phone = payload["phone"].strip() or None
+            teacher.detail.phone = str(payload["phone"] or "").strip() or None
         if "specialties" in payload:
-            teacher.detail.specialties = payload["specialties"].strip() or None
+            teacher.detail.specialties = str(payload["specialties"] or "").strip() or None
 
     db.session.commit()
-    db.session.add(AuditLog(admin_id=1, action="update_teacher", target_type="teacher", target_id=teacher.id))
+    db.session.add(AuditLog(admin_id=current_admin_id() or 1, action="update_teacher", target_type="teacher", target_id=teacher.id))
     db.session.commit()
     return {"id": teacher.id, "name": teacher.real_name}
 

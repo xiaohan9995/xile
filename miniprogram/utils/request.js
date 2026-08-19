@@ -47,6 +47,22 @@ const readRequestId = (response = {}) => {
   return response.requestId || header['X-Cloudbase-Request-Id'] || header['X-Request-Id'] || '';
 };
 
+// Backend and object-storage errors are not always returned in a consistent
+// shape. Keep raw English/XML messages out of the user-facing mini program UI.
+const normalizeUserMessage = (value, fallback = '操作失败，请稍后重试') => {
+  const raw = String(value || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!raw) return fallback;
+  const lower = raw.toLowerCase();
+  if (/image\s+too\s+large|file\s+too\s+large|entity\s+too\s+large|超过\s*8\s*mb/.test(lower)) return '图片不能超过8MB';
+  if (/internal\s+server\s+error|server\s+error|服务器内部错误/.test(lower)) return '服务暂时不可用，请稍后重试';
+  if (/accessdenied|access denied|forbidden|拒绝访问/.test(lower)) return '图片暂时无法访问，请稍后重试';
+  if (/unauthorized|未授权/.test(lower)) return '登录已过期，请重新登录';
+  if (/network|timeout|网络|超时/.test(lower)) return '网络连接失败，请检查网络后重试';
+  // Toasts should remain readable even if an upstream service returns a long
+  // diagnostic string (request IDs and XML are not useful to end users).
+  return raw.length > 32 ? fallback : raw;
+};
+
 const messageForError = (statusCode, code, payload = {}) => {
   if (code === 'INVALID_HOST') return '云开发环境未关联当前小程序，请完成小程序认证后重试';
   if (statusCode === 401) return '登录已过期，请重新登录';
@@ -54,7 +70,7 @@ const messageForError = (statusCode, code, payload = {}) => {
   if (statusCode === 404) return '服务地址不存在，请稍后重试';
   if (statusCode === 429) return '操作过于频繁，请稍后再试';
   if (statusCode >= 500) return '服务暂时不可用，请稍后重试';
-  return payload.error || payload.message || `请求失败 (${statusCode || '网络异常'})`;
+  return normalizeUserMessage(payload.error || payload.message, `请求失败 (${statusCode || '网络异常'})`);
 };
 
 const toRequestError = (response = {}) => {
@@ -82,7 +98,7 @@ const handleAuthError = () => {
 };
 
 const showError = (error, silent) => {
-  if (!silent) wx.showToast({ title: error.message || '网络连接失败，请检查网络', icon: 'none', duration: 2200 });
+  if (!silent) wx.showToast({ title: normalizeUserMessage(error && error.message, '网络连接失败，请检查网络后重试'), icon: 'none', duration: 2200 });
 };
 
 const request = (options) => {
@@ -217,4 +233,4 @@ const uploadFile = (options) => new Promise((resolve, reject) => {
   });
 });
 
-module.exports = { request, uploadFile, RequestError };
+module.exports = { request, uploadFile, RequestError, normalizeUserMessage };

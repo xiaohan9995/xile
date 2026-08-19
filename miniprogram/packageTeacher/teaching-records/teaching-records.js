@@ -42,7 +42,7 @@ Page({
       this.setData({ saving: true });
       await request({ url: '/api/mp/teaching-records', method: 'POST', data: { ...form, status, durationHours: form.durationHours || null, participantCount: form.participantCount || null } });
       this.setData({ showForm: false, form: { taughtOn: '', platform: '', title: '', durationHours: '', participantCount: '', description: '', evidenceKey: '', evidenceName: '' } });
-      await this.loadRecords(); wx.showToast({ title: status === 'draft' ? '草稿已保存' : '教学记录已提交', icon: 'success' });
+      await this.loadRecords(); wx.showToast({ title: status === 'draft' ? '草稿已保存' : '教学记录已提交', icon: 'none' });
     } catch (e) { wx.showToast({ title: e.message || '提交失败，请稍后重试', icon: 'none' }); }
     finally { this.setData({ saving: false }); }
   },

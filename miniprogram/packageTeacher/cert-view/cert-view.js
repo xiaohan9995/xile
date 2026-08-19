@@ -83,7 +83,7 @@ Page({
     }
     wx.saveImageToPhotosAlbum({
       filePath: url,
-      success: () => wx.showToast({ title: '已保存到相册', icon: 'success' }),
+      success: () => wx.showToast({ title: '已保存到相册', icon: 'none' }),
       fail: () => wx.showToast({ title: '保存失败', icon: 'none' }),
     });
   },

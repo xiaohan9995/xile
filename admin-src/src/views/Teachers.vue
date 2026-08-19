@@ -348,6 +348,20 @@ const showLinkCode = ref(false)
 const accountDraft = reactive({ teacherId: null, name: '', username: '', password: '' })
 const linkCodeDraft = reactive({ name: '', code: '', expiresAt: '' })
 
+function formatLinkCodeExpiry(value) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  return new Intl.DateTimeFormat('zh-CN', {
+    timeZone: 'Asia/Shanghai',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(date).replace(/\//g, '-')
+}
+
 function genPassword() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789'
   let pwd = ''
@@ -388,7 +402,7 @@ async function generateLinkCode(teacher) {
     const result = await createTeacherLinkCode(teacher.id)
     linkCodeDraft.name = teacher.name
     linkCodeDraft.code = result.code
-    linkCodeDraft.expiresAt = (result.expiresAt || '').replace('T', ' ').replace('Z', '')
+    linkCodeDraft.expiresAt = formatLinkCodeExpiry(result.expiresAt)
     showLinkCode.value = true
   } catch (e) {
     toast(e?.response?.data?.error || e?.message || '关联码生成失败，请重试', 'info')
@@ -412,7 +426,8 @@ async function uploadTeacherAsset(event, assetType, targetField) {
     editDraft[targetField] = result.url
     toast('图片已上传到对象存储')
   } catch (e) {
-    toast(e?.response?.data?.error || e?.message || '图片上传失败，请检查对象存储配置', 'info')
+    const message = e?.response?.data?.error || e?.message || '图片上传失败，请检查对象存储配置'
+    toast(message === 'image too large, max 8MB' ? '图片大小不能超过 8MB' : message, 'error')
   } finally {
     event.target.value = ''
   }

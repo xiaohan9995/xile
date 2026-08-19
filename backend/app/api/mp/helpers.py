@@ -31,7 +31,7 @@ def _teacher_summary(teacher):
         "tierName": teacher.tier.name,
         "city": teacher.city,
         "district": teacher.district,
-        "avatarUrl": teacher.avatar_url,
+        "avatarUrl": _file_url(teacher.avatar_url),
         "validUntil": _date_text(teacher.valid_until),
         "certifiedAt": _date_text(teacher.first_certified_on),
         "certificationStatus": _certification_status(teacher),

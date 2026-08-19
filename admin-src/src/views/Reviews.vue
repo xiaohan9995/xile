@@ -45,7 +45,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="review in filteredReviews" :key="review.id">
+            <tr v-for="review in pagedReviews" :key="review.id">
               <td>
                 <div class="cell-person compact">
                   <img :src="review.avatar" :alt="review.name" />
@@ -63,6 +63,7 @@
             </tr>
           </tbody>
         </table>
+        <Pagination v-model:current-page="currentPage" :total-pages="totalPages" :total-items="filteredReviews.length" />
       </div>
     </template>
 
@@ -122,16 +123,19 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import { fetchAdminReviews } from '../api/adminData'
 import { useToast } from '../composables/useToast'
+import Pagination from '../components/Pagination.vue'
 
 const { show: toast } = useToast()
 const reviews = ref([])
 const activeTab = ref('pending')
 const keyword = ref('')
 const selectedId = ref(null)
+const currentPage = ref(1)
+const pageSize = 15
 
 onMounted(async () => {
   await loadReviews()
@@ -156,6 +160,13 @@ const filteredReviews = computed(() => {
   return list.filter((r) =>
     [r.name, r.xileName, r.certNo].some((field) => (field || '').toLowerCase().includes(text))
   )
+})
+
+const totalPages = computed(() => Math.ceil(filteredReviews.value.length / pageSize))
+const pagedReviews = computed(() => filteredReviews.value.slice((currentPage.value - 1) * pageSize, currentPage.value * pageSize))
+watch([activeTab, keyword], () => { currentPage.value = 1 })
+watch(totalPages, (total) => {
+  if (total > 0 && currentPage.value > total) currentPage.value = total
 })
 
 const selected = computed(() => reviews.value.find((r) => r.id === selectedId.value))

@@ -5,7 +5,7 @@ from flask import request
 from werkzeug.utils import secure_filename
 
 from ...extensions import limiter
-from ...utils.storage import StorageNotConfiguredError, upload_to_cos
+from ...utils.storage import StorageNotConfiguredError, file_url, upload_to_cos
 from .helpers import require_admin_roles, require_admin_token
 from . import admin_bp
 
@@ -43,7 +43,12 @@ def upload_asset():
 
     key = f"{prefix}/{uuid.uuid4().hex}{ext}"
     try:
-        url = upload_to_cos(uploaded.stream, key, uploaded.content_type or "image/jpeg")
+        url = upload_to_cos(
+            uploaded.stream,
+            key,
+            uploaded.content_type or "image/jpeg",
+            public_read=asset_type in {"teacher-avatar", "studio-cover"},
+        )
     except StorageNotConfiguredError as error:
         return {"error": str(error)}, 503
-    return {"key": key, "url": url}, 201
+    return {"key": key, "url": file_url(url)}, 201

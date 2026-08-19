@@ -6,6 +6,6 @@ Page({
   },
 
   goMyCert() {
-    wx.redirectTo({ url: '/packageTeacher/home/home' });
+    wx.redirectTo({ url: '/packageTeacher/profile/profile' });
   },
 });

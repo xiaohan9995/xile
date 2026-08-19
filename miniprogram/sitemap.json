@@ -5,7 +5,6 @@
     { "action": "allow", "page": "pages/teacher-detail/teacher-detail" },
     { "action": "allow", "page": "pages/studios/studios" },
     { "action": "allow", "page": "pages/studio-detail/studio-detail" },
-    { "action": "allow", "page": "packageTeacher/home/home" },
     { "action": "allow", "page": "packageTeacher/login/login" },
     { "action": "allow", "page": "packageTeacher/account-login/account-login" },
     { "action": "allow", "page": "packageTeacher/link-teacher/link-teacher" },

@@ -21,10 +21,11 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="member in members" :key="member.id">
+          <tr v-for="member in pagedMembers" :key="member.id">
             <td>
               <div class="cell-person">
-                <div class="member-avatar">{{ member.username.charAt(0).toUpperCase() }}</div>
+                <img v-if="member.avatarUrl" class="member-avatar user-avatar user-avatar-image" :src="member.avatarUrl" alt="管理员头像" @error="member.avatarUrl = ''" />
+                <div v-else class="member-avatar">{{ member.username.charAt(0).toUpperCase() }}</div>
                 <div>
                   <strong>{{ member.username }}</strong>
                 </div>
@@ -40,6 +41,7 @@
           </tr>
         </tbody>
       </table>
+      <Pagination v-model:current-page="memberPage" :total-pages="memberTotalPages" :total-items="members.length" />
     </div>
 
     <div v-if="showAdminRoleModal" class="modal-backdrop" @click.self="showAdminRoleModal = false">
@@ -58,7 +60,7 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th>用户</th>
+            <th>喜乐名</th>
             <th>手机号</th>
             <th>角色</th>
             <th>关联教师</th>
@@ -67,11 +69,15 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="user in users" :key="user.id">
+          <tr v-for="user in pagedUsers" :key="user.id">
             <td>
               <div class="cell-person">
-                <div class="member-avatar user-avatar">{{ user.id }}</div>
-                <div><code>{{ user.openid }}</code></div>
+                <img v-if="user.avatarUrl" class="member-avatar user-avatar user-avatar-image" :src="user.avatarUrl" alt="小程序用户头像" @error="user.avatarUrl = ''" />
+                <div v-else class="member-avatar user-avatar">{{ user.id }}</div>
+                <div>
+                  <strong>{{ user.nickname || user.nickName || user.weixinName || '微信用户' }}</strong>
+                  <code>{{ user.openid }}</code>
+                </div>
               </div>
             </td>
             <td>{{ user.phone || '未绑定' }}</td>
@@ -91,6 +97,7 @@
           </tr>
         </tbody>
       </table>
+      <Pagination v-model:current-page="userPage" :total-pages="userTotalPages" :total-items="users.length" />
     </div>
 
     <!-- Invite admin modal -->
@@ -165,6 +172,7 @@
 import { computed, ref, onMounted } from 'vue'
 import { createTeacherAccount, fetchPermissions, inviteAdmin, fetchUsers, updateAdminRole, updateUserRole, fetchAdminTeachers } from '../api/adminData'
 import { useAuthStore } from '../stores/auth'
+import Pagination from '../components/Pagination.vue'
 
 const members = ref([])
 const users = ref([])
@@ -175,11 +183,18 @@ const showAdminRoleModal = ref(false)
 const inviteForm = ref({ username: '', password: '', role: 'admin' })
 const roleForm = ref({ userId: null, role: 'student', teacherId: null, currentRole: '', username: '', password: '' })
 const adminRoleForm = ref({ id: null, username: '', role: '' })
+const memberPage = ref(1)
+const userPage = ref(1)
+const pageSize = 15
 const auth = useAuthStore()
 const isSuperAdmin = computed(() => auth.admin?.role === 'super_admin')
 
 const adminRoleLabel = (role) => ({ super_admin: '超级管理员', admin: '普通管理员', reviewer: '审核成员', group_leader: '审核组长' }[role] || role)
 const canEditAdmin = (member) => isSuperAdmin.value && member.id !== auth.admin?.id
+const memberTotalPages = computed(() => Math.ceil(members.value.length / pageSize))
+const userTotalPages = computed(() => Math.ceil(users.value.length / pageSize))
+const pagedMembers = computed(() => members.value.slice((memberPage.value - 1) * pageSize, memberPage.value * pageSize))
+const pagedUsers = computed(() => users.value.slice((userPage.value - 1) * pageSize, userPage.value * pageSize))
 
 onMounted(async () => {
   await Promise.all([loadMembers(), loadUsers(), loadTeachers()])
@@ -290,6 +305,11 @@ async function handleInvite() {
   background: #eee;
   color: #666;
   font-size: 12px;
+}
+
+.user-avatar-image {
+  display: block;
+  object-fit: cover;
 }
 
 .text-btn {

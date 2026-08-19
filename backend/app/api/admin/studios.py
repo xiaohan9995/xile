@@ -2,7 +2,7 @@ from flask import request
 
 from ...extensions import db
 from ...models import AuditLog, Studio
-from .helpers import require_admin_roles, require_admin_token
+from .helpers import current_admin_id, require_admin_roles, require_admin_token
 from . import admin_bp
 
 
@@ -81,24 +81,24 @@ def update_studio(studio_id):
     payload = request.get_json(silent=True) or {}
 
     if "name" in payload:
-        studio.name = payload["name"].strip()
+        studio.name = str(payload["name"] or "").strip()
     if "city" in payload:
-        studio.city = payload["city"].strip() or None
+        studio.city = str(payload["city"] or "").strip() or None
     if "district" in payload:
-        studio.district = payload["district"].strip() or None
+        studio.district = str(payload["district"] or "").strip() or None
     if "address" in payload:
-        studio.address = payload["address"].strip() or None
+        studio.address = str(payload["address"] or "").strip() or None
     if "contact" in payload:
-        studio.contact_text = payload["contact"].strip() or None
+        studio.contact_text = str(payload["contact"] or "").strip() or None
     if "tags" in payload:
-        studio.tags = payload["tags"].strip() or None
+        studio.tags = str(payload["tags"] or "").strip() or None
     if "intro" in payload:
-        studio.intro = payload["intro"].strip() or None
+        studio.intro = str(payload["intro"] or "").strip() or None
     if "openingHours" in payload:
-        studio.opening_hours = payload["openingHours"].strip() or None
+        studio.opening_hours = str(payload["openingHours"] or "").strip() or None
     if "coverUrl" in payload:
         studio.cover_url = (payload["coverUrl"] or "").strip() or None
 
-    db.session.add(AuditLog(admin_id=1, action="update_studio", target_type="studio", target_id=studio.id))
+    db.session.add(AuditLog(admin_id=current_admin_id() or 1, action="update_studio", target_type="studio", target_id=studio.id))
     db.session.commit()
     return {"id": studio.id, "name": studio.name}

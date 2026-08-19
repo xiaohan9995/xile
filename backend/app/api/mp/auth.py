@@ -7,8 +7,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 from ...extensions import db, limiter
-from ...models import User
-from ...utils.storage import StorageNotConfiguredError, upload_to_cos
+from ...models import Teacher, User
+from ...utils.storage import StorageNotConfiguredError, file_url as _file_url, upload_to_cos
 from ...services.auth_service import (
     AuthError,
     cloudbase_login,
@@ -41,7 +41,7 @@ def mp_login():
         "teacherId": user.teacher_id,
         "role": user.role,
         "phoneBound": bool(user.phone),
-        "avatarUrl": user.avatar_url,
+        "avatarUrl": _file_url(user.avatar_url),
         "nickname": user.nickname,
     }
 
@@ -62,7 +62,7 @@ def mp_cloudbase_login():
         "teacherId": user.teacher_id,
         "role": user.role,
         "phoneBound": bool(user.phone),
-        "avatarUrl": user.avatar_url,
+        "avatarUrl": _file_url(user.avatar_url),
         "nickname": user.nickname,
     }
 
@@ -163,7 +163,7 @@ def link_teacher():
         "teacherId": teacher.id,
         "role": linked_user.role,
         "phoneBound": bool(linked_user.phone),
-        "avatarUrl": linked_user.avatar_url,
+        "avatarUrl": _file_url(linked_user.avatar_url),
         "nickname": linked_user.nickname,
     }
 
@@ -181,7 +181,7 @@ def auth_me():
         "role": user.role,
         "phoneBound": bool(user.phone),
         "phone": user.phone,
-        "avatarUrl": user.avatar_url,
+        "avatarUrl": _file_url(user.avatar_url),
         "nickname": user.nickname,
         "mustChangePassword": user.must_change_password,
     }
@@ -198,7 +198,12 @@ def _save_avatar(avatar_file):
 
     key = f"avatars/{filename}"
     try:
-        return upload_to_cos(avatar_file.stream, key, avatar_file.content_type or "image/jpeg")
+        return upload_to_cos(
+            avatar_file.stream,
+            key,
+            avatar_file.content_type or "image/jpeg",
+            public_read=True,
+        )
     except StorageNotConfiguredError:
         if not (current_app.debug or current_app.testing):
             raise
@@ -224,6 +229,7 @@ def update_profile():
         user.nickname = nickname
 
     avatar_file = request.files.get("avatar")
+    teacher_avatar_url = None
     if avatar_file and avatar_file.filename:
         try:
             avatar_url = _save_avatar(avatar_file)
@@ -232,11 +238,17 @@ def update_profile():
         if avatar_url is None:
             return {"error": "avatar must be jpg/png/gif/webp"}, 400
         user.avatar_url = avatar_url
+        if user.teacher_id:
+            teacher = db.session.get(Teacher, user.teacher_id)
+            if teacher:
+                teacher.avatar_url = avatar_url
+                teacher_avatar_url = avatar_url
 
     db.session.commit()
 
     return {
-        "avatarUrl": user.avatar_url,
+        "avatarUrl": _file_url(user.avatar_url),
+        "teacherAvatarUrl": _file_url(teacher_avatar_url),
         "nickname": user.nickname,
     }
 
