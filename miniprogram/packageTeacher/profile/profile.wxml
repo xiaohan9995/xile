@@ -15,7 +15,7 @@
           disabled="{{avatarUploading}}"
           aria-label="更换头像"
         >
-          <image wx:if="{{user.avatarUrl || teacher.avatarUrl}}" class="avatar-img" src="{{user.avatarUrl || teacher.avatarUrl}}" mode="aspectFill" alt="{{user.nickname || teacher.name || '微信用户'}}的头像" />
+          <image wx:if="{{teacher.avatarUrl || user.avatarUrl}}" class="avatar-img" src="{{teacher.avatarUrl || user.avatarUrl}}" mode="aspectFill" alt="{{user.nickname || teacher.name || '微信用户'}}的头像" />
           <view wx:else class="avatar-img avatar-img--placeholder">
             <text class="avatar-initial">{{teacher.xileName[0] || user.nickname[0] || teacher.name[0] || '我'}}</text>
           </view>

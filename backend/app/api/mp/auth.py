@@ -1,9 +1,15 @@
+import base64
+import binascii
+import io
 import os
+from urllib.parse import urlparse
+from urllib.request import Request as UrlRequest, urlopen
 import uuid
 
-from flask import current_app, request, send_from_directory
+from flask import Response, current_app, request, send_from_directory
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
 from ...extensions import db, limiter
@@ -223,16 +229,33 @@ def update_profile():
     if not user:
         return {"error": "user not found"}, 404
 
-    nickname = (request.form.get("nickname") or "").strip()
-    xile_name = (request.form.get("xileName") or "").strip()
-    if not nickname:
-        json_body = request.get_json(silent=True) or {}
-        nickname = (json_body.get("nickname") or "").strip()
+    json_body = request.get_json(silent=True) or {}
+    nickname = (request.form.get("nickname") or json_body.get("nickname") or "").strip()
+    xile_name = (request.form.get("xileName") or json_body.get("xileName") or "").strip()
     if nickname:
         user.nickname = nickname
 
     avatar_file = request.files.get("avatar")
+    # wx.cloud.callContainer does not consistently preserve multipart file
+    # fields. The mini program therefore sends the selected avatar as base64
+    # JSON in production; retain multipart support for web/dev clients.
+    avatar_base64 = json_body.get("avatarBase64")
+    if not avatar_file and avatar_base64:
+        try:
+            encoded = avatar_base64.split(",", 1)[-1]
+            avatar_bytes = base64.b64decode(encoded, validate=True)
+        except (ValueError, binascii.Error):
+            return {"error": "头像数据无效"}, 400
+        if len(avatar_bytes) > 8 * 1024 * 1024:
+            return {"error": "图片不能超过8MB"}, 413
+        filename = secure_filename(json_body.get("avatarFilename") or "avatar.jpg") or "avatar.jpg"
+        avatar_file = FileStorage(
+            stream=io.BytesIO(avatar_bytes),
+            filename=filename,
+            content_type=json_body.get("avatarContentType") or "image/jpeg",
+        )
     teacher_avatar_url = None
+    saved_avatar_url = None
     if avatar_file and avatar_file.filename:
         try:
             avatar_url = _save_avatar(avatar_file)
@@ -240,6 +263,7 @@ def update_profile():
             return {"error": str(error)}, 503
         if avatar_url is None:
             return {"error": "avatar must be jpg/png/gif/webp"}, 400
+        saved_avatar_url = avatar_url
         user.avatar_url = avatar_url
         if user.teacher_id:
             teacher = db.session.get(Teacher, user.teacher_id)
@@ -258,8 +282,10 @@ def update_profile():
     db.session.commit()
 
     return {
-        "avatarUrl": _file_url(user.avatar_url),
-        "teacherAvatarUrl": _file_url(teacher_avatar_url),
+        # Return the just-uploaded delivery URL unchanged. Re-signing it here
+        # can produce a stale/invalid COS URL before the new object is visible.
+        "avatarUrl": saved_avatar_url or _file_url(user.avatar_url),
+        "teacherAvatarUrl": saved_avatar_url if teacher_avatar_url else None,
         "nickname": user.nickname,
         "xileName": (db.session.get(Teacher, user.teacher_id).xile_name if user.teacher_id else None),
     }
@@ -269,3 +295,22 @@ def update_profile():
 def serve_avatar(filename):
     upload_dir = os.path.join(current_app.instance_path, "..", "uploads", "avatars")
     return send_from_directory(upload_dir, filename)
+
+
+@mp_bp.get("/auth/avatar-proxy")
+def avatar_proxy():
+    """Proxy WeChat profile images so the mini program need not whitelist qlogo."""
+    source = (request.args.get("url") or "").strip()
+    parsed = urlparse(source)
+    if parsed.scheme != "https" or parsed.hostname not in {"qlogo.cn", "thirdwx.qlogo.cn", "wx.qlogo.cn"}:
+        return {"error": "invalid avatar url"}, 400
+    try:
+        upstream = UrlRequest(source, headers={"User-Agent": "xile-yoga-avatar/1.0"})
+        with urlopen(upstream, timeout=5) as response:
+            content = response.read(8 * 1024 * 1024 + 1)
+            content_type = response.headers.get_content_type() or "image/jpeg"
+    except Exception:
+        return {"error": "avatar unavailable"}, 404
+    if len(content) > 8 * 1024 * 1024:
+        return {"error": "avatar too large"}, 413
+    return Response(content, mimetype=content_type, headers={"Cache-Control": "public, max-age=86400"})

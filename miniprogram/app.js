@@ -33,7 +33,9 @@ App({
     }
     wx.cloud.init({ env: envId, traceUser: true });
     this.globalData.cloudEnv = envId;
-    this.globalData.apiBaseUrl = '';
+    // File downloads (for example certificate previews) cannot use
+    // wx.cloud.callContainer, so they need the public CloudRun origin.
+    this.globalData.apiBaseUrl = 'https://xile-yoga-297941-11-1305573525.sh.run.tcloudbase.com';
   },
 
   globalData: {
