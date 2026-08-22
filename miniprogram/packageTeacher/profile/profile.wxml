@@ -67,7 +67,7 @@
         <text class="certificate-preview__link">查看详情 ›</text>
       </view>
       <view class="certificate-preview__sheet">
-        <image wx:if="{{certImageUrl}}" class="certificate-preview__image" src="{{certImageUrl}}" mode="aspectFill" alt="{{teacher.name}}的电子认证证书" />
+        <image wx:if="{{certImageUrl}}" class="certificate-preview__image" src="{{certImageUrl}}" mode="widthFix" alt="{{teacher.name}}的电子认证证书" />
         <view wx:else class="certificate-preview__placeholder">
           <text class="certificate-preview__seal">喜</text>
           <text class="certificate-preview__org">喜乐瑜伽教师认证中心</text>
