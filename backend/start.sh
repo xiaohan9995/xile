@@ -10,13 +10,10 @@ echo "[startup] starting nginx on port 80"
 nginx
 
 # Alembic migrations are idempotent and must run before the app serves schema
-# changes. Already-applied revisions are skipped by Alembic.
-if [ "${RUN_DB_MIGRATIONS:-1}" = "1" ]; then
-    echo "[startup] applying database migrations"
-    flask db upgrade
-else
-    echo "[startup] skipping database migrations (RUN_DB_MIGRATIONS is not 1)"
-fi
+# changes. Always run them; an old RUN_DB_MIGRATIONS=0 setting must not leave
+# the deployed schema behind the application code.
+echo "[startup] applying database migrations"
+flask db upgrade
 
 if [ "${RUN_PRODUCTION_INIT:-}" = "run-once" ]; then
     # Create only required reference data (tiers, system defaults and first admin);
