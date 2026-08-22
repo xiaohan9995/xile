@@ -30,7 +30,7 @@ def teacher_list():
             "validUntil": _date_text(t.valid_until),
             "certifiedAt": _date_text(t.first_certified_on),
             "avatarUrl": storage_reference(t.avatar_url),
-            "certificateUrl": t.certificate_url,
+            "certificateUrl": _file_url(t.certificate_url),
             "phone": t.detail.phone if t.detail else None,
             "committeeRemark": t.detail.committee_remark if t.detail else None,
         }
@@ -58,7 +58,7 @@ def get_teacher_detail(teacher_id):
         "validUntil": _date_text(teacher.valid_until),
         "certifiedAt": _date_text(teacher.first_certified_on),
         "avatarUrl": storage_reference(teacher.avatar_url),
-        "certificateUrl": teacher.certificate_url,
+        "certificateUrl": _file_url(teacher.certificate_url),
         "phone": teacher.detail.phone if teacher.detail else None,
         "specialties": teacher.detail.specialties if teacher.detail else None,
         "teachingSummary": teacher.detail.teaching_summary if teacher.detail else None,
