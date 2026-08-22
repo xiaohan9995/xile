@@ -7,7 +7,7 @@ from flask import request, send_file
 from ...extensions import db
 from ...models import AuditLog, ImportBatch, ImportError, Teacher, TeacherDetail, TeacherTier
 from ...services.teacher_service import create_teacher as svc_create_teacher, generate_teacher_no
-from ...utils.storage import storage_reference
+from ...utils.storage import file_url as _file_url, storage_reference
 from .helpers import current_admin_id, require_admin_roles, require_admin_token, _date_text
 from . import admin_bp
 
