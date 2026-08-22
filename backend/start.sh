@@ -9,10 +9,9 @@ cd /app
 echo "[startup] starting nginx on port 80"
 nginx
 
-# Migrations and reference-data initialisation are explicit release operations.
-# Enable either only in an intentionally one-off task, never on the regular
-# Cloud Run service.
-if [ "${RUN_DB_MIGRATIONS:-0}" = "1" ]; then
+# Alembic migrations are idempotent and must run before the app serves schema
+# changes. Already-applied revisions are skipped by Alembic.
+if [ "${RUN_DB_MIGRATIONS:-1}" = "1" ]; then
     echo "[startup] applying database migrations"
     flask db upgrade
 else
