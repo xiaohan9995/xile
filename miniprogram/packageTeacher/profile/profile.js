@@ -88,11 +88,9 @@ Page({
           { icon: '设', title: '个人设置', subtitle: '更新头像、手机号或喜乐名', url: '/packageTeacher/settings/settings' },
         ],
       });
-      if (t.certificateUrl) {
-        this.setData({ certImageUrl: t.certificateUrl });
-      } else {
-        this.loadCertificatePreview();
-      }
+      // Certificate objects may be private in COS. Always download through
+      // the authenticated endpoint so the card receives a readable temp file.
+      this.loadCertificatePreview();
     } catch (err) {
       this.setData({
         isTeacher: false,

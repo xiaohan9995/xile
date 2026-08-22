@@ -38,4 +38,13 @@ Page({
   goBack() {
     wx.navigateBack();
   },
+
+  previewCertificate() {
+    const url = this.data.teacher && this.data.teacher.certificateUrl;
+    if (!url) {
+      wx.showToast({ title: '证书图片暂未生成', icon: 'none' });
+      return;
+    }
+    wx.previewImage({ urls: [url], current: url });
+  },
 });

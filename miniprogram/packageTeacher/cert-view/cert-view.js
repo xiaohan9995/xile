@@ -35,11 +35,8 @@ Page({
         },
         loading: false,
       });
-      if (t.certificateUrl) {
-        this.setData({ certImageUrl: t.certificateUrl });
-      } else {
-        this.loadCertImage();
-      }
+      // Use the authenticated download endpoint for private COS certificates.
+      this.loadCertImage();
     } catch (err) {
       this.setData({ error: '加载失败', loading: false });
     }
