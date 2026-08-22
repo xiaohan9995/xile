@@ -132,7 +132,7 @@
 }
 
 .cert-preview {
-  height: 152rpx;
+  height: 520rpx;
   border-radius: 24rpx;
   background: linear-gradient(135deg, #f7efe2, #fff);
   border: 1rpx solid rgba(184, 154, 99, 0.2);
