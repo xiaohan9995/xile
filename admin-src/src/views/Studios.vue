@@ -91,10 +91,6 @@
           地址
           <input v-model="createDraft.address" placeholder="请输入详细地址" />
         </label>
-        <div class="form-grid two">
-          <label>纬度<input v-model="createDraft.latitude" type="number" step="any" placeholder="如 39.9042" /></label>
-          <label>经度<input v-model="createDraft.longitude" type="number" step="any" placeholder="如 116.4074" /></label>
-        </div>
         <button type="button" class="sync-btn map-pick-btn" @click="openMapPicker(createDraft)">地图选点</button>
         <label>
           简介
@@ -149,10 +145,6 @@
           地址
           <input v-model="editDraft.address" placeholder="详细地址" />
         </label>
-        <div class="form-grid two">
-          <label>纬度<input v-model="editDraft.latitude" type="number" step="any" placeholder="如 39.9042" /></label>
-          <label>经度<input v-model="editDraft.longitude" type="number" step="any" placeholder="如 116.4074" /></label>
-        </div>
         <button type="button" class="sync-btn map-pick-btn" @click="openMapPicker(editDraft)">地图选点</button>
         <label>
           简介
@@ -194,7 +186,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import ImagePreview from '../components/ImagePreview.vue'
-import { fetchAdminStudios, createStudio, updateStudio, deleteStudio, uploadAdminAsset } from '../api/adminData'
+import { fetchAdminStudios, fetchMapConfig, createStudio, updateStudio, deleteStudio, uploadAdminAsset } from '../api/adminData'
 import { useToast } from '../composables/useToast'
 import Pagination from '../components/Pagination.vue'
 
@@ -205,7 +197,7 @@ const showEdit = ref(false)
 const studios = ref([])
 const currentPage = ref(1)
 const pageSize = 15
-const mapKey = import.meta.env.VITE_TENCENT_MAP_KEY || ''
+const mapKey = ref(import.meta.env.VITE_TENCENT_MAP_KEY || '')
 const showMapPicker = ref(false)
 const mapContainer = ref(null)
 const mapTarget = ref(null)
@@ -224,7 +216,7 @@ function loadTencentMap() {
   if (mapScriptPromise) return mapScriptPromise
   mapScriptPromise = new Promise((resolve, reject) => {
     const script = document.createElement('script')
-    script.src = `https://map.qq.com/api/gljs?v=1.exp&key=${encodeURIComponent(mapKey)}`
+    script.src = `https://map.qq.com/api/gljs?v=1.exp&key=${encodeURIComponent(mapKey.value)}`
     script.onload = () => (window.TMap ? resolve(window.TMap) : reject(new Error('腾讯地图脚本加载失败')))
     script.onerror = reject
     document.head.appendChild(script)
@@ -233,7 +225,7 @@ function loadTencentMap() {
 }
 
 async function openMapPicker(target) {
-  if (!mapKey) {
+  if (!mapKey.value) {
     toast('请先配置腾讯地图 Web Key')
     return
   }
@@ -318,7 +310,20 @@ async function loadStudios() {
   }
 }
 
-onMounted(loadStudios)
+onMounted(() => {
+  loadStudios()
+  loadMapKey()
+})
+
+async function loadMapKey() {
+  if (mapKey.value) return
+  try {
+    const config = await fetchMapConfig()
+    mapKey.value = config.key || ''
+  } catch (error) {
+    console.warn('获取腾讯地图配置失败', error)
+  }
+}
 
 const filteredList = computed(() => {
   const matches = (value, query) => !query || String(value || '').toLowerCase().includes(query)
