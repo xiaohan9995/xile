@@ -27,6 +27,18 @@ def object_url(file_key):
     return f"https://{settings['bucket']}.cos.{settings['region']}.myqcloud.com/{file_key}"
 
 
+def storage_reference(file_ref):
+    """Return a stable COS object URL without temporary signature parameters."""
+    if not file_ref:
+        return None
+    settings = _cos_settings()
+    if settings["bucket"] and settings["region"]:
+        key = _cos_key(file_ref, settings)
+        if key:
+            return object_url(key)
+    return file_ref
+
+
 def _cos_client(settings):
     from qcloud_cos import CosConfig, CosS3Client
 

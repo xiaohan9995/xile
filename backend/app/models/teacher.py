@@ -15,7 +15,7 @@ class Teacher(db.Model):
     first_certified_on = db.Column(db.Date)
     valid_until = db.Column(db.Date, index=True)
     certificate_url = db.Column(db.Text)
-    avatar_url = db.Column(db.String(256))
+    avatar_url = db.Column(db.Text)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
 
