@@ -99,6 +99,10 @@ export async function fetchAdminStudios() {
   return (payload.items || []).map(mapAdminStudio)
 }
 
+export async function fetchMapConfig() {
+  return api.get('/map-config')
+}
+
 export async function fetchAdminReviews() {
   const payload = await api.get('/reviews')
   return (payload.items || []).map(mapAdminReview)

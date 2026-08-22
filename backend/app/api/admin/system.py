@@ -1,4 +1,5 @@
 from datetime import date, datetime, timedelta
+import os
 
 from flask import request
 from werkzeug.security import generate_password_hash
@@ -119,6 +120,21 @@ def analytics():
 
 
 # ─── Settings ────────────────────────────────────────────────────────────────
+
+
+@admin_bp.get("/map-config")
+@require_admin_token
+def get_map_config():
+    """Expose the browser-safe Tencent Maps key for admin map picking."""
+    return {
+        "key": (
+            os.getenv("TENCENT_MAP_KEY")
+            or os.getenv("TENCENT_LBS_KEY")
+            or os.getenv("QQ_MAP_KEY")
+            or os.getenv("VITE_TENCENT_MAP_KEY")
+            or ""
+        )
+    }
 
 
 @admin_bp.get("/settings")
