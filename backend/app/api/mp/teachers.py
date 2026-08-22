@@ -7,7 +7,7 @@ from sqlalchemy import extract
 
 from ...extensions import db, limiter
 from ...models import Announcement, AnnualReview, ReviewCycle, Studio, Teacher, TeacherTier, User
-from ...utils.storage import StorageNotConfiguredError, cos_is_configured, upload_to_cos
+from ...utils.storage import StorageNotConfiguredError, cos_is_configured, file_url, upload_to_cos
 from .helpers import (
     _certification_status,
     _date_text,
@@ -192,9 +192,10 @@ def get_my_certification():
     if not user or not user.teacher_id:
         return {"error": "not a teacher"}, 403
     teacher = Teacher.query.filter(Teacher.id == user.teacher_id, Teacher.status != "hidden").first_or_404()
-    # Reconcile legacy records where the mini-program user and linked teacher
-    # still point at different avatar objects.
-    if user.avatar_url and teacher.avatar_url != user.avatar_url:
+    # Fill only legacy teacher records that have no avatar. An administrator
+    # may intentionally update the teacher avatar independently; never
+    # overwrite that newer value with the mini-program user's cached avatar.
+    if user.avatar_url and not teacher.avatar_url:
         teacher.avatar_url = user.avatar_url
         db.session.commit()
     return _certification_payload(teacher, include_reviews=True)
@@ -232,7 +233,9 @@ def generate_certificate_image():
         return {"error": "teacher not found"}, 404
 
     if teacher.certificate_url:
-        return redirect(teacher.certificate_url, code=302)
+        # Certificate objects are private in COS; redirect to a temporary
+        # signed URL instead of exposing the raw object path anonymously.
+        return redirect(file_url(teacher.certificate_url), code=302)
 
     from PIL import Image, ImageDraw, ImageFont
 

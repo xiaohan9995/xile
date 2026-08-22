@@ -1,7 +1,13 @@
-const { request, uploadFile } = require('../../utils/request');
+const { request } = require('../../utils/request');
 const auth = require('../../utils/auth');
 
 const app = getApp();
+
+const displayAvatarUrl = (url) => {
+  if (!url || !/^https:\/\/(?:thirdwx|wx)\.qlogo\.cn\//i.test(url)) return url || '';
+  const baseUrl = app.globalData.apiBaseUrl || '';
+  return baseUrl ? `${baseUrl}/api/mp/auth/avatar-proxy?url=${encodeURIComponent(url)}` : url;
+};
 
 Page({
   data: {
@@ -38,7 +44,7 @@ Page({
 
   onShow() {
     this.setData({
-      'user.avatarUrl': auth.getAvatarUrl(),
+      'user.avatarUrl': displayAvatarUrl(auth.getAvatarUrl()),
       'user.nickname': auth.getNickname(),
     });
   },
@@ -62,7 +68,7 @@ Page({
           xileName: t.xileName || '',
           tier: t.tier || '',
           tierName: t.tierName || '',
-          avatarUrl: t.avatarUrl || '',
+          avatarUrl: displayAvatarUrl(t.avatarUrl),
           bio: t.bio || '',
           validUntil: t.validUntil || '--',
           daysLeft: t.daysLeft || 0,
@@ -127,14 +133,27 @@ Page({
     if (!avatarUrl || this.data.avatarUploading) return;
 
     this.setData({ avatarUploading: true });
-    uploadFile({
-      url: '/api/mp/auth/update-profile',
-      filePath: avatarUrl,
-      name: 'avatar',
-      formData: { nickname: this.data.user.nickname || '' },
+    const fs = wx.getFileSystemManager();
+    new Promise((resolve, reject) => {
+      fs.readFile({
+        filePath: avatarUrl,
+        encoding: 'base64',
+        success: resolve,
+        fail: reject,
+      });
     })
+      .then((file) => request({
+        url: '/api/mp/auth/update-profile',
+        method: 'POST',
+        data: {
+          nickname: this.data.user.nickname || '',
+          avatarBase64: file.data,
+          avatarFilename: 'avatar.jpg',
+          avatarContentType: 'image/jpeg',
+        },
+      }))
       .then((res) => {
-        const savedAvatarUrl = res.avatarUrl || avatarUrl;
+        const savedAvatarUrl = displayAvatarUrl(res.avatarUrl || avatarUrl);
         this.setData({
           'user.avatarUrl': savedAvatarUrl,
           'teacher.avatarUrl': res.teacherAvatarUrl || savedAvatarUrl,
@@ -156,7 +175,7 @@ Page({
   async loadCertificatePreview() {
     this.setData({ certImageLoading: true, certImageUrl: '' });
     try {
-      const baseUrl = app.globalData.apiBaseUrl || 'http://127.0.0.1:5000';
+      const baseUrl = app.globalData.apiBaseUrl;
       const token = auth.getToken();
       const result = await new Promise((resolve, reject) => {
         wx.downloadFile({

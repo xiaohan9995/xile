@@ -1,3 +1,4 @@
+import base64
 import hashlib
 import hmac
 import time
@@ -820,6 +821,24 @@ def test_mp_update_profile_sets_nickname(client):
         user_avatar = User.query.get(1).avatar_url
         assert teacher_avatar.startswith("/uploads/avatars/")
         assert teacher_avatar == user_avatar
+
+
+def test_mp_update_profile_accepts_cloud_container_avatar_payload(client):
+    token = _login_as_teacher(client, 1)
+    response = client.post(
+        "/api/mp/auth/update-profile",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "avatarBase64": base64.b64encode(b"test-avatar-json").decode("ascii"),
+            "avatarFilename": "avatar.jpg",
+            "avatarContentType": "image/jpeg",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert payload["avatarUrl"].startswith("/uploads/avatars/")
+    assert payload["teacherAvatarUrl"] == payload["avatarUrl"]
 
 
 def test_mp_login_response_includes_avatar_fields(client):

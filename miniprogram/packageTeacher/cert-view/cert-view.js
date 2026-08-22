@@ -47,7 +47,7 @@ Page({
 
   async loadCertImage() {
     try {
-      const baseUrl = app.globalData.apiBaseUrl || 'http://127.0.0.1:5000';
+      const baseUrl = app.globalData.apiBaseUrl;
       const token = auth.getToken();
       const res = await new Promise((resolve, reject) => {
         wx.downloadFile({
