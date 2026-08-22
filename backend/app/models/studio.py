@@ -9,6 +9,8 @@ class Studio(db.Model):
     city = db.Column(db.String(32), index=True)
     district = db.Column(db.String(32))
     address = db.Column(db.String(128))
+    latitude = db.Column(db.Float)
+    longitude = db.Column(db.Float)
     owner_teacher_id = db.Column(db.Integer, db.ForeignKey("teachers.id"), index=True)
     cover_url = db.Column(db.String(256))
     tags = db.Column(db.String(256))

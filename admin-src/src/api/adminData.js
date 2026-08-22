@@ -19,6 +19,8 @@ export function mapAdminTeacher(teacher) {
     expiryDate: teacher.validUntil || '待确认',
     certifiedAt: teacher.certifiedAt,
     avatar: resolveAvatar(teacher.avatarUrl),
+    avatarUrl: teacher.avatarUrl || '',
+    certificateUrl: teacher.certificateUrl || '',
     phone: teacher.phone || '未登记',
     city: teacher.city,
     district: teacher.district,

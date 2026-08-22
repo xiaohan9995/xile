@@ -41,7 +41,7 @@
 
     <!-- Info Grid -->
     <view class="info-grid">
-      <view class="grid-item soft-card">
+      <view class="grid-item soft-card" bindtap="openMap">
         <text class="grid-icon">📍</text>
         <view class="grid-text">
           <text class="grid-label">地址</text>

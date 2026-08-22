@@ -63,6 +63,8 @@ def _studio_summary(studio):
         "city": studio.city,
         "district": studio.district,
         "address": studio.address,
+        "latitude": studio.latitude,
+        "longitude": studio.longitude,
         "coverUrl": studio.cover_url,
         "tags": tags,
         "intro": studio.intro,

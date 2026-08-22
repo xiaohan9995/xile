@@ -1022,6 +1022,46 @@ button {
   margin-top: 10px;
 }
 
+.map-pick-btn {
+  width: fit-content;
+  margin: 4px 0 12px;
+}
+
+.map-picker-modal {
+  width: min(920px, calc(100vw - 64px));
+}
+
+.map-picker-hint {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.map-container {
+  width: 100%;
+  height: 440px;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 16px;
+}
+
+.map-picker-empty {
+  display: grid;
+  min-height: 180px;
+  place-items: center;
+  padding: 24px;
+  color: var(--muted);
+  background: var(--surface-soft);
+  border-radius: 16px;
+}
+
+.map-picker-coords {
+  padding: 12px 0 0;
+  color: var(--muted);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 13px;
+}
+
 @media (max-width: 720px) {
   .admin-modal--edit {
     width: min(560px, calc(100vw - 24px));
