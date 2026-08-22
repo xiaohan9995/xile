@@ -17,6 +17,8 @@ def studio_list():
             "city": s.city,
             "district": s.district,
             "address": s.address,
+            "latitude": s.latitude,
+            "longitude": s.longitude,
             "ownerTeacherName": s.owner.real_name if s.owner else None,
             "coverUrl": s.cover_url,
             "tags": [t.strip() for t in (s.tags or "").split(",") if t.strip()],
@@ -45,6 +47,8 @@ def create_studio():
         city=payload.get("city", "").strip() or None,
         district=payload.get("district", "").strip() or None,
         address=payload.get("address", "").strip() or None,
+        latitude=payload.get("latitude"),
+        longitude=payload.get("longitude"),
         contact_text=payload.get("contact", "").strip() or None,
         tags=payload.get("tags", "").strip() or None,
         intro=payload.get("intro", "").strip() or None,
@@ -88,6 +92,10 @@ def update_studio(studio_id):
         studio.district = str(payload["district"] or "").strip() or None
     if "address" in payload:
         studio.address = str(payload["address"] or "").strip() or None
+    if "latitude" in payload:
+        studio.latitude = payload["latitude"]
+    if "longitude" in payload:
+        studio.longitude = payload["longitude"]
     if "contact" in payload:
         studio.contact_text = str(payload["contact"] or "").strip() or None
     if "tags" in payload:

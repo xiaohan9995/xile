@@ -53,4 +53,21 @@ Page({
       wx.showToast({ title: '请通过微信联系工作室', icon: 'none' });
     }
   },
+
+  openMap() {
+    const studio = this.data.studio;
+    const latitude = Number(studio && studio.latitude);
+    const longitude = Number(studio && studio.longitude);
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      wx.showToast({ title: '该工作室暂未配置地图位置', icon: 'none' });
+      return;
+    }
+    wx.openLocation({
+      latitude,
+      longitude,
+      name: studio.name || '工作室',
+      address: studio.address || '',
+      scale: 16,
+    });
+  },
 });

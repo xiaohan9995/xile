@@ -91,6 +91,11 @@
           地址
           <input v-model="createDraft.address" placeholder="请输入详细地址" />
         </label>
+        <div class="form-grid two">
+          <label>纬度<input v-model="createDraft.latitude" type="number" step="any" placeholder="如 39.9042" /></label>
+          <label>经度<input v-model="createDraft.longitude" type="number" step="any" placeholder="如 116.4074" /></label>
+        </div>
+        <button type="button" class="sync-btn map-pick-btn" @click="openMapPicker(createDraft)">地图选点</button>
         <label>
           简介
           <input v-model="createDraft.intro" placeholder="请输入工作室简介" />
@@ -144,6 +149,11 @@
           地址
           <input v-model="editDraft.address" placeholder="详细地址" />
         </label>
+        <div class="form-grid two">
+          <label>纬度<input v-model="editDraft.latitude" type="number" step="any" placeholder="如 39.9042" /></label>
+          <label>经度<input v-model="editDraft.longitude" type="number" step="any" placeholder="如 116.4074" /></label>
+        </div>
+        <button type="button" class="sync-btn map-pick-btn" @click="openMapPicker(editDraft)">地图选点</button>
         <label>
           简介
           <input v-model="editDraft.intro" placeholder="工作室简介" />
@@ -158,6 +168,25 @@
           <button type="submit" class="primary-btn">保存修改</button>
         </div>
       </form>
+    </div>
+
+    <div v-if="showMapPicker" class="modal-backdrop" @click.self="closeMapPicker">
+      <div class="admin-modal map-picker-modal">
+        <div class="modal-head">
+          <div>
+            <h2>选择工作室位置</h2>
+            <p class="map-picker-hint">点击地图上的位置，确认后自动回填经纬度</p>
+          </div>
+          <button type="button" @click="closeMapPicker">×</button>
+        </div>
+        <div v-if="!mapKey" class="map-picker-empty">尚未配置腾讯地图 Web Key，请设置 VITE_TENCENT_MAP_KEY。</div>
+        <div v-else ref="mapContainer" class="map-container"></div>
+        <div class="map-picker-coords">当前坐标：{{ pickedCoordinateText }}</div>
+        <div class="modal-actions">
+          <button type="button" class="sync-btn" @click="closeMapPicker">取消</button>
+          <button type="button" class="primary-btn" :disabled="!pickedPoint" @click="confirmMapPicker">确认位置</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -176,6 +205,81 @@ const showEdit = ref(false)
 const studios = ref([])
 const currentPage = ref(1)
 const pageSize = 15
+const mapKey = import.meta.env.VITE_TENCENT_MAP_KEY || ''
+const showMapPicker = ref(false)
+const mapContainer = ref(null)
+const mapTarget = ref(null)
+const pickedPoint = ref(null)
+let mapInstance = null
+let mapMarker = null
+let mapScriptPromise = null
+
+const pickedCoordinateText = computed(() => {
+  if (!pickedPoint.value) return '未选择'
+  return `${pickedPoint.value.latitude.toFixed(6)}, ${pickedPoint.value.longitude.toFixed(6)}`
+})
+
+function loadTencentMap() {
+  if (window.TMap) return Promise.resolve(window.TMap)
+  if (mapScriptPromise) return mapScriptPromise
+  mapScriptPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script')
+    script.src = `https://map.qq.com/api/gljs?v=1.exp&key=${encodeURIComponent(mapKey)}`
+    script.onload = () => (window.TMap ? resolve(window.TMap) : reject(new Error('腾讯地图脚本加载失败')))
+    script.onerror = reject
+    document.head.appendChild(script)
+  })
+  return mapScriptPromise
+}
+
+async function openMapPicker(target) {
+  if (!mapKey) {
+    toast('请先配置腾讯地图 Web Key')
+    return
+  }
+  mapTarget.value = target
+  const latitude = Number(target.latitude) || 39.9042
+  const longitude = Number(target.longitude) || 116.4074
+  pickedPoint.value = { latitude, longitude }
+  showMapPicker.value = true
+  await nextTick()
+  try {
+    const TMap = await loadTencentMap()
+    mapInstance = new TMap.Map(mapContainer.value, {
+      center: new TMap.LatLng(latitude, longitude),
+      zoom: 14,
+      viewMode: '2D',
+    })
+    mapMarker = new TMap.MultiMarker({
+      map: mapInstance,
+      styles: { marker: new TMap.MarkerStyle({ width: 24, height: 30, anchor: { x: 12, y: 30 } }) },
+      geometries: [{ id: 'studio-location', position: new TMap.LatLng(latitude, longitude) }],
+    })
+    mapInstance.on('click', (event) => {
+      const point = { latitude: event.latLng.getLat(), longitude: event.latLng.getLng() }
+      pickedPoint.value = point
+      mapMarker.setGeometries([{ id: 'studio-location', position: new TMap.LatLng(point.latitude, point.longitude) }])
+    })
+  } catch (error) {
+    toast('地图加载失败，请检查 Key 和域名白名单')
+    closeMapPicker()
+  }
+}
+
+function confirmMapPicker() {
+  if (!mapTarget.value || !pickedPoint.value) return
+  mapTarget.value.latitude = pickedPoint.value.latitude
+  mapTarget.value.longitude = pickedPoint.value.longitude
+  closeMapPicker()
+}
+
+function closeMapPicker() {
+  showMapPicker.value = false
+  if (mapInstance) mapInstance.destroy()
+  mapInstance = null
+  mapMarker = null
+  mapTarget.value = null
+}
 
 const createDraft = reactive({
   name: '',
@@ -187,6 +291,8 @@ const createDraft = reactive({
   intro: '',
   openingHours: '',
   coverUrl: '',
+  latitude: '',
+  longitude: '',
 })
 
 const editDraft = reactive({
@@ -200,6 +306,8 @@ const editDraft = reactive({
   intro: '',
   openingHours: '',
   coverUrl: '',
+  latitude: '',
+  longitude: '',
 })
 
 async function loadStudios() {
@@ -243,6 +351,8 @@ function openCreate() {
   createDraft.intro = ''
   createDraft.openingHours = ''
   createDraft.coverUrl = ''
+  createDraft.latitude = ''
+  createDraft.longitude = ''
   showCreate.value = true
 }
 
@@ -257,6 +367,8 @@ function openEdit(studio) {
   editDraft.intro = studio.intro || ''
   editDraft.openingHours = studio.openingHours || ''
   editDraft.coverUrl = studio.coverUrl || ''
+  editDraft.latitude = studio.latitude ?? ''
+  editDraft.longitude = studio.longitude ?? ''
   showEdit.value = true
 }
 
@@ -271,6 +383,8 @@ async function handleCreate() {
     intro: createDraft.intro,
     openingHours: createDraft.openingHours,
     coverUrl: createDraft.coverUrl,
+    latitude: createDraft.latitude === '' ? null : Number(createDraft.latitude),
+    longitude: createDraft.longitude === '' ? null : Number(createDraft.longitude),
   })
   showCreate.value = false
   toast('工作室添加成功')
@@ -288,6 +402,8 @@ async function handleUpdate() {
     intro: editDraft.intro,
     openingHours: editDraft.openingHours,
     coverUrl: editDraft.coverUrl,
+    latitude: editDraft.latitude === '' ? null : Number(editDraft.latitude),
+    longitude: editDraft.longitude === '' ? null : Number(editDraft.longitude),
   })
   showEdit.value = false
   toast('工作室信息已更新')
