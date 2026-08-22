@@ -49,6 +49,7 @@ def _teacher_profile(teacher):
             "specialties": specialties,
             "teachingSummary": teacher.detail.teaching_summary if teacher.detail else None,
             "certificationNote": "该教师已通过喜乐瑜伽教师认证，资质处于有效期内。",
+            "certificateUrl": _file_url(teacher.certificate_url),
         }
     )
     return profile

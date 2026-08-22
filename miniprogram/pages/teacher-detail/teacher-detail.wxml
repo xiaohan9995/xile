@@ -54,12 +54,13 @@
 
     <!-- Certificate card -->
     <view class="cert-card">
-      <view class="cert-header">
+      <view class="cert-header" bindtap="previewCertificate">
         <text class="cert-title">证书展示</text>
         <text class="cert-action">查看大图</text>
       </view>
-      <view class="cert-preview">
-        <text class="cert-preview-text">喜乐瑜伽教师认证证书</text>
+      <view class="cert-preview" bindtap="previewCertificate">
+        <image wx:if="{{teacher.certificateUrl}}" class="cert-preview-image" src="{{teacher.certificateUrl}}" mode="aspectFit" />
+        <text wx:else class="cert-preview-text">喜乐瑜伽教师认证证书</text>
       </view>
     </view>
 

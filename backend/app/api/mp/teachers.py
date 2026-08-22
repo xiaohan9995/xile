@@ -164,7 +164,7 @@ def _certification_payload(teacher, include_reviews=True):
             "daysLeft": max(days_left, 0) if days_left is not None else None,
             "reviewCycleYears": teacher.tier.review_cycle_years if teacher.tier else None,
             "reviewRequired": teacher.tier.review_required if teacher.tier else True,
-            "certificateUrl": teacher.certificate_url,
+            "certificateUrl": file_url(teacher.certificate_url),
             "teachingSummary": teacher.detail.teaching_summary if teacher.detail else None,
             "phone": teacher.detail.phone if teacher.detail else None,
         },
@@ -212,7 +212,7 @@ def get_teacher_certification(teacher_id):
             **_teacher_summary(teacher),
             "validUntil": _date_text(teacher.valid_until),
             "firstCertifiedOn": _date_text(teacher.first_certified_on),
-            "certificateUrl": teacher.certificate_url,
+            "certificateUrl": file_url(teacher.certificate_url),
             "teachingSummary": teacher.detail.teaching_summary if teacher.detail else None,
         },
     }
