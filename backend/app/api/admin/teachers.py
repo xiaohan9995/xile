@@ -7,7 +7,7 @@ from flask import request, send_file
 from ...extensions import db
 from ...models import AuditLog, ImportBatch, ImportError, Teacher, TeacherDetail, TeacherTier
 from ...services.teacher_service import create_teacher as svc_create_teacher, generate_teacher_no
-from ...utils.storage import file_url as _file_url
+from ...utils.storage import storage_reference
 from .helpers import current_admin_id, require_admin_roles, require_admin_token, _date_text
 from . import admin_bp
 
@@ -29,7 +29,7 @@ def teacher_list():
             "status": t.status,
             "validUntil": _date_text(t.valid_until),
             "certifiedAt": _date_text(t.first_certified_on),
-            "avatarUrl": _file_url(t.avatar_url),
+            "avatarUrl": storage_reference(t.avatar_url),
             "certificateUrl": t.certificate_url,
             "phone": t.detail.phone if t.detail else None,
             "committeeRemark": t.detail.committee_remark if t.detail else None,
@@ -57,7 +57,7 @@ def get_teacher_detail(teacher_id):
         "status": teacher.status,
         "validUntil": _date_text(teacher.valid_until),
         "certifiedAt": _date_text(teacher.first_certified_on),
-        "avatarUrl": _file_url(teacher.avatar_url),
+        "avatarUrl": storage_reference(teacher.avatar_url),
         "certificateUrl": teacher.certificate_url,
         "phone": teacher.detail.phone if teacher.detail else None,
         "specialties": teacher.detail.specialties if teacher.detail else None,
@@ -85,9 +85,9 @@ def update_teacher(teacher_id):
     if "district" in payload:
         teacher.district = str(payload["district"] or "").strip() or None
     if "avatarUrl" in payload:
-        teacher.avatar_url = (payload["avatarUrl"] or "").strip() or None
+        teacher.avatar_url = storage_reference((payload["avatarUrl"] or "").strip())
     if "certificateUrl" in payload:
-        teacher.certificate_url = (payload["certificateUrl"] or "").strip() or None
+        teacher.certificate_url = storage_reference((payload["certificateUrl"] or "").strip())
 
     if "committeeRemark" in payload or "phone" in payload or "specialties" in payload:
         if not teacher.detail:
