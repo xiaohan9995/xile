@@ -2,7 +2,7 @@
 from alembic import op
 import sqlalchemy as sa
 
-revision = "007_expand_teacher_certificate_url"
+revision = "007_expand_cert_url"
 down_revision = "006_add_studio_coordinates"
 branch_labels = None
 depends_on = None
