@@ -1,5 +1,9 @@
 from datetime import date, datetime, timedelta
+import json
 import os
+from urllib.error import URLError
+from urllib.parse import urlencode
+from urllib.request import urlopen
 
 from flask import request
 from werkzeug.security import generate_password_hash
@@ -134,6 +138,95 @@ def get_map_config():
             or os.getenv("VITE_TENCENT_MAP_KEY")
             or ""
         )
+    }
+
+
+@admin_bp.get("/map-search")
+@require_admin_token
+def search_map_places():
+    """Search Tencent Maps server-side so the admin picker can search places."""
+    keyword = (request.args.get("keyword") or "").strip()
+    region = (request.args.get("region") or "").strip()
+    if not keyword:
+        return {"items": []}
+
+    key = (
+        os.getenv("TENCENT_MAP_KEY")
+        or os.getenv("TENCENT_LBS_KEY")
+        or os.getenv("QQ_MAP_KEY")
+        or os.getenv("VITE_TENCENT_MAP_KEY")
+    )
+    if not key:
+        return {"error": "尚未配置腾讯地图 Key"}, 503
+
+    query = {"keyword": keyword, "key": key, "page_size": 10}
+    if region:
+        query["region"] = region
+    url = "https://apis.map.qq.com/ws/place/v1/suggestion?" + urlencode(query)
+    try:
+        with urlopen(url, timeout=8) as response:
+            payload = json.load(response)
+    except (URLError, TimeoutError, ValueError):
+        return {"error": "地点搜索服务暂时不可用，请稍后重试"}, 502
+
+    if payload.get("status") != 0:
+        return {"error": payload.get("message") or "地点搜索失败，请检查腾讯地图 Key 是否开通 WebService API"}, 502
+
+    return {
+        "items": [
+            {
+                "title": item.get("title") or "未命名地点",
+                "address": item.get("address") or "",
+                "city": item.get("ad_info", {}).get("city") or "",
+                "district": item.get("ad_info", {}).get("district") or "",
+                "latitude": item.get("location", {}).get("lat"),
+                "longitude": item.get("location", {}).get("lng"),
+            }
+            for item in payload.get("data", [])
+            if item.get("location", {}).get("lat") is not None and item.get("location", {}).get("lng") is not None
+        ]
+    }
+
+
+@admin_bp.get("/map-reverse-geocode")
+@require_admin_token
+def reverse_geocode_map_location():
+    """Translate a selected coordinate into the fields stored on a studio."""
+    latitude = request.args.get("latitude", type=float)
+    longitude = request.args.get("longitude", type=float)
+    if latitude is None or longitude is None:
+        return {"error": "缺少有效的经纬度"}, 400
+
+    key = (
+        os.getenv("TENCENT_MAP_KEY")
+        or os.getenv("TENCENT_LBS_KEY")
+        or os.getenv("QQ_MAP_KEY")
+        or os.getenv("VITE_TENCENT_MAP_KEY")
+    )
+    if not key:
+        return {"error": "尚未配置腾讯地图 Key"}, 503
+
+    url = "https://apis.map.qq.com/ws/geocoder/v1/?" + urlencode({
+        "location": f"{latitude},{longitude}",
+        "key": key,
+    })
+    try:
+        with urlopen(url, timeout=8) as response:
+            payload = json.load(response)
+    except (URLError, TimeoutError, ValueError):
+        return {"error": "地址解析服务暂时不可用，请稍后重试"}, 502
+
+    if payload.get("status") != 0:
+        return {"error": payload.get("message") or "地址解析失败，请检查腾讯地图 Key 是否开通 WebService API"}, 502
+
+    result = payload.get("result") or {}
+    component = result.get("address_component") or {}
+    return {
+        "city": component.get("city") or "",
+        "district": component.get("district") or "",
+        "address": result.get("address") or "",
+        "latitude": latitude,
+        "longitude": longitude,
     }
 
 
