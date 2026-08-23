@@ -1037,6 +1037,50 @@ button {
   font-size: 13px;
 }
 
+.map-search-row {
+  display: flex;
+  gap: 10px;
+  margin: 18px 0 10px;
+}
+
+.map-search-row input {
+  flex: 1;
+}
+
+.map-search-results {
+  max-height: 180px;
+  margin-bottom: 10px;
+  overflow-y: auto;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.map-search-results button {
+  display: grid;
+  width: 100%;
+  gap: 3px;
+  padding: 11px 14px;
+  color: var(--ink);
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.map-search-results button:last-child {
+  border-bottom: 0;
+}
+
+.map-search-results button:hover {
+  background: var(--surface-soft);
+}
+
+.map-search-results span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .map-container {
   width: 100%;
   height: 440px;
@@ -1053,6 +1097,17 @@ button {
   color: var(--muted);
   background: var(--surface-soft);
   border-radius: 16px;
+}
+
+.map-load-error {
+  margin-top: 10px;
+  padding: 10px 12px;
+  color: #9c3f2b;
+  font-size: 13px;
+  line-height: 1.5;
+  background: #fff4ed;
+  border: 1px solid #f2c5b1;
+  border-radius: 10px;
 }
 
 .map-picker-coords {

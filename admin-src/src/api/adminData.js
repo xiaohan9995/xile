@@ -42,6 +42,8 @@ export function mapAdminStudio(studio) {
     openingHours: studio.openingHours || '',
     image: studio.coverUrl || DEFAULT_STUDIO,
     coverUrl: studio.coverUrl || '',
+    latitude: studio.latitude ?? null,
+    longitude: studio.longitude ?? null,
     status: studio.status,
     ownerTeacherName: studio.ownerTeacherName,
   }
@@ -101,6 +103,14 @@ export async function fetchAdminStudios() {
 
 export async function fetchMapConfig() {
   return api.get('/map-config')
+}
+
+export async function searchMapPlaces(keyword, region) {
+  return api.get('/map-search', { keyword, region })
+}
+
+export async function reverseGeocodeMapLocation(latitude, longitude) {
+  return api.get('/map-reverse-geocode', { latitude, longitude })
 }
 
 export async function fetchAdminReviews() {
