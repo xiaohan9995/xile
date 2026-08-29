@@ -1,13 +1,13 @@
 from datetime import date
 import os
 
-from flask import current_app, redirect, request, send_file
+from flask import current_app, request, send_file
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from sqlalchemy import extract
 
 from ...extensions import db, limiter
 from ...models import Announcement, AnnualReview, ReviewCycle, Studio, Teacher, TeacherTier, User
-from ...utils.storage import StorageNotConfiguredError, cos_is_configured, file_url, upload_to_cos
+from ...utils.storage import StorageNotConfiguredError, cos_is_configured, download_cos_object, file_url, upload_to_cos
 from .helpers import (
     _certification_status,
     _date_text,
@@ -233,9 +233,23 @@ def generate_certificate_image():
         return {"error": "teacher not found"}, 404
 
     if teacher.certificate_url:
-        # Certificate objects are private in COS; redirect to a temporary
-        # signed URL instead of exposing the raw object path anonymously.
-        return redirect(file_url(teacher.certificate_url), code=302)
+        # Do not redirect the mini program to COS. A redirected private file
+        # may be saved as an unknown temporary file or be rejected by COS,
+        # which prevents wx.saveImageToPhotosAlbum from accepting it.
+        try:
+            content, content_type = download_cos_object(teacher.certificate_url)
+            return send_file(
+                BytesIO(content),
+                mimetype=content_type.split(";", 1)[0],
+                download_name=f"cert_{teacher.teacher_no}.png",
+                max_age=0,
+            )
+        except StorageNotConfiguredError:
+            # Retain compatibility for legacy non-COS certificate URLs.
+            return {"error": "证书文件无法读取"}, 503
+        except Exception:
+            current_app.logger.exception("failed to download certificate for teacher_id=%s", teacher.id)
+            return {"error": "证书文件下载失败，请稍后重试"}, 502
 
     from PIL import Image, ImageDraw, ImageFont
 
@@ -297,7 +311,13 @@ def generate_certificate_image():
                 "image/png",
             )
             db.session.commit()
-            return redirect(teacher.certificate_url, code=302)
+            content, content_type = download_cos_object(teacher.certificate_url)
+            return send_file(
+                BytesIO(content),
+                mimetype=content_type.split(";", 1)[0],
+                download_name=f"cert_{teacher.teacher_no}.png",
+                max_age=0,
+            )
         except StorageNotConfiguredError:
             pass
     if not (current_app.debug or current_app.testing):

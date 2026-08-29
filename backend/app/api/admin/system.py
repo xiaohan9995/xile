@@ -3,7 +3,7 @@ import json
 import os
 from urllib.error import URLError
 from urllib.parse import urlencode
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 from flask import request
 from werkzeug.security import generate_password_hash
@@ -22,6 +22,34 @@ from ...models import (
 from .helpers import current_admin_id, require_admin_roles, require_admin_token, _date_text, _datetime_text
 from ...utils.storage import file_url as _file_url
 from . import admin_bp
+
+
+def _browser_map_key():
+    return (
+        os.getenv("TENCENT_MAP_KEY")
+        or os.getenv("TENCENT_LBS_KEY")
+        or os.getenv("QQ_MAP_KEY")
+        or os.getenv("VITE_TENCENT_MAP_KEY")
+        or ""
+    )
+
+
+def _webservice_map_key():
+    """WebService requests originate from Cloud Run and need a server-side key."""
+    return (
+        os.getenv("TENCENT_MAP_WEB_SERVICE_KEY")
+        or os.getenv("TENCENT_MAP_WEBSERVICE_KEY")
+        # A single Key can be used temporarily when it has both JavaScript API
+        # GL and WebService API enabled. Production should still set the
+        # dedicated variable above so browser and server quotas are isolated.
+        or _browser_map_key()
+    )
+
+
+def _tencent_maps_request(url):
+    """Attach the admin origin required by Tencent Maps domain validation."""
+    referer = os.getenv("TENCENT_MAP_REFERER") or f"https://{request.host}/"
+    return Request(url, headers={"Referer": referer, "User-Agent": "xile-yoga-map-service"})
 
 
 # ─── Dashboard ───────────────────────────────────────────────────────────────
@@ -130,15 +158,7 @@ def analytics():
 @require_admin_token
 def get_map_config():
     """Expose the browser-safe Tencent Maps key for admin map picking."""
-    return {
-        "key": (
-            os.getenv("TENCENT_MAP_KEY")
-            or os.getenv("TENCENT_LBS_KEY")
-            or os.getenv("QQ_MAP_KEY")
-            or os.getenv("VITE_TENCENT_MAP_KEY")
-            or ""
-        )
-    }
+    return {"key": _browser_map_key()}
 
 
 @admin_bp.get("/map-search")
@@ -150,21 +170,16 @@ def search_map_places():
     if not keyword:
         return {"items": []}
 
-    key = (
-        os.getenv("TENCENT_MAP_KEY")
-        or os.getenv("TENCENT_LBS_KEY")
-        or os.getenv("QQ_MAP_KEY")
-        or os.getenv("VITE_TENCENT_MAP_KEY")
-    )
+    key = _webservice_map_key()
     if not key:
-        return {"error": "尚未配置腾讯地图 Key"}, 503
+        return {"error": "尚未配置腾讯地图 WebService Key"}, 503
 
     query = {"keyword": keyword, "key": key, "page_size": 10}
     if region:
         query["region"] = region
     url = "https://apis.map.qq.com/ws/place/v1/suggestion?" + urlencode(query)
     try:
-        with urlopen(url, timeout=8) as response:
+        with urlopen(_tencent_maps_request(url), timeout=8) as response:
             payload = json.load(response)
     except (URLError, TimeoutError, ValueError):
         return {"error": "地点搜索服务暂时不可用，请稍后重试"}, 502
@@ -197,21 +212,16 @@ def reverse_geocode_map_location():
     if latitude is None or longitude is None:
         return {"error": "缺少有效的经纬度"}, 400
 
-    key = (
-        os.getenv("TENCENT_MAP_KEY")
-        or os.getenv("TENCENT_LBS_KEY")
-        or os.getenv("QQ_MAP_KEY")
-        or os.getenv("VITE_TENCENT_MAP_KEY")
-    )
+    key = _webservice_map_key()
     if not key:
-        return {"error": "尚未配置腾讯地图 Key"}, 503
+        return {"error": "尚未配置腾讯地图 WebService Key"}, 503
 
     url = "https://apis.map.qq.com/ws/geocoder/v1/?" + urlencode({
         "location": f"{latitude},{longitude}",
         "key": key,
     })
     try:
-        with urlopen(url, timeout=8) as response:
+        with urlopen(_tencent_maps_request(url), timeout=8) as response:
             payload = json.load(response)
     except (URLError, TimeoutError, ValueError):
         return {"error": "地址解析服务暂时不可用，请稍后重试"}, 502
