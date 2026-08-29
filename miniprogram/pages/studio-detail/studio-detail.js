@@ -65,8 +65,10 @@ Page({
     wx.openLocation({
       latitude,
       longitude,
-      name: studio.name || '工作室',
-      address: studio.address || '',
+      // Map clients prominently display `name`; use the selected street
+      // address rather than the studio brand so navigation is unambiguous.
+      name: studio.address || studio.name || '工作室地址',
+      address: studio.address || studio.name || '',
       scale: 16,
     });
   },

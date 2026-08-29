@@ -72,6 +72,23 @@ def signed_object_url(file_ref, expires=3600):
     )
 
 
+def download_cos_object(file_ref):
+    """Read a private COS object through server credentials.
+
+    This is used for authenticated mini-program downloads where a 302 to a
+    signed COS URL can lose request context on some clients.
+    """
+    settings = _cos_settings()
+    if not all(settings.values()):
+        raise StorageNotConfiguredError("对象存储未配置")
+    key = _cos_key(file_ref, settings)
+    if not key:
+        raise StorageNotConfiguredError("文件不在当前对象存储中")
+    response = _cos_client(settings).get_object(Bucket=settings["bucket"], Key=key)
+    body = response["Body"].get_raw_stream().read()
+    return body, response.get("ContentType") or "application/octet-stream"
+
+
 def upload_to_cos(file_stream, file_key, content_type=None, public_read=False):
     """Store an object in COS and return its delivery URL.
 
