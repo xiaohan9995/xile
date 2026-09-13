@@ -160,7 +160,7 @@ def test_cloudbase_auth_bridge_rejects_tampered_identity(client, monkeypatch):
 
 def test_teacher_can_link_wechat_session_with_an_admin_generated_code(client):
     teacher = db.session.get(Teacher, 1)
-    teacher.id_number = "110101199001011234"
+    teacher.teacher_no = "110101199001011234"
     db.session.commit()
     admin_headers = {"Authorization": "Bearer test-admin-token"}
     create_code = client.post("/api/admin/teachers/1/link-code", headers=admin_headers)
@@ -477,14 +477,14 @@ def test_admin_create_teacher(client):
     response = client.post(
         "/api/admin/teachers",
         headers={"Authorization": "Bearer test-admin-token"},
-        json={"name": "测试教师", "level": "L2", "phone": "13512345678", "city": "深圳市"},
+        json={"name": "测试教师", "idNumber": "440101199001011234", "level": "L2", "phone": "13512345678", "city": "深圳市"},
     )
 
     assert response.status_code == 201
     payload = response.get_json()
     assert payload["name"] == "测试教师"
     assert payload["tier"] == "L2"
-    assert payload["teacherNo"].startswith("JY2026")
+    assert payload["teacherNo"] is None
 
 
 def test_admin_delete_teacher(client):
@@ -503,7 +503,7 @@ def test_admin_delete_teacher(client):
 
 def test_admin_create_restores_hidden_teacher_with_same_id_number(client):
     teacher = db.session.get(Teacher, 1)
-    teacher.id_number = "110101199001011234"
+    teacher.teacher_no = "110101199001011234"
     db.session.commit()
     headers = {"Authorization": "Bearer test-admin-token"}
     assert client.delete("/api/admin/teachers/1", headers=headers).status_code == 200
@@ -617,7 +617,7 @@ def test_admin_review_decision_endpoint_is_retired_for_every_outcome(client):
 def test_teacher_password_account_and_teaching_record(client):
     admin_headers = {"Authorization": "Bearer test-admin-token"}
     teacher = Teacher.query.get(1)
-    teacher.id_number = "110101199001011234"
+    teacher.teacher_no = "110101199001011234"
     db.session.commit()
     account = client.post(
         "/api/admin/teacher-accounts", headers=admin_headers,
@@ -653,7 +653,7 @@ def test_teacher_password_account_and_teaching_record(client):
 def test_link_teacher_by_id_number_requires_one_time_password_reset(client):
     admin_headers = {"Authorization": "Bearer test-admin-token"}
     teacher = db.session.get(Teacher, 1)
-    teacher.id_number = "110101199001011234"
+    teacher.teacher_no = "110101199001011234"
     db.session.commit()
     account = client.post("/api/admin/teacher-accounts", headers=admin_headers, json={"teacherId": 1})
     assert account.status_code == 201
@@ -812,7 +812,7 @@ def test_super_admin_can_update_another_admin_role_but_not_their_own(client):
 def test_admin_user_list_and_role_update(client):
     token = _login_as_teacher(client, 1)
     teacher = db.session.get(Teacher, 1)
-    teacher.id_number = "110101199001011234"
+    teacher.teacher_no = "110101199001011234"
     db.session.commit()
 
     response = client.get(

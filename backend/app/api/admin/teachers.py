@@ -7,7 +7,7 @@ from flask import g, request, send_file
 
 from ...extensions import db
 from ...models import AuditLog, ImportBatch, ImportError, Teacher, TeacherDetail, TeacherTier
-from ...services.teacher_service import create_teacher as svc_create_teacher, generate_teacher_no
+from ...services.teacher_service import create_teacher as svc_create_teacher, generate_certificate_no
 from ...utils.storage import file_url as _file_url, storage_reference
 from .helpers import current_admin_id, require_admin_roles, require_admin_token, _date_text
 from . import admin_bp
@@ -17,12 +17,12 @@ from . import admin_bp
 @require_admin_token
 @require_admin_roles("admin", "super_admin")
 def teacher_list():
-    teachers = Teacher.query.filter(Teacher.status != "hidden").order_by(Teacher.teacher_no.asc()).all()
+    teachers = Teacher.query.filter(Teacher.status != "hidden").order_by(Teacher.real_name.asc()).all()
     can_view_identity = getattr(g, "current_admin_role", None) in ("admin", "super_admin")
     items = [
         {
             "id": t.id,
-            "teacherNo": t.teacher_no,
+            "teacherNo": t.certificate_no,
             "name": t.real_name,
             "xileName": t.xile_name,
             "alias": t.alias,
@@ -38,7 +38,7 @@ def teacher_list():
             "avatarUrl": storage_reference(t.avatar_url),
             "certificateUrl": _file_url(t.certificate_url),
             **({
-                "idNumber": t.id_number,
+                "idNumber": t.teacher_no,
                 "phone": t.detail.phone if t.detail else None,
                 "committeeRemark": t.detail.committee_remark if t.detail else None,
             } if can_view_identity else {}),
@@ -57,11 +57,11 @@ def get_teacher_detail(teacher_id):
         return {"error": "not found"}, 404
     return {
         "id": teacher.id,
-        "teacherNo": teacher.teacher_no,
+        "teacherNo": teacher.certificate_no,
         "name": teacher.real_name,
         "xileName": teacher.xile_name,
         "alias": teacher.alias,
-        "idNumber": teacher.id_number,
+        "idNumber": teacher.teacher_no,
         "tier": teacher.tier.code if teacher.tier else None,
         "tierName": teacher.tier.name if teacher.tier else None,
         "city": teacher.city,
@@ -101,10 +101,16 @@ def update_teacher(teacher_id):
         id_number = str(payload["idNumber"] or "").strip().upper()
         if id_number and len(id_number) < 6:
             return {"error": "身份证号至少需要 6 位"}, 400
-        duplicate = Teacher.query.filter(Teacher.id_number == id_number, Teacher.id != teacher.id).first() if id_number else None
+        duplicate = Teacher.query.filter(Teacher.teacher_no == id_number, Teacher.id != teacher.id).first() if id_number else None
         if duplicate:
             return {"error": "该身份证号已关联其他教师"}, 409
-        teacher.id_number = id_number or None
+        teacher.teacher_no = id_number
+    if "certificateNo" in payload:
+        certificate_no = str(payload["certificateNo"] or "").strip().upper() or None
+        duplicate = Teacher.query.filter(Teacher.certificate_no == certificate_no, Teacher.id != teacher.id).first() if certificate_no else None
+        if duplicate:
+            return {"error": "该证书编号已关联其他教师"}, 409
+        teacher.certificate_no = certificate_no
     if "residences" in payload:
         residences = payload["residences"]
         teacher.residences = ",".join(str(item).strip() for item in residences if str(item).strip()) if isinstance(residences, list) else None
@@ -155,9 +161,9 @@ def create_teacher():
     if not name:
         return {"error": "name required"}, 400
     id_number = (payload.get("idNumber") or "").strip().upper()
-    if id_number and len(id_number) < 6:
-        return {"error": "身份证号至少需要 6 位"}, 400
-    existing_teacher = Teacher.query.filter_by(id_number=id_number).first() if id_number else None
+    if len(id_number) < 6:
+        return {"error": "请填写至少 6 位身份证号"}, 400
+    existing_teacher = Teacher.query.filter_by(teacher_no=id_number).first() if id_number else None
     if existing_teacher and existing_teacher.status != "hidden":
         return {"error": "该身份证号已关联其他教师"}, 409
 
@@ -189,7 +195,7 @@ def create_teacher():
         db.session.commit()
         return {
             "id": existing_teacher.id,
-            "teacherNo": existing_teacher.teacher_no,
+            "teacherNo": existing_teacher.certificate_no,
             "name": existing_teacher.real_name,
             "tier": tier.code,
             "validUntil": _date_text(existing_teacher.valid_until),
@@ -204,6 +210,7 @@ def create_teacher():
         xile_name=payload.get("xileName", "").strip(),
         phone=payload.get("phone", "").strip(),
         id_number=id_number,
+        certificate_no=(payload.get("certificateNo") or "").strip().upper() or None,
         valid_until=valid_until,
     )
 
@@ -212,7 +219,7 @@ def create_teacher():
 
     return {
         "id": teacher.id,
-        "teacherNo": teacher.teacher_no,
+        "teacherNo": teacher.certificate_no,
         "name": teacher.real_name,
         "tier": tier.code,
         "validUntil": _date_text(teacher.valid_until),
@@ -334,14 +341,14 @@ def import_preview():
 
     errors = []
     parsed_rows = []
-    seen_teacher_nos = set()
+    seen_certificate_nos = set()
 
-    # Collect existing teacherNo values from DB for duplicate detection
+    # Certificate numbers are optional; identity credentials are not.
     existing_nos = set(
-        no for (no,) in db.session.query(Teacher.teacher_no).all()
+        no for (no,) in db.session.query(Teacher.certificate_no).filter(Teacher.certificate_no.isnot(None)).all()
     )
     existing_id_numbers = set(
-        number for (number,) in db.session.query(Teacher.id_number).filter(Teacher.id_number.isnot(None)).all()
+        number for (number,) in db.session.query(Teacher.teacher_no).all()
     )
     seen_id_numbers = set()
 
@@ -376,12 +383,12 @@ def import_preview():
 
         # Optional: teacherNo (check duplicates)
         if data["teacherNo"]:
-            if data["teacherNo"] in seen_teacher_nos:
+            if data["teacherNo"] in seen_certificate_nos:
                 row_errors.append({"rowNumber": idx, "field": "teacherNo", "message": "编号在文件中重复"})
             elif data["teacherNo"] in existing_nos:
                 row_errors.append({"rowNumber": idx, "field": "teacherNo", "message": "编号已存在于系统中"})
             else:
-                seen_teacher_nos.add(data["teacherNo"])
+                seen_certificate_nos.add(data["teacherNo"])
 
         if data["idNumber"]:
             if len(data["idNumber"]) < 6:
@@ -457,9 +464,9 @@ def import_commit():
     rows = list(ws.iter_rows(min_row=2, values_only=True))
     wb.close()
 
-    # Collect existing teacherNo values for duplicate check during commit
+    # Collect existing certificate numbers for duplicate check during commit
     existing_nos = set(
-        no for (no,) in db.session.query(Teacher.teacher_no).all()
+        no for (no,) in db.session.query(Teacher.certificate_no).filter(Teacher.certificate_no.isnot(None)).all()
     )
     used_nos = set()
     created = 0
@@ -485,17 +492,18 @@ def import_commit():
         if not tier:
             continue
 
-        # Determine teacherNo: use provided value or generate
-        teacher_no = data["teacherNo"]
-        if teacher_no:
+        # Certificate number is optional. Imported certified teachers receive
+        # one when the file does not provide it.
+        certificate_no = data["teacherNo"]
+        if certificate_no:
             # Skip if duplicate
-            if teacher_no in existing_nos or teacher_no in used_nos:
+            if certificate_no in existing_nos or certificate_no in used_nos:
                 continue
-            used_nos.add(teacher_no)
+            used_nos.add(certificate_no)
         else:
-            teacher_no = generate_teacher_no()
+            certificate_no = generate_certificate_no()
             # Ensure generated number is tracked to avoid collision within batch
-            existing_nos.add(teacher_no)
+            existing_nos.add(certificate_no)
 
         # Determine validUntil: use provided date or calculate from tier cycle
         valid_until = _parse_date(data["validUntil"])
@@ -506,10 +514,10 @@ def import_commit():
             valid_until = date(target_year, cert_date.month, target_day)
 
         teacher = Teacher(
-            teacher_no=teacher_no,
+            teacher_no=data["idNumber"],
+            certificate_no=certificate_no,
             real_name=data["name"],
             xile_name=data["xileName"] or None,
-            id_number=data["idNumber"] or None,
             tier_id=tier.id,
             city=data["city"] or None,
             district=data["district"] or None,

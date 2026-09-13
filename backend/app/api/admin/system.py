@@ -374,7 +374,7 @@ def create_teacher_account():
         return {"error": "教师不存在"}, 404
 
     # 身份证号仅在管理端保存和使用，不能由浏览器传入账号或密码。
-    id_number = (teacher.id_number or "").strip().upper()
+    id_number = (teacher.teacher_no or "").strip().upper()
     if len(id_number) < 6:
         return {"error": "请先在教师档案中填写有效身份证号"}, 400
     username = id_number
@@ -482,7 +482,7 @@ def update_user_role(user_id):
         teacher = db.session.get(Teacher, teacher_id)
         if teacher is None:
             return {"error": "teacher not found"}, 404
-        if len((teacher.id_number or "").strip()) < 6:
+        if len((teacher.teacher_no or "").strip()) < 6:
             return {"error": "请先在教师档案中填写有效身份证号"}, 400
         existing_link = User.query.filter(User.teacher_id == teacher_id, User.id != user_id).first()
         if existing_link:
