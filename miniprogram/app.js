@@ -16,8 +16,8 @@ App({
     this.globalData.avatarUrl = auth.getAvatarUrl();
     this.globalData.nickname = auth.getNickname();
 
-    // Login is initiated by the teacher after entering a protected area.
-    // Do not call wx.login silently at startup: public pages must work without it.
+    // Each page performs its own login guard so users choose when to authorize
+    // WeChat, while unauthenticated sessions cannot load application content.
     this.globalData.loginReady = true;
     this.globalData.loginPromise = Promise.resolve();
   },

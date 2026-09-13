@@ -6,9 +6,9 @@ class ServiceRecord(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     teacher_id = db.Column(db.Integer, db.ForeignKey("teachers.id"), nullable=False, index=True)
-    served_on = db.Column(db.Date, nullable=False, index=True)
-    service_type = db.Column(db.String(64), nullable=False)
-    title = db.Column(db.String(128), nullable=False)
+    served_on = db.Column(db.Date, index=True)
+    service_type = db.Column(db.String(64))
+    title = db.Column(db.String(128))
     location = db.Column(db.String(128))
     description = db.Column(db.Text)
     evidence_key = db.Column(db.String(256))

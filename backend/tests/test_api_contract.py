@@ -189,7 +189,8 @@ def test_teacher_can_link_wechat_session_with_an_admin_generated_code(client):
 
 
 def test_mp_stats_overview_returns_counts(client):
-    response = client.get("/api/mp/stats/overview")
+    token = _login_as_teacher(client, 1)
+    response = client.get("/api/mp/stats/overview", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 200
     payload = response.get_json()
@@ -197,8 +198,10 @@ def test_mp_stats_overview_returns_counts(client):
     assert payload["totalStudios"] >= 2
 
 
-def test_mp_homepage_returns_public_content(client):
-    response = client.get("/api/mp/homepage")
+def test_mp_homepage_requires_login_and_returns_content(client):
+    assert client.get("/api/mp/homepage").status_code == 401
+    token = _login_as_teacher(client, 1)
+    response = client.get("/api/mp/homepage", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 200
     payload = response.get_json()
@@ -207,7 +210,8 @@ def test_mp_homepage_returns_public_content(client):
 
 
 def test_featured_teachers_show_up_to_ten_and_sort_by_tier_desc(client):
-    response = client.get("/api/mp/teachers/featured?page=1&pageSize=10")
+    token = _login_as_teacher(client, 1)
+    response = client.get("/api/mp/teachers/featured?page=1&pageSize=10", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 200
     payload = response.get_json()
@@ -219,7 +223,8 @@ def test_featured_teachers_show_up_to_ten_and_sort_by_tier_desc(client):
 
 
 def test_teacher_search_filters_by_name_and_hides_private_fields(client):
-    response = client.get("/api/mp/teachers/search?q=张")
+    token = _login_as_teacher(client, 1)
+    response = client.get("/api/mp/teachers/search?q=张", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 200
     payload = response.get_json()
@@ -235,18 +240,21 @@ def test_teacher_search_filters_by_name_and_hides_private_fields(client):
 
 
 def test_teacher_search_supports_exact_certificate_and_region_modes(client):
-    exact = client.get("/api/mp/teachers/search?mode=certificate&q=JY20230001")
+    token = _login_as_teacher(client, 1)
+    headers = {"Authorization": f"Bearer {token}"}
+    exact = client.get("/api/mp/teachers/search?mode=certificate&q=JY20230001", headers=headers)
     assert exact.status_code == 200
     assert exact.get_json()["total"] == 1
     assert exact.get_json()["items"][0]["name"] == "张三"
 
-    region = client.get("/api/mp/teachers/search?mode=region&city=上海市")
+    region = client.get("/api/mp/teachers/search?mode=region&city=上海市", headers=headers)
     assert region.status_code == 200
     assert all(item["city"] == "上海市" for item in region.get_json()["items"])
 
 
 def test_teacher_detail_returns_public_certification_profile(client):
-    response = client.get("/api/mp/teachers/1/summary")
+    token = _login_as_teacher(client, 1)
+    response = client.get("/api/mp/teachers/1/summary", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 200
     payload = response.get_json()
@@ -259,7 +267,8 @@ def test_teacher_detail_returns_public_certification_profile(client):
 
 
 def test_studio_list_returns_open_studios_with_tags(client):
-    response = client.get("/api/mp/studios")
+    token = _login_as_teacher(client, 1)
+    response = client.get("/api/mp/studios", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 200
     payload = response.get_json()
@@ -271,7 +280,8 @@ def test_studio_list_returns_open_studios_with_tags(client):
 
 
 def test_studio_detail_returns_public_profile(client):
-    response = client.get("/api/mp/studios/1")
+    token = _login_as_teacher(client, 1)
+    response = client.get("/api/mp/studios/1", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 200
     payload = response.get_json()
@@ -341,7 +351,8 @@ def test_mp_review_submission_validates_teacher_and_files(client):
 
 
 def test_mp_teacher_certification_public_returns_summary_only(client):
-    response = client.get("/api/mp/teachers/2/certification")
+    token = _login_as_teacher(client, 1)
+    response = client.get("/api/mp/teachers/2/certification", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 200
     payload = response.get_json()
@@ -476,8 +487,37 @@ def test_admin_delete_teacher(client):
     assert response.status_code == 200
     assert response.get_json()["status"] == "hidden"
 
-    search = client.get("/api/mp/teachers/search?q=张")
+    token = _login_as_teacher(client, 1)
+    search = client.get("/api/mp/teachers/search?q=张", headers={"Authorization": f"Bearer {token}"})
     assert search.get_json()["total"] == 0
+
+
+def test_admin_create_restores_hidden_teacher_with_same_id_number(client):
+    teacher = db.session.get(Teacher, 1)
+    teacher.id_number = "110101199001011234"
+    db.session.commit()
+    headers = {"Authorization": "Bearer test-admin-token"}
+    assert client.delete("/api/admin/teachers/1", headers=headers).status_code == 200
+
+    response = client.post(
+        "/api/admin/teachers",
+        headers=headers,
+        json={"name": "张三", "xileName": "善悦", "idNumber": "110101199001011234", "level": "L3"},
+    )
+    assert response.status_code == 200
+    assert response.get_json()["restored"] is True
+    assert db.session.get(Teacher, 1).status == "active"
+
+
+def test_service_record_draft_allows_incomplete_fields(client):
+    token = _login_as_teacher(client, 1)
+    response = client.post(
+        "/api/mp/service-records",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"status": "draft"},
+    )
+    assert response.status_code == 201
+    assert response.get_json()["servedOn"] == ""
 
 
 def test_admin_studio_list_returns_all_studios_for_management(client):

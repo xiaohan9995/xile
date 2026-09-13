@@ -3,7 +3,7 @@ import json
 from io import BytesIO
 from datetime import date, datetime
 
-from flask import request, send_file
+from flask import g, request, send_file
 
 from ...extensions import db
 from ...models import AuditLog, ImportBatch, ImportError, Teacher, TeacherDetail, TeacherTier
@@ -17,6 +17,7 @@ from . import admin_bp
 @require_admin_token
 def teacher_list():
     teachers = Teacher.query.filter(Teacher.status != "hidden").order_by(Teacher.teacher_no.asc()).all()
+    can_view_identity = getattr(g, "current_admin_role", None) in ("admin", "super_admin")
     items = [
         {
             "id": t.id,
@@ -24,7 +25,6 @@ def teacher_list():
             "name": t.real_name,
             "xileName": t.xile_name,
             "alias": t.alias,
-            "idNumber": t.id_number,
             "tier": t.tier.code if t.tier else None,
             "tierName": t.tier.name if t.tier else None,
             "city": t.city,
@@ -36,8 +36,11 @@ def teacher_list():
             "residences": [item.strip() for item in (t.residences or "").split(",") if item.strip()],
             "avatarUrl": storage_reference(t.avatar_url),
             "certificateUrl": _file_url(t.certificate_url),
-            "phone": t.detail.phone if t.detail else None,
-            "committeeRemark": t.detail.committee_remark if t.detail else None,
+            **({
+                "idNumber": t.id_number,
+                "phone": t.detail.phone if t.detail else None,
+                "committeeRemark": t.detail.committee_remark if t.detail else None,
+            } if can_view_identity else {}),
         }
         for t in teachers
     ]
@@ -46,6 +49,7 @@ def teacher_list():
 
 @admin_bp.get("/teachers/<int:teacher_id>")
 @require_admin_token
+@require_admin_roles("admin", "super_admin")
 def get_teacher_detail(teacher_id):
     teacher = db.session.get(Teacher, teacher_id)
     if teacher is None or teacher.status == "hidden":
@@ -152,7 +156,8 @@ def create_teacher():
     id_number = (payload.get("idNumber") or "").strip().upper()
     if id_number and len(id_number) < 6:
         return {"error": "身份证号至少需要 6 位"}, 400
-    if id_number and Teacher.query.filter_by(id_number=id_number).first():
+    existing_teacher = Teacher.query.filter_by(id_number=id_number).first() if id_number else None
+    if existing_teacher and existing_teacher.status != "hidden":
         return {"error": "该身份证号已关联其他教师"}, 409
 
     valid_until_str = payload.get("expiryDate")
@@ -162,6 +167,33 @@ def create_teacher():
             valid_until = date.fromisoformat(valid_until_str.replace(".", "-"))
         except ValueError:
             pass
+
+    if existing_teacher:
+        tier_code = (payload.get("level") or "L1").strip().upper()
+        tier = TeacherTier.query.filter_by(code=tier_code).first() or TeacherTier.query.filter_by(code="L1").first()
+        existing_teacher.real_name = name
+        existing_teacher.xile_name = (payload.get("xileName") or "").strip() or None
+        existing_teacher.tier_id = tier.id
+        existing_teacher.city = (payload.get("city") or "").strip() or None
+        existing_teacher.district = (payload.get("district") or "").strip() or None
+        existing_teacher.status = "active"
+        if valid_until:
+            existing_teacher.valid_until = valid_until
+        phone = (payload.get("phone") or "").strip()
+        if phone:
+            if not existing_teacher.detail:
+                existing_teacher.detail = TeacherDetail(teacher_id=existing_teacher.id)
+            existing_teacher.detail.phone = phone
+        db.session.add(AuditLog(admin_id=current_admin_id() or 1, action="restore_teacher", target_type="teacher", target_id=existing_teacher.id))
+        db.session.commit()
+        return {
+            "id": existing_teacher.id,
+            "teacherNo": existing_teacher.teacher_no,
+            "name": existing_teacher.real_name,
+            "tier": tier.code,
+            "validUntil": _date_text(existing_teacher.valid_until),
+            "restored": True,
+        }, 200
 
     teacher, tier = svc_create_teacher(
         name=name,

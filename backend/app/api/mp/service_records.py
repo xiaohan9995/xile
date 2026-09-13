@@ -16,7 +16,7 @@ def _current_teacher_id():
 def _payload(record):
     return {
         "id": record.id,
-        "servedOn": record.served_on.isoformat(),
+        "servedOn": record.served_on.isoformat() if record.served_on else "",
         "serviceType": record.service_type,
         "title": record.title,
         "location": record.location,
@@ -27,14 +27,18 @@ def _payload(record):
 
 
 def _validate(payload, status):
+    raw_served_on = (payload.get("servedOn") or "").strip()
     try:
-        served_on = date.fromisoformat(payload.get("servedOn", ""))
+        served_on = date.fromisoformat(raw_served_on) if raw_served_on else None
     except ValueError:
         return None, "请选择有效的服务日期"
     service_type = (payload.get("serviceType") or "").strip()
     title = (payload.get("title") or "").strip()
-    if status == "submitted" and (not service_type or not title):
-        return None, "请填写服务类型和活动名称"
+    if status == "submitted":
+        if not served_on:
+            return None, "请选择有效的服务日期"
+        if not service_type or not title:
+            return None, "请填写服务类型和活动名称"
     return (served_on, service_type, title), None
 
 
@@ -91,7 +95,7 @@ def update_service_record(record_id):
     if record.status == "submitted" and status == "draft":
         return {"error": "已提交记录不能退回草稿"}, 409
     merged = {
-        "servedOn": payload.get("servedOn", record.served_on.isoformat()),
+        "servedOn": payload.get("servedOn", record.served_on.isoformat() if record.served_on else ""),
         "serviceType": payload.get("serviceType", record.service_type),
         "title": payload.get("title", record.title),
     }
