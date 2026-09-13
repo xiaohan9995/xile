@@ -13,6 +13,8 @@ Page({
     currentPassword: '',
     newPassword: '',
     changingPassword: false,
+    mustChangePassword: false,
+    forcePasswordChange: false,
     alias: '',
     residencesText: '',
     teachingSummary: '',
@@ -21,9 +23,12 @@ Page({
     savingPublicProfile: false,
   },
 
-  onLoad() {
+  onLoad(options) {
     if (!auth.requireLogin('/packageTeacher/settings/settings')) return;
-    this.setData({ statusBarHeight: app.globalData.statusBarHeight });
+    this.setData({
+      statusBarHeight: app.globalData.statusBarHeight,
+      forcePasswordChange: options.forcePasswordChange === '1',
+    });
     this.loadUserInfo();
   },
 
@@ -34,8 +39,9 @@ Page({
         nickname: data.xileName || '',
         xileName: data.xileName || '',
         isTeacher: !!data.teacherId,
+        mustChangePassword: !!data.mustChangePassword,
       });
-      if (data.teacherId) this.loadPublicProfile();
+      if (data.teacherId && !data.mustChangePassword) this.loadPublicProfile();
     } catch (err) {
       this.setData({
         nickname: '',
@@ -107,8 +113,13 @@ Page({
           newPassword: this.data.newPassword,
         },
       });
+      auth.setMustChangePassword(false);
+      this.setData({ mustChangePassword: false });
       this.setData({ currentPassword: '', newPassword: '' });
       wx.showToast({ title: '密码已更新', icon: 'none' });
+      if (this.data.forcePasswordChange) {
+        setTimeout(() => wx.reLaunch({ url: '/packageTeacher/profile/profile' }), 500);
+      }
     } catch (err) {
       const message = err.statusCode === 404
         ? '当前微信账号未设置教师登录密码'

@@ -6,7 +6,8 @@ const app = getApp();
 Page({
   data: {
     statusBarHeight: 20,
-    code: '',
+    idNumber: '',
+    password: '',
     submitting: false,
   },
 
@@ -15,29 +16,32 @@ Page({
     this.setData({ statusBarHeight: app.globalData.statusBarHeight || 20 });
   },
 
-  onCodeInput(e) {
-    const code = (e.detail.value || '').toUpperCase().replace(/[^A-Z0-9-]/g, '');
-    this.setData({ code });
+  onIdNumberInput(e) {
+    this.setData({ idNumber: (e.detail.value || '').toUpperCase().replace(/\s/g, '') });
+  },
+
+  onPasswordInput(e) {
+    this.setData({ password: e.detail.value || '' });
   },
 
   async submit() {
-    const code = (this.data.code || '').replace(/-/g, '').trim();
-    if (code.length !== 8) {
-      wx.showToast({ title: '请输入 8 位关联码', icon: 'none' });
+    const idNumber = (this.data.idNumber || '').trim();
+    if (idNumber.length < 6 || !this.data.password) {
+      wx.showToast({ title: '请输入身份证号和密码', icon: 'none' });
       return;
     }
     if (this.data.submitting) return;
     this.setData({ submitting: true });
     try {
       const data = await request({
-        url: '/api/mp/auth/link-teacher',
+        url: '/api/mp/auth/link-teacher-by-password',
         method: 'POST',
-        data: { code },
+        data: { idNumber, password: this.data.password },
         silent: true,
       });
       auth.applySession(data);
-      wx.showToast({ title: '教师身份已关联', icon: 'none' });
-      setTimeout(() => wx.reLaunch({ url: '/packageTeacher/profile/profile' }), 700);
+      wx.showToast({ title: '关联成功，请先重置密码', icon: 'none' });
+      setTimeout(() => wx.reLaunch({ url: '/packageTeacher/settings/settings?forcePasswordChange=1' }), 700);
     } catch (error) {
       wx.showToast({ title: error.message || '关联失败，请重试', icon: 'none', duration: 2500 });
     } finally {

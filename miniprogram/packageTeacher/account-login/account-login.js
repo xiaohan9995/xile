@@ -17,7 +17,9 @@ Page({
     try {
       const data = await auth.loginWithPassword(username.trim(), password);
       if (data.mustChangePassword) {
-        wx.showToast({ title: '请尽快在设置中修改初始密码', icon: 'none' });
+        wx.showToast({ title: '请先重置初始密码', icon: 'none' });
+        wx.reLaunch({ url: '/packageTeacher/settings/settings?forcePasswordChange=1' });
+        return;
       }
       wx.reLaunch({ url: returnUrl });
     } catch (e) {

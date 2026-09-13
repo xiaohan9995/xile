@@ -9,7 +9,7 @@
     <view class="form-cell"><text class="form-cell__label">身份证号</text><input class="field" placeholder="请输入身份证号" value="{{username}}" bindinput="input" data-field="username" /></view>
     <view class="form-cell"><text class="form-cell__label">密码</text><input class="field" password placeholder="请输入登录密码" value="{{password}}" bindinput="input" data-field="password" /></view>
     <button class="primary" bindtap="submit" loading="{{loading}}" disabled="{{loading}}">登录</button>
-    <text class="help">初始密码为 Xile + 身份证后六位；首次登录后请修改密码。</text>
+    <text class="help">初始密码为身份证后六位；首次登录后必须立即修改密码。</text>
   </view>
   <text class="wechat-link" bindtap="goBack">返回微信登录</text>
 </view>

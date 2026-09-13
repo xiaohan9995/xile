@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 import requests as http_requests
 from flask import current_app
 from flask_jwt_extended import create_access_token
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from ..extensions import db
 from ..models import Teacher, TeacherDetail, TeacherLinkCode, User
@@ -131,9 +131,9 @@ def cloudbase_login(assertion, profile=None):
 def password_login(username, password):
     user = User.query.filter_by(username=username).first()
     if not user or not user.password_hash or not check_password_hash(user.password_hash, password):
-        raise AuthError("invalid username or password", 401)
+        raise AuthError("身份证号或密码错误", 401)
     if user.role != "teacher" or not user.teacher_id:
-        raise AuthError("teacher account is not linked", 403)
+        raise AuthError("该账号尚未关联教师档案", 403)
     return _issue_token(user), user
 
 
@@ -200,6 +200,7 @@ def link_user_to_teacher_by_phone(user, phone_number):
 
     user.teacher_id = teacher.id
     user.role = "teacher"
+    _ensure_initial_teacher_password(user, teacher)
     return teacher
 
 
@@ -280,6 +281,65 @@ def link_wechat_user_to_teacher_by_code(user, code):
         user.role = "teacher"
 
     record.used_at = datetime.utcnow()
+    _ensure_initial_teacher_password(linked_user, teacher)
+    linked_user.must_change_password = True
+    return linked_user, teacher
+
+
+def _ensure_initial_teacher_password(user, teacher):
+    """Give legacy link flows a usable one-time password when none exists."""
+    if user.password_hash:
+        return
+    id_number = (teacher.id_number or "").strip().upper()
+    if len(id_number) < 6:
+        raise AuthError("教师档案缺少有效身份证号，请联系管理员", 400)
+    duplicate = User.query.filter(User.username == id_number, User.id != user.id).first()
+    if duplicate:
+        raise AuthError("该教师账号已关联其他小程序用户，请联系管理员", 409)
+    user.username = id_number
+    user.password_hash = generate_password_hash(id_number[-6:], method="pbkdf2:sha256")
+    user.must_change_password = True
+
+
+def link_wechat_user_to_teacher_by_password(user, id_number, password):
+    """Bind a WeChat user after verifying the teacher password account."""
+    if not user or not user.openid:
+        raise AuthError("请先使用微信登录再关联教师身份", 403)
+    normalized_id_number = "".join(str(id_number or "").strip().upper().split())
+    teacher = Teacher.query.filter(
+        Teacher.id_number == normalized_id_number,
+        Teacher.status != "hidden",
+    ).first()
+    if not teacher:
+        raise AuthError("身份证号或密码错误", 401)
+    account_user = User.query.filter_by(teacher_id=teacher.id).first()
+    if (
+        not account_user
+        or account_user.username != normalized_id_number
+        or not account_user.password_hash
+        or not check_password_hash(account_user.password_hash, password or "")
+    ):
+        raise AuthError("身份证号或密码错误", 401)
+    if user.teacher_id and user.teacher_id != teacher.id:
+        raise AuthError("当前微信账号已关联其他教师档案", 409)
+    if account_user.id != user.id:
+        if account_user.openid and account_user.openid != user.openid:
+            raise AuthError("该教师档案已关联其他微信账号，请联系管理员", 409)
+        account_user.openid = user.openid
+        account_user.role = "teacher"
+        if not account_user.nickname:
+            account_user.nickname = user.nickname
+        if not account_user.avatar_url:
+            account_user.avatar_url = user.avatar_url
+        if not account_user.phone:
+            account_user.phone = user.phone
+        db.session.delete(user)
+        linked_user = account_user
+    else:
+        linked_user = user
+        linked_user.teacher_id = teacher.id
+        linked_user.role = "teacher"
+    linked_user.must_change_password = True
     return linked_user, teacher
 
 

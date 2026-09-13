@@ -164,7 +164,9 @@ const mockResponse = (url, options = {}) => {
   }
 
   if (method === 'POST' && path === '/api/mp/auth/bind-phone') {
-    return { phone: '13800001111', teacherId: 2, role: 'teacher', matchedTeacher: true };
+    return {
+      phone: '13800001111', teacherId: 2, role: 'teacher', matchedTeacher: true, mustChangePassword: true,
+    };
   }
 
   if (path === '/api/mp/stats/overview') {
