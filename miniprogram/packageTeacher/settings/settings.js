@@ -104,7 +104,7 @@ Page({
     }
     this.setData({ changingPassword: true });
     try {
-      await request({
+      const data = await request({
         url: '/api/mp/auth/change-password',
         method: 'POST',
         silent: true,
