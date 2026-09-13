@@ -22,16 +22,25 @@ def upgrade():
         op.add_column("teachers", sa.Column("certificate_no", sa.String(length=32), nullable=True))
         op.create_index("ix_teachers_certificate_no", "teachers", ["certificate_no"], unique=True)
 
-    # A teacher number becomes the identity credential. Do all data checks
-    # before changing rows, so ambiguous historical records never get partly
-    # converted during container startup.
-    missing = bind.execute(sa.text("SELECT COUNT(*) FROM teachers WHERE id_number IS NULL OR TRIM(id_number) = ''")).scalar()
-    duplicate = bind.execute(sa.text("SELECT COUNT(*) FROM (SELECT id_number FROM teachers WHERE id_number IS NOT NULL AND TRIM(id_number) <> '' GROUP BY id_number HAVING COUNT(*) > 1) AS duplicate_ids")).scalar()
-    username_collision = bind.execute(sa.text("""
+    # Historically, ``teacher_no`` stored the identity-card number.  The
+    # short-lived ``id_number`` column was introduced later and is blank for
+    # older teachers, so it must only take precedence when it was explicitly
+    # populated.  The new certificate number is intentionally left blank:
+    # it is a separate, optional business field going forward.
+    identity_sql = "UPPER(COALESCE(NULLIF(TRIM(id_number), ''), TRIM(teacher_no)))"
+    missing = bind.execute(sa.text(
+        f"SELECT COUNT(*) FROM teachers WHERE {identity_sql} IS NULL OR {identity_sql} = ''"
+    )).scalar()
+    duplicate = bind.execute(sa.text(
+        f"SELECT COUNT(*) FROM (SELECT {identity_sql} AS identity_no FROM teachers "
+        f"WHERE {identity_sql} IS NOT NULL AND {identity_sql} <> '' "
+        "GROUP BY identity_no HAVING COUNT(*) > 1) AS duplicate_ids"
+    )).scalar()
+    username_collision = bind.execute(sa.text(f"""
         SELECT COUNT(*)
         FROM users AS teacher_user
         JOIN teachers ON teachers.id = teacher_user.teacher_id
-        JOIN users AS other_user ON other_user.username = UPPER(TRIM(teachers.id_number))
+        JOIN users AS other_user ON other_user.username = {identity_sql}
           AND other_user.id <> teacher_user.id
         WHERE teacher_user.role = 'teacher'
     """)).scalar()
@@ -41,9 +50,8 @@ def upgrade():
             "请先在管理后台修正后再部署。"
         )
 
-    # Preserve certificate numbers only for teachers that have been certified.
-    bind.execute(sa.text("UPDATE teachers SET certificate_no = CASE WHEN first_certified_on IS NOT NULL THEN teacher_no ELSE NULL END"))
-    bind.execute(sa.text("UPDATE teachers SET teacher_no = UPPER(TRIM(id_number))"))
+    bind.execute(sa.text("UPDATE teachers SET certificate_no = NULL"))
+    bind.execute(sa.text(f"UPDATE teachers SET teacher_no = {identity_sql}"))
 
     # Existing password accounts are deliberately reset because their login
     # name has changed from the old field to the ID-number teacher_no.
