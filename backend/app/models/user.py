@@ -9,6 +9,7 @@ class User(db.Model):
     username = db.Column(db.String(64), unique=True, nullable=True, index=True)
     password_hash = db.Column(db.String(256))
     must_change_password = db.Column(db.Boolean, nullable=False, default=False)
+    session_version = db.Column(db.Integer, nullable=False, default=0)
     phone = db.Column(db.String(20), nullable=True, index=True)
     avatar_url = db.Column(db.String(512), nullable=True)
     nickname = db.Column(db.String(64), nullable=True)

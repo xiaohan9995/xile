@@ -3,7 +3,8 @@ import binascii
 import io
 import os
 from urllib.parse import urlparse
-from urllib.request import Request as UrlRequest, urlopen
+from urllib.error import HTTPError, URLError
+from urllib.request import HTTPRedirectHandler, Request as UrlRequest, build_opener
 import uuid
 
 from flask import Response, current_app, request, send_from_directory
@@ -108,8 +109,19 @@ def change_password():
         return {"error": "当前密码错误"}, 400
     user.password_hash = generate_password_hash(new_password, method="pbkdf2:sha256")
     user.must_change_password = False
+    user.session_version = (user.session_version or 0) + 1
     db.session.commit()
-    return {"ok": True, "mustChangePassword": False}
+    return {
+        "ok": True,
+        "token": _issue_token(user),
+        "userId": user.id,
+        "teacherId": user.teacher_id,
+        "role": user.role,
+        "phoneBound": bool(user.phone),
+        "avatarUrl": _file_url(user.avatar_url),
+        "nickname": user.nickname,
+        "mustChangePassword": False,
+    }
 
 
 @mp_bp.post("/auth/bind-phone")
@@ -236,6 +248,17 @@ def auth_me():
 
 
 ALLOWED_AVATAR_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
+AVATAR_CONTENT_TYPES = {
+    ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png",
+    ".gif": "image/gif", ".webp": "image/webp",
+}
+
+
+class _RejectRedirects(HTTPRedirectHandler):
+    """A trusted URL must not be allowed to redirect to an internal host."""
+
+    def redirect_request(self, *_args, **_kwargs):
+        return None
 
 
 def _save_avatar(avatar_file):
@@ -249,7 +272,7 @@ def _save_avatar(avatar_file):
         return upload_to_cos(
             avatar_file.stream,
             key,
-            avatar_file.content_type or "image/jpeg",
+            AVATAR_CONTENT_TYPES[ext],
             public_read=True,
         )
     except StorageNotConfiguredError:
@@ -342,15 +365,25 @@ def avatar_proxy():
     """Proxy WeChat profile images so the mini program need not whitelist qlogo."""
     source = (request.args.get("url") or "").strip()
     parsed = urlparse(source)
-    if parsed.scheme != "https" or parsed.hostname not in {"qlogo.cn", "thirdwx.qlogo.cn", "wx.qlogo.cn"}:
+    try:
+        port = parsed.port
+    except ValueError:
+        return {"error": "invalid avatar url"}, 400
+    if (
+        parsed.scheme != "https"
+        or parsed.hostname not in {"qlogo.cn", "thirdwx.qlogo.cn", "wx.qlogo.cn"}
+        or port not in (None, 443)
+    ):
         return {"error": "invalid avatar url"}, 400
     try:
         upstream = UrlRequest(source, headers={"User-Agent": "xile-yoga-avatar/1.0"})
-        with urlopen(upstream, timeout=5) as response:
+        with build_opener(_RejectRedirects()).open(upstream, timeout=5) as response:
             content = response.read(8 * 1024 * 1024 + 1)
             content_type = response.headers.get_content_type() or "image/jpeg"
-    except Exception:
+    except (HTTPError, URLError, OSError, ValueError):
         return {"error": "avatar unavailable"}, 404
     if len(content) > 8 * 1024 * 1024:
         return {"error": "avatar too large"}, 413
+    if content_type not in AVATAR_CONTENT_TYPES.values():
+        return {"error": "avatar format unavailable"}, 415
     return Response(content, mimetype=content_type, headers={"Cache-Control": "public, max-age=86400"})

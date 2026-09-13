@@ -19,6 +19,17 @@ def _public_error_detail(error):
     return detail[:300]
 
 
+def _production_error_reason(error):
+    """Keep diagnostics useful without disclosing SQL or infrastructure data."""
+    from sqlalchemy.exc import SQLAlchemyError
+
+    if isinstance(error, SQLAlchemyError):
+        return "数据库操作失败"
+    if isinstance(error, (OSError, TimeoutError, ConnectionError)):
+        return "依赖服务暂时不可用"
+    return "服务内部错误"
+
+
 def create_app(config=None):
     app = Flask(__name__)
 
@@ -38,6 +49,21 @@ def create_app(config=None):
     jwt.init_app(app)
     migrate.init_app(app, db)
     limiter.init_app(app)
+
+    @jwt.token_in_blocklist_loader
+    def is_revoked_token(_jwt_header, jwt_payload):
+        # Admin tokens use a separate account model and are not part of the
+        # mini-program password/session lifecycle.
+        if jwt_payload.get("type") == "admin":
+            return False
+        try:
+            from .models import User
+
+            user = db.session.get(User, int(jwt_payload.get("sub")))
+            token_version = int(jwt_payload.get("sessionVersion", 0))
+            return user is None or token_version != (user.session_version or 0)
+        except (TypeError, ValueError):
+            return True
 
     # --- global error handlers ---
     @app.errorhandler(400)
@@ -73,7 +99,7 @@ def create_app(config=None):
         )
         return jsonify(
             error="请求处理失败",
-            reason=_public_error_detail(error),
+            reason=_public_error_detail(error) if (app.debug or app.testing) else _production_error_reason(error),
             requestId=request_id,
         ), 500
 

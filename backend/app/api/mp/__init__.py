@@ -1,5 +1,5 @@
 from flask import Blueprint, request
-from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from flask_jwt_extended import get_jwt, get_jwt_identity, verify_jwt_in_request
 
 from ...extensions import db
 from ...models import User
@@ -16,9 +16,11 @@ _PASSWORD_RESET_EXEMPT_ENDPOINTS = {
 @mp_bp.before_request
 def require_initial_password_reset():
     """Block business APIs until a teacher replaces an initial password."""
+    verify_jwt_in_request(optional=True)
+    if get_jwt().get("type") == "admin":
+        return {"error": "unauthorized"}, 401
     if request.endpoint in _PASSWORD_RESET_EXEMPT_ENDPOINTS:
         return None
-    verify_jwt_in_request(optional=True)
     identity = get_jwt_identity()
     user = db.session.get(User, int(identity)) if identity else None
     if user and user.must_change_password:

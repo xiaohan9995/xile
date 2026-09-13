@@ -200,7 +200,12 @@ def link_user_to_teacher_by_phone(user, phone_number):
 
     user.teacher_id = teacher.id
     user.role = "teacher"
-    _ensure_initial_teacher_password(user, teacher)
+    # Legacy phone matching predates the mandatory ID-number credential. Do
+    # not turn an incomplete historical record into a 500/400 login failure;
+    # once an administrator creates the ID-number account, its normal
+    # must-change-password policy still applies.
+    if (teacher.id_number or "").strip():
+        _ensure_initial_teacher_password(user, teacher)
     return teacher
 
 
@@ -266,16 +271,21 @@ def link_wechat_user_to_teacher_by_code(user, code):
     if existing_user:
         if existing_user.openid and existing_user.openid != user.openid:
             raise AuthError("该教师档案已关联其他微信账号，请联系管理员", 409)
-        existing_user.openid = user.openid
+        openid, nickname, avatar_url, phone = user.openid, user.nickname, user.avatar_url, user.phone
+        # Release the unique OpenID before assigning it to the legacy teacher
+        # account. SQLAlchemy can otherwise issue UPDATE before DELETE and
+        # transiently violate users.openid's unique index.
+        db.session.delete(user)
+        db.session.flush()
+        existing_user.openid = openid
         existing_user.role = "teacher"
         if not existing_user.nickname:
-            existing_user.nickname = user.nickname
+            existing_user.nickname = nickname
         if not existing_user.avatar_url:
-            existing_user.avatar_url = user.avatar_url
+            existing_user.avatar_url = avatar_url
         if not existing_user.phone:
-            existing_user.phone = user.phone
+            existing_user.phone = phone
         linked_user = existing_user
-        db.session.delete(user)
     else:
         user.teacher_id = teacher.id
         user.role = "teacher"
@@ -283,6 +293,7 @@ def link_wechat_user_to_teacher_by_code(user, code):
     record.used_at = datetime.utcnow()
     _ensure_initial_teacher_password(linked_user, teacher)
     linked_user.must_change_password = True
+    linked_user.session_version = (linked_user.session_version or 0) + 1
     return linked_user, teacher
 
 
@@ -325,21 +336,24 @@ def link_wechat_user_to_teacher_by_password(user, id_number, password):
     if account_user.id != user.id:
         if account_user.openid and account_user.openid != user.openid:
             raise AuthError("该教师档案已关联其他微信账号，请联系管理员", 409)
-        account_user.openid = user.openid
+        openid, nickname, avatar_url, phone = user.openid, user.nickname, user.avatar_url, user.phone
+        db.session.delete(user)
+        db.session.flush()
+        account_user.openid = openid
         account_user.role = "teacher"
         if not account_user.nickname:
-            account_user.nickname = user.nickname
+            account_user.nickname = nickname
         if not account_user.avatar_url:
-            account_user.avatar_url = user.avatar_url
+            account_user.avatar_url = avatar_url
         if not account_user.phone:
-            account_user.phone = user.phone
-        db.session.delete(user)
+            account_user.phone = phone
         linked_user = account_user
     else:
         linked_user = user
         linked_user.teacher_id = teacher.id
         linked_user.role = "teacher"
     linked_user.must_change_password = True
+    linked_user.session_version = (linked_user.session_version or 0) + 1
     return linked_user, teacher
 
 
@@ -356,5 +370,9 @@ def _get_or_create_user(openid):
 def _issue_token(user):
     return create_access_token(
         identity=str(user.id),
-        additional_claims={"teacherId": user.teacher_id, "jti": uuid.uuid4().hex},
+        additional_claims={
+            "teacherId": user.teacher_id,
+            "sessionVersion": user.session_version or 0,
+            "jti": uuid.uuid4().hex,
+        },
     )

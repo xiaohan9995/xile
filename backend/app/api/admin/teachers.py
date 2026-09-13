@@ -15,6 +15,7 @@ from . import admin_bp
 
 @admin_bp.get("/teachers")
 @require_admin_token
+@require_admin_roles("admin", "super_admin")
 def teacher_list():
     teachers = Teacher.query.filter(Teacher.status != "hidden").order_by(Teacher.teacher_no.asc()).all()
     can_view_identity = getattr(g, "current_admin_role", None) in ("admin", "super_admin")

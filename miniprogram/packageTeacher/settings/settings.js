@@ -81,7 +81,7 @@ Page({
     this.setData({ savingPublicProfile: true });
     try {
       const residences = (this.data.residencesText || '').split(/[、,，]/).map((item) => item.trim()).filter(Boolean).slice(0, 3);
-      await request({
+      const data = await request({
         url: '/api/mp/teachers/me/public-profile', method: 'PUT', silent: true,
         data: {
           alias: this.data.alias,
@@ -113,7 +113,9 @@ Page({
           newPassword: this.data.newPassword,
         },
       });
-      auth.setMustChangePassword(false);
+      // Changing a password invalidates the old JWT on the server. Persist
+      // the replacement token before navigating away from this page.
+      auth.applySession(data);
       this.setData({ mustChangePassword: false });
       this.setData({ currentPassword: '', newPassword: '' });
       wx.showToast({ title: '密码已更新', icon: 'none' });

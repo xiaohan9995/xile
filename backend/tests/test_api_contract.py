@@ -24,7 +24,11 @@ def client():
         }
     )
 
-    return app.test_client()
+    # Several contract checks inspect seeded records directly. Keep one app
+    # context for the test so those checks work consistently across Flask
+    # versions without weakening endpoint authentication.
+    with app.app_context():
+        yield app.test_client()
 
 
 def test_health_endpoint_reports_service_status(client):
@@ -234,7 +238,7 @@ def test_teacher_search_filters_by_name_and_hides_private_fields(client):
     payload = response.get_json()
     assert payload["total"] == 1
     teacher = payload["items"][0]
-    assert teacher["name"] == "张三"
+    assert teacher["name"] == "善悦"
     assert teacher["tier"] == "L3"
     assert teacher["certificationStatus"] == "认证有效"
     assert teacher["validUntil"] == "2028.12.31"
@@ -249,7 +253,7 @@ def test_teacher_search_supports_exact_certificate_and_region_modes(client):
     exact = client.get("/api/mp/teachers/search?mode=certificate&q=JY20230001", headers=headers)
     assert exact.status_code == 200
     assert exact.get_json()["total"] == 1
-    assert exact.get_json()["items"][0]["name"] == "张三"
+    assert exact.get_json()["items"][0]["name"] == "善悦"
 
     region = client.get("/api/mp/teachers/search?mode=region&city=上海市", headers=headers)
     assert region.status_code == 200
@@ -262,7 +266,7 @@ def test_teacher_detail_returns_public_certification_profile(client):
 
     assert response.status_code == 200
     payload = response.get_json()
-    assert payload["name"] == "张三"
+    assert payload["name"] == "善悦"
     assert payload["teacherNo"] == "JY20230001"
     assert payload["specialties"] == ["阴瑜伽", "流瑜伽", "产后瑜伽"]
     assert payload["certifiedAt"] == "2023.01.01"
@@ -311,6 +315,7 @@ def test_mp_review_submission_creates_admin_visible_review_with_files(client):
                 {
                     "title": "professional portrait",
                     "fileName": "portrait.jpg",
+                    "fileKey": "reviews/1/portrait.jpg",
                     "fileType": "image/jpeg",
                     "fileSize": 12345,
                 }
@@ -632,6 +637,8 @@ def test_teacher_password_account_and_teaching_record(client):
         json={"currentPassword": "", "newPassword": "changed-pass"},
     )
     assert changed.status_code == 200
+    assert client.get("/api/mp/stats/overview", headers=headers).status_code == 401
+    headers = {"Authorization": f"Bearer {changed.get_json()['token']}"}
     relogin = client.post("/api/mp/auth/password-login", json={"username": "110101199001011234", "password": "changed-pass"})
     assert relogin.status_code == 200
     record = client.post(
@@ -804,6 +811,9 @@ def test_super_admin_can_update_another_admin_role_but_not_their_own(client):
 
 def test_admin_user_list_and_role_update(client):
     token = _login_as_teacher(client, 1)
+    teacher = db.session.get(Teacher, 1)
+    teacher.id_number = "110101199001011234"
+    db.session.commit()
 
     response = client.get(
         "/api/admin/users",
