@@ -8,6 +8,7 @@ from . import admin_bp
 
 @admin_bp.get("/studios")
 @require_admin_token
+@require_admin_roles("admin", "super_admin")
 def studio_list():
     studios = Studio.query.order_by(Studio.display_order.desc(), Studio.id.asc()).all()
     items = [

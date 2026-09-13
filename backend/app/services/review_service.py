@@ -36,6 +36,20 @@ def submit_review(user_id, teacher_id, review_year, files, teaching_record_ids=N
     if not files and not teaching_record_ids and not service_record_ids:
         raise ReviewError("files or submitted activity records required", 400)
 
+    expected_file_prefix = f"reviews/{teacher.id}/"
+    normalized_files = []
+    for file in files:
+        if not isinstance(file, dict):
+            raise ReviewError("review file format is invalid", 400)
+        file_key = str(file.get("fileKey") or "").strip()
+        # File keys are issued by /upload/presign under the current teacher's
+        # namespace. Reject client-supplied keys from other teachers so a
+        # review cannot be used to obtain a signed URL for another account's
+        # private material.
+        if not file_key.startswith(expected_file_prefix) or len(file_key) > 256:
+            raise ReviewError("review file does not belong to the current teacher", 403)
+        normalized_files.append((file, file_key))
+
     next_valid = _calculate_next_valid(teacher)
 
     review = AnnualReview.query.filter_by(teacher_id=teacher.id, review_year=review_year).first()
@@ -76,11 +90,11 @@ def submit_review(user_id, teacher_id, review_year, files, teaching_record_ids=N
     review.published_at = None
     review.published_by_id = None
 
-    for index, file in enumerate(files, start=1):
+    for index, (file, file_key) in enumerate(normalized_files, start=1):
         filename = file.get("fileName") or file.get("filename") or file.get("title") or f"review-file-{index}"
         review.files.append(
             ReviewFile(
-                file_key=file.get("fileKey") or f"mp-review/{teacher.teacher_no}/{review_year}/{index}-{filename}",
+                file_key=file_key,
                 file_name=filename[:128],
                 file_type=(file.get("fileType") or "material")[:16],
                 file_size=int(file.get("fileSize") or 0),

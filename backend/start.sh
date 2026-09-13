@@ -3,6 +3,10 @@ set -e
 
 cd /app
 
+# Docker also sets this value. Keep the startup script defensive for manual
+# image runs where the Dockerfile environment may be overridden.
+export FLASK_ENV="${FLASK_ENV:-production}"
+
 # Cloud Hosting probes TCP port 80 while the application starts. Keep the web
 # process independent from schema work: MySQL locks or a slow database must
 # never prevent a new revision from becoming reachable.

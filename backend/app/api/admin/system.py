@@ -389,6 +389,7 @@ def create_teacher_account():
     user.username = username
     user.password_hash = generate_password_hash(password, method="pbkdf2:sha256")
     user.must_change_password = True
+    user.session_version = (user.session_version or 0) + 1
     db.session.add(AuditLog(admin_id=current_admin_id() or 1, action="set_teacher_password", target_type="teacher", target_id=teacher_id))
     db.session.commit()
     return {
@@ -431,6 +432,7 @@ def create_teacher_link_code(teacher_id):
 
 @admin_bp.get("/users")
 @require_admin_token
+@require_admin_roles("admin", "super_admin")
 def user_list():
     users = User.query.order_by(User.created_at.desc()).all()
     items = []

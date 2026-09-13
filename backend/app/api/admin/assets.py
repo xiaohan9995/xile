@@ -16,6 +16,9 @@ _ASSET_PREFIXES = {
     "studio-cover": "studio-covers",
 }
 _IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
+_IMAGE_CONTENT_TYPES = {
+    ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp",
+}
 _MAX_IMAGE_BYTES = 8 * 1024 * 1024
 
 
@@ -46,7 +49,7 @@ def upload_asset():
         url = upload_to_cos(
             uploaded.stream,
             key,
-            uploaded.content_type or "image/jpeg",
+            _IMAGE_CONTENT_TYPES[ext],
             public_read=asset_type in {"teacher-avatar", "studio-cover"},
         )
     except StorageNotConfiguredError as error:
