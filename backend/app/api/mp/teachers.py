@@ -26,6 +26,7 @@ from . import mp_bp
 
 
 @mp_bp.get("/homepage")
+@jwt_required()
 def homepage_data():
     announcements = (
         Announcement.query.filter_by(status="active")
@@ -52,6 +53,7 @@ def homepage_data():
 
 @mp_bp.get("/teachers/featured")
 @limiter.limit("60 per minute")
+@jwt_required()
 def featured_teachers():
     """Return one lightweight page for the homepage teacher carousel."""
     try:
@@ -84,6 +86,7 @@ def featured_teachers():
 
 
 @mp_bp.get("/stats/overview")
+@jwt_required()
 def stats_overview():
     total_teachers = Teacher.query.filter(Teacher.status != "hidden").count()
     total_studios = Studio.query.filter_by(status="open").count()
@@ -101,6 +104,7 @@ def stats_overview():
 
 @mp_bp.get("/teachers/search")
 @limiter.limit("60 per minute")
+@jwt_required()
 def search_teachers():
     keyword = request.args.get("q", "").strip()
     city = request.args.get("city", "").strip()
@@ -150,6 +154,7 @@ def search_teachers():
 
 
 @mp_bp.get("/teachers/<int:teacher_id>/summary")
+@jwt_required()
 def get_teacher_summary(teacher_id):
     teacher = Teacher.query.filter(Teacher.id == teacher_id, Teacher.status != "hidden").first_or_404()
     return _teacher_profile(teacher)
@@ -258,6 +263,7 @@ def update_my_public_profile():
 
 
 @mp_bp.get("/teachers/<int:teacher_id>/certification")
+@jwt_required()
 def get_teacher_certification(teacher_id):
     teacher = Teacher.query.filter(Teacher.id == teacher_id, Teacher.status != "hidden").first_or_404()
     user = _get_current_user()
@@ -267,9 +273,9 @@ def get_teacher_certification(teacher_id):
         "teacher": {
             **_teacher_summary(teacher),
             "validUntil": _date_text(teacher.valid_until),
-            "firstCertifiedOn": _date_text(teacher.first_certified_on),
+            "firstCertifiedOn": _date_text(teacher.first_certified_on) if _public_profile_settings(teacher)["showFirstCertifiedOn"] else None,
             "certificateUrl": file_url(teacher.certificate_url),
-            "teachingSummary": teacher.detail.teaching_summary if teacher.detail else None,
+            "teachingSummary": teacher.detail.teaching_summary if teacher.detail and _public_profile_settings(teacher)["showBio"] else None,
         },
     }
 

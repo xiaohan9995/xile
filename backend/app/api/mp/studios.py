@@ -1,4 +1,5 @@
 from flask import request
+from flask_jwt_extended import jwt_required
 
 from ...extensions import db, limiter
 from ...models import Studio
@@ -7,6 +8,7 @@ from . import mp_bp
 
 
 @mp_bp.get("/studios")
+@jwt_required()
 def list_studios():
     try:
         page = max(int(request.args.get("page", 1)), 1)
@@ -32,6 +34,7 @@ def list_studios():
 
 
 @mp_bp.get("/studios/<int:studio_id>")
+@jwt_required()
 def get_studio(studio_id):
     studio = Studio.query.filter_by(id=studio_id, status="open").first_or_404()
     return _studio_summary(studio)

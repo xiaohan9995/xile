@@ -38,7 +38,7 @@ Page({
   },
   async submit(status = 'submitted') {
     const { form, types, typeIndex } = this.data;
-    if (!form.servedOn || !form.title.trim()) { wx.showToast({ title: '请填写日期和活动名称', icon: 'none' }); return; }
+    if (status === 'submitted' && (!form.servedOn || !form.title.trim())) { wx.showToast({ title: '请填写日期和活动名称', icon: 'none' }); return; }
     this.setData({ saving: true });
     try {
       await request({ url: '/api/mp/service-records', method: 'POST', data: { ...form, serviceType: types[typeIndex], status } });

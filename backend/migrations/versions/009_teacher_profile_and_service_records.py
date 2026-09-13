@@ -48,9 +48,9 @@ def upgrade():
             "service_records",
             sa.Column("id", sa.Integer(), primary_key=True),
             sa.Column("teacher_id", sa.Integer(), sa.ForeignKey("teachers.id"), nullable=False),
-            sa.Column("served_on", sa.Date(), nullable=False),
-            sa.Column("service_type", sa.String(length=64), nullable=False),
-            sa.Column("title", sa.String(length=128), nullable=False),
+            sa.Column("served_on", sa.Date(), nullable=True),
+            sa.Column("service_type", sa.String(length=64), nullable=True),
+            sa.Column("title", sa.String(length=128), nullable=True),
             sa.Column("location", sa.String(length=128), nullable=True),
             sa.Column("description", sa.Text(), nullable=True),
             sa.Column("evidence_key", sa.String(length=256), nullable=True),
@@ -58,6 +58,10 @@ def upgrade():
             sa.Column("created_at", sa.DateTime(), server_default=sa.text("CURRENT_TIMESTAMP")),
             sa.Column("updated_at", sa.DateTime(), server_default=sa.text("CURRENT_TIMESTAMP")),
         )
+    service_columns = {column["name"]: column for column in sa.inspect(bind).get_columns("service_records")}
+    for name in ("served_on", "service_type", "title"):
+        if not service_columns[name]["nullable"]:
+            op.alter_column("service_records", name, existing_type=service_columns[name]["type"], nullable=True)
     service_indexes = _index_names(bind, "service_records")
     if "ix_service_records_teacher_id" not in service_indexes:
         op.create_index("ix_service_records_teacher_id", "service_records", ["teacher_id"])
