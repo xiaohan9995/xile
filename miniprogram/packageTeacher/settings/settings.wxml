@@ -35,7 +35,7 @@
         />
       </view>
       <button
-        class="action-button action-button--primary"
+        class="btn-primary"
         bindtap="onSaveNickname"
         loading="{{savingNickname}}"
         disabled="{{savingNickname}}"
@@ -52,13 +52,13 @@
       <view class="field-block"><text class="field-label">当前等级认证时间</text><picker mode="date" value="{{currentTierCertifiedOn}}" bindchange="onPublicInput" data-field="currentTierCertifiedOn"><view class="settings-input settings-picker">{{currentTierCertifiedOn || '请选择日期'}}</view></picker></view>
       <view class="field-block"><text class="field-label">个人简介</text><textarea class="settings-input settings-textarea" maxlength="500" placeholder="未填写时显示无" value="{{teachingSummary}}" bindinput="onPublicInput" data-field="teachingSummary" /></view>
       <view class="visibility-list">
-        <view class="visibility-row"><text>公开别名</text><switch checked="{{visibility.showAlias}}" color="#426D58" bindchange="onVisibilityChange" data-field="showAlias" /></view>
-        <view class="visibility-row"><text>公开经常居住地</text><switch checked="{{visibility.showResidences}}" color="#426D58" bindchange="onVisibilityChange" data-field="showResidences" /></view>
-        <view class="visibility-row"><text>公开个人简介</text><switch checked="{{visibility.showBio}}" color="#426D58" bindchange="onVisibilityChange" data-field="showBio" /></view>
-        <view class="visibility-row"><text>公开首次认证时间</text><switch checked="{{visibility.showFirstCertifiedOn}}" color="#426D58" bindchange="onVisibilityChange" data-field="showFirstCertifiedOn" /></view>
-        <view class="visibility-row"><text>公开当前等级认证时间</text><switch checked="{{visibility.showCurrentTierCertifiedOn}}" color="#426D58" bindchange="onVisibilityChange" data-field="showCurrentTierCertifiedOn" /></view>
+        <view class="visibility-row"><text>公开别名</text><switch checked="{{visibility.showAlias}}" color="{{themeColor}}" bindchange="onVisibilityChange" data-field="showAlias" /></view>
+        <view class="visibility-row"><text>公开经常居住地</text><switch checked="{{visibility.showResidences}}" color="{{themeColor}}" bindchange="onVisibilityChange" data-field="showResidences" /></view>
+        <view class="visibility-row"><text>公开个人简介</text><switch checked="{{visibility.showBio}}" color="{{themeColor}}" bindchange="onVisibilityChange" data-field="showBio" /></view>
+        <view class="visibility-row"><text>公开首次认证时间</text><switch checked="{{visibility.showFirstCertifiedOn}}" color="{{themeColor}}" bindchange="onVisibilityChange" data-field="showFirstCertifiedOn" /></view>
+        <view class="visibility-row"><text>公开当前等级认证时间</text><switch checked="{{visibility.showCurrentTierCertifiedOn}}" color="{{themeColor}}" bindchange="onVisibilityChange" data-field="showCurrentTierCertifiedOn" /></view>
       </view>
-      <button class="action-button action-button--primary" bindtap="savePublicProfile" loading="{{savingPublicProfile}}" disabled="{{savingPublicProfile}}">保存公开资料</button>
+      <button class="btn-primary" bindtap="savePublicProfile" loading="{{savingPublicProfile}}" disabled="{{savingPublicProfile}}">保存公开资料</button>
     </view>
 
     <view class="section-heading section-heading--spaced">
@@ -93,7 +93,7 @@
         />
       </view>
       <button
-        class="action-button action-button--secondary"
+        class="btn-secondary"
         bindtap="changePassword"
         loading="{{changingPassword}}"
         disabled="{{changingPassword}}"

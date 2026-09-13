@@ -3,14 +3,14 @@
   padding: 24rpx;
   background: var(--color-card);
   border: 1rpx solid var(--color-line);
-  border-radius: 24rpx;
-  box-shadow: 0 4rpx 24rpx rgba(31, 37, 33, 0.04);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .studio-card:active {
   transform: scale(0.98);
-  box-shadow: 0 2rpx 12rpx rgba(31, 37, 33, 0.06);
+  box-shadow: var(--shadow-card);
 }
 
 /* Cover image */
@@ -18,7 +18,7 @@
   flex-shrink: 0;
   width: 160rpx;
   height: 160rpx;
-  border-radius: 18rpx;
+  border-radius: var(--radius-base);
   margin-right: 24rpx;
   border: 1rpx solid var(--color-line);
 }
@@ -69,7 +69,7 @@
 .studio-card__tag {
   display: inline-block;
   padding: 4rpx 16rpx;
-  border-radius: 999rpx;
+  border-radius: var(--radius-full);
   background: var(--color-surface);
   color: var(--color-primary);
   font-size: 20rpx;
@@ -87,7 +87,7 @@
   font-weight: 600;
   color: var(--color-primary);
   padding: 8rpx 20rpx;
-  border-radius: 12rpx;
+  border-radius: var(--radius-sm);
   background: var(--color-surface);
   transition: background 0.2s ease;
 }

@@ -7,7 +7,7 @@ page {
   min-height: 100vh;
   background:
     radial-gradient(circle at 86% 8%, rgba(137, 101, 43, 0.14), transparent 30%),
-    linear-gradient(180deg, #f3f7f3 0%, #f8faf7 56%, #f5f7f4 100%);
+    linear-gradient(180deg, #f3f7f3 0%, #f8faf7 56%, var(--color-bg) 100%);
 }
 
 .login-shell {
@@ -24,7 +24,7 @@ page {
 .login-brand__avatar {
   width: 132rpx;
   height: 132rpx;
-  border-radius: 36rpx;
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-elevated);
 }
 
@@ -34,7 +34,7 @@ page {
   color: var(--color-gold);
   font-size: 20rpx;
   font-weight: 700;
-  letter-spacing: 4rpx;
+  letter-spacing: 3rpx;
 }
 
 .login-brand__name {
@@ -57,16 +57,16 @@ page {
   padding: 48rpx 36rpx 40rpx;
   background: var(--color-card);
   border: 1rpx solid rgba(66, 109, 88, 0.1);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-elevated);
 }
 
 .login-card__eyebrow {
   display: block;
   color: var(--color-gold);
-  font-size: 22rpx;
+  font-size: 20rpx;
   font-weight: 700;
-  letter-spacing: 2rpx;
+  letter-spacing: 3rpx;
 }
 
 .login-card__heading {
@@ -86,36 +86,11 @@ page {
   line-height: 1.7;
 }
 
-.wechat-btn,
-.account-btn {
-  width: 100%;
-  height: 96rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-base);
-  font-size: 30rpx;
-  font-weight: 700;
-  transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease;
-}
-
-.wechat-btn {
+.login-card .btn-primary {
   margin-top: 44rpx;
-  background: var(--color-primary);
-  color: #fff;
 }
 
-.wechat-btn:active,
-.account-btn:active {
-  opacity: 0.8;
-  transform: scale(0.98);
-}
-
-.wechat-btn[disabled] {
-  opacity: 0.6;
-}
-
-.wechat-btn__icon {
+.login-btn__icon {
   width: 38rpx;
   height: 38rpx;
   margin-right: 14rpx;
@@ -140,12 +115,6 @@ page {
 
 .login-divider text {
   padding: 0 20rpx;
-}
-
-.account-btn {
-  color: var(--color-primary-dark);
-  background: var(--color-primary-light);
-  border: 1rpx solid rgba(66, 109, 88, 0.18);
 }
 
 .security-note {

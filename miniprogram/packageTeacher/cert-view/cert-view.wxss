@@ -19,9 +19,9 @@
 
 /* ---- Certificate Card ---- */
 .cert-card {
-  background: #fff;
-  border-radius: 24rpx;
-  border: 1rpx solid rgba(31, 37, 33, 0.08);
+  background: var(--color-card);
+  border-radius: var(--radius-md);
+  border: 1rpx solid var(--color-line);
   overflow: hidden;
 }
 
@@ -54,9 +54,13 @@
   align-items: center;
 }
 
+.cert-card__image-wrap:active {
+  opacity: 0.85;
+}
+
 .cert-card__image {
   width: 100%;
-  border-radius: 12rpx;
+  border-radius: var(--radius-sm);
 }
 
 .cert-card__zoom-hint {
@@ -93,7 +97,7 @@
 /* ---- Info Rows ---- */
 .cert-card__info {
   padding: 24rpx 32rpx 32rpx;
-  border-top: 1rpx solid rgba(31, 37, 33, 0.06);
+  border-top: 1rpx solid var(--color-line);
 }
 
 .cert-info-row {
@@ -104,7 +108,7 @@
 }
 
 .cert-info-row + .cert-info-row {
-  border-top: 1rpx solid rgba(31, 37, 33, 0.04);
+  border-top: 1rpx solid var(--color-line);
 }
 
 .cert-info-label {
@@ -129,28 +133,11 @@
   justify-content: center;
 }
 
-.cert-save-btn {
-  width: 100%;
-  height: 88rpx;
-  line-height: 88rpx;
-  background: var(--color-primary-dark);
-  color: #fff;
-  font-size: 30rpx;
-  font-weight: 600;
-  border-radius: 44rpx;
-  border: none;
-  letter-spacing: 2rpx;
-}
-
-.cert-save-btn::after {
-  border: none;
-}
-
 /* ---- Note ---- */
 .cert-note {
   margin-top: 24rpx;
   padding: 20rpx 24rpx;
-  background: rgba(120, 136, 122, 0.06);
+  background: var(--color-surface);
   border-radius: var(--radius-base);
   font-size: 22rpx;
   color: var(--color-muted);

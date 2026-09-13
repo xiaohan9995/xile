@@ -110,7 +110,7 @@
 
 .info-tag {
   padding: 8rpx 18rpx;
-  border-radius: 999rpx;
+  border-radius: var(--radius-full);
   background: var(--color-gold-light);
   color: var(--color-gold);
   font-size: 22rpx;

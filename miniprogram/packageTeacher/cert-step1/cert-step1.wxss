@@ -10,7 +10,7 @@
   margin: 28rpx;
   padding: 36rpx;
   background: var(--color-card);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   border: 1rpx solid var(--color-line);
   box-shadow: var(--shadow-card);
 }
@@ -79,7 +79,7 @@
 }
 
 .field-picker--placeholder {
-  color: #b0b8b1;
+  color: var(--color-muted);
 }
 
 .picker-arrow {
@@ -92,7 +92,7 @@
   margin-top: 20rpx;
   padding: 12rpx 16rpx;
   background: #fef2f2;
-  border-radius: 12rpx;
+  border-radius: var(--radius-base);
   border: 1rpx solid #fecaca;
 }
 

@@ -31,7 +31,7 @@
   color: #fff;
   font-size: 60rpx;
   font-weight: 900;
-  box-shadow: 0 12rpx 32rpx rgba(93, 114, 97, 0.3);
+  box-shadow: var(--shadow-card);
 }
 
 /* Text */

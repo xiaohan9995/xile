@@ -52,7 +52,7 @@ def test_production_reference_data_initialization_is_idempotent():
     with app.app_context():
         db.create_all()
         ensure_system_defaults()
-        assert TeacherTier.query.count() == 6
+        assert TeacherTier.query.count() == 5
         assert SystemConfig.query.count() == 2
 
         l1 = TeacherTier.query.filter_by(code="L1").first()
@@ -60,7 +60,7 @@ def test_production_reference_data_initialization_is_idempotent():
         db.session.commit()
         ensure_system_defaults()
 
-        assert TeacherTier.query.count() == 6
+        assert TeacherTier.query.count() == 5
         assert TeacherTier.query.filter_by(code="L1").first().review_cycle_years == 4
 
 
@@ -226,7 +226,7 @@ def test_featured_teachers_show_up_to_ten_and_sort_by_tier_desc(client):
     assert len(payload["items"]) <= 10
     assert payload["page"] == 1
     assert payload["pageSize"] == 10
-    assert [item["tier"] for item in payload["items"]] == ["L5", "L4", "L3", "L2"]
+    assert [item["tier"] for item in payload["items"]] == ["L4", "L4", "L3", "L2"]
     assert "hasMore" in payload
 
 
@@ -754,7 +754,7 @@ def test_admin_settings_get_and_update(client):
 
     assert response.status_code == 200
     payload = response.get_json()
-    assert len(payload["tiers"]) >= 6
+    assert len(payload["tiers"]) == 5
     assert payload["features"]["qrVerifyEnabled"] is True
 
     update = client.put(

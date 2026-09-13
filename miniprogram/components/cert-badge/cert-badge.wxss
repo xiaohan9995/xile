@@ -3,7 +3,7 @@
   align-items: center;
   gap: 8rpx;
   padding: 8rpx 20rpx;
-  border-radius: 999rpx;
+  border-radius: var(--radius-full);
   background: var(--color-gold-light);
   border: 1rpx solid rgba(184, 154, 99, 0.15);
 }

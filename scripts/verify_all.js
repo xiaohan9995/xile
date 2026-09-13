@@ -1,4 +1,5 @@
 const { spawnSync } = require('child_process');
+const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
@@ -6,6 +7,19 @@ const root = path.resolve(__dirname, '..');
 const isWin = process.platform === 'win32';
 const npm = isWin ? 'npm.cmd' : 'npm';
 const shell = isWin ? { command: process.env.ComSpec || 'cmd.exe', wrap: (cmd) => ['/d', '/s', '/c', cmd] } : null;
+
+function resolvePython() {
+  const candidates = isWin ? ['python', 'py', 'python3'] : ['python3', 'python'];
+  for (const candidate of candidates) {
+    const probe = spawnSync(candidate, ['--version'], { stdio: 'ignore' });
+    if (!probe.error && probe.status === 0) {
+      return candidate;
+    }
+  }
+  return null;
+}
+
+const python = resolvePython();
 
 const steps = [
   {
@@ -34,15 +48,17 @@ const steps = [
   },
   {
     name: 'backend API contract tests',
-    command: 'python',
+    command: python,
     args: ['-m', 'pytest', 'backend/tests/test_api_contract.py', '-q'],
     cwd: root,
+    requiresPython: true,
   },
   {
     name: 'backend HTTP smoke verification',
-    command: 'python',
+    command: python,
     args: ['scripts/verify_backend_http.py'],
     cwd: root,
+    requiresPython: true,
   },
   {
     name: 'admin tests and static contract',
@@ -61,10 +77,21 @@ const steps = [
     command: 'node',
     args: ['scripts/verify_admin_preview.js'],
     cwd: root,
+    requires: 'scripts/verify_admin_preview.js',
   },
 ];
 
 for (const step of steps) {
+  if (step.requires && !fs.existsSync(path.join(root, step.requires))) {
+    console.warn(`\n==> ${step.name} (skipped: ${step.requires} not found)`);
+    continue;
+  }
+  if (step.requiresPython && !python) {
+    console.warn(
+      `\n==> ${step.name} (skipped: no Python interpreter found; expected "python3" or "python" on PATH)`,
+    );
+    continue;
+  }
   console.log(`\n==> ${step.name}`);
   const result = spawnSync(step.command, step.args, {
     cwd: step.cwd,

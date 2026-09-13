@@ -5,7 +5,7 @@ const teachers = [
     name: '张三',
     xileName: '善悦',
     tier: 'L3',
-    tierName: '认证导师',
+    tierName: '高级喜乐瑜伽教师',
     city: '上海市',
     district: '徐汇区',
     avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200&auto=format&fit=crop',
@@ -21,7 +21,7 @@ const teachers = [
     name: '李四',
     xileName: '清心',
     tier: 'L2',
-    tierName: '认证导师',
+    tierName: '中级喜乐瑜伽教师',
     city: '北京市',
     district: '朝阳区',
     avatarUrl: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?q=80&w=200&auto=format&fit=crop',
@@ -177,7 +177,7 @@ const mockResponse = (url, options = {}) => {
     return {
       announcements: [
         { id: 1, title: '2026年度年审通知', content: '请各位教师于7月31日前完成年度审核材料提交', linkUrl: '' },
-        { id: 2, title: 'L4高级导师认证开放申请', content: '符合条件的L3导师可提交晋升申请', linkUrl: '' },
+        { id: 2, title: 'L4导师认证开放申请', content: '符合条件的L3高级喜乐瑜伽教师可提交晋升申请', linkUrl: '' },
         { id: 3, title: '暑期工作坊报名中', content: '8月杭州站·阴瑜伽深度研修班，名额有限', linkUrl: '' },
       ],
       featuredTeachers: teachers.slice(0, 3),
@@ -196,16 +196,48 @@ const mockResponse = (url, options = {}) => {
     };
   }
 
+  if (method === 'POST' && path === '/api/mp/upload/presign') {
+    const data = options.data || {};
+    return {
+      uploadUrl: '/api/mp/upload/file',
+      fileKey: `mock/uploads/${data.filename || 'material'}`,
+    };
+  }
+
+  if (path === '/api/mp/teaching-records') {
+    return { items: [], total: 0, page: 1, pageSize: 20, hasMore: false };
+  }
+
+  if (path === '/api/mp/service-records') {
+    return { items: [], total: 0, page: 1, pageSize: 20, hasMore: false };
+  }
+
   if (path === '/api/mp/teachers/search') {
     const keyword = getQuery(url, 'q').trim();
-    const items = keyword
-      ? teachers.filter((teacher) => (
+    const tier = getQuery(url, 'tier').trim();
+    const city = getQuery(url, 'city').trim();
+    let items = teachers;
+    if (keyword) {
+      items = items.filter((teacher) => (
         teacher.name.indexOf(keyword) >= 0 ||
         teacher.xileName.indexOf(keyword) >= 0 ||
         teacher.teacherNo.indexOf(keyword) >= 0
-      ))
-      : teachers;
-    return { items, total: items.length, page: 1, pageSize: 20, hasMore: false };
+      ));
+    }
+    if (tier) {
+      items = items.filter((teacher) => teacher.tier === tier);
+    }
+    if (city) {
+      items = items.filter((teacher) => teacher.city.indexOf(city) >= 0);
+    }
+    return {
+      items,
+      total: items.length,
+      page: 1,
+      pageSize: 20,
+      hasMore: false,
+      cities: [...new Set(teachers.map((teacher) => teacher.city))],
+    };
   }
 
   const teacherMatch = path.match(/^\/api\/mp\/teachers\/(\d+)\/summary$/);
@@ -246,7 +278,20 @@ const mockResponse = (url, options = {}) => {
   }
 
   if (path === '/api/mp/studios') {
-    return { items: studios, total: studios.length, page: 1, pageSize: 20, hasMore: false };
+    const keyword = getQuery(url, 'q').trim();
+    const city = getQuery(url, 'city').trim();
+    let items = studios;
+    if (city) {
+      items = items.filter((studio) => studio.city.indexOf(city) >= 0);
+    }
+    if (keyword) {
+      items = items.filter((studio) => (
+        studio.name.indexOf(keyword) >= 0 ||
+        studio.district.indexOf(keyword) >= 0 ||
+        (studio.tags || []).some((tag) => tag.indexOf(keyword) >= 0)
+      ));
+    }
+    return { items, total: items.length, page: 1, pageSize: 20, hasMore: false };
   }
 
   const studioMatch = path.match(/^\/api\/mp\/studios\/(\d+)$/);

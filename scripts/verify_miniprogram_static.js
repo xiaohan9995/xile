@@ -95,7 +95,7 @@ const mojibakeTokens = ['鍠', '鐟', '寰', '瀵', '璁', '銆', '乣', '鈱', 
 const requiredPageText = {
   'pages/index/index': [
     'JOY YOGA',
-    '让每一次练习',
+    '我是被认证的',
     '教师查询',
     '我的认证',
     '瑜伽工作室',

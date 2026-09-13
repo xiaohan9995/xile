@@ -241,7 +241,7 @@ def delete_teacher(teacher_id):
 
 # ─── Import ──────────────────────────────────────────────────────────────────
 
-VALID_TIERS = {"L0", "L1", "L2", "L3", "L4", "L5"}
+VALID_TIERS = {"L0", "L1", "L2", "L3", "L4"}
 
 # Expected column order:
 # A: name, B: phone, C: tier, D: city, E: district,
@@ -364,9 +364,9 @@ def import_preview():
         if not data["name"]:
             row_errors.append({"rowNumber": idx, "field": "name", "message": "姓名不能为空"})
 
-        # Required: tier (must be L0-L5)
+        # Required: tier (must be L0-L4)
         if not data["tier"] or data["tier"] not in VALID_TIERS:
-            row_errors.append({"rowNumber": idx, "field": "tier", "message": "等级代码无效（需为L0-L5）"})
+            row_errors.append({"rowNumber": idx, "field": "tier", "message": "等级代码无效（需为L0-L4）"})
 
         # Required: certifiedAt
         cert_date = _parse_date(data["certifiedAt"])
