@@ -21,6 +21,7 @@ from ...services.auth_service import (
     get_phone_number,
     link_wechat_user_to_teacher_by_code,
     link_user_to_teacher_by_phone,
+    link_wechat_user_to_teacher_by_password,
     password_login,
     _issue_token,
     wx_login,
@@ -50,6 +51,7 @@ def mp_login():
         "avatarUrl": _file_url(user.avatar_url),
         "nickname": user.nickname,
         "xileName": (db.session.get(Teacher, user.teacher_id).xile_name if user.teacher_id else None),
+        "mustChangePassword": user.must_change_password,
     }
 
 
@@ -71,6 +73,7 @@ def mp_cloudbase_login():
         "phoneBound": bool(user.phone),
         "avatarUrl": _file_url(user.avatar_url),
         "nickname": user.nickname,
+        "mustChangePassword": user.must_change_password,
     }
 
 
@@ -81,7 +84,7 @@ def teacher_password_login():
     username = (payload.get("username") or "").strip()
     password = payload.get("password") or ""
     if not username or not password:
-        return {"error": "username and password required"}, 400
+        return {"error": "请输入身份证号和密码"}, 400
     try:
         token, user = password_login(username, password)
     except AuthError as e:
@@ -97,16 +100,16 @@ def change_password():
     current_password = payload.get("currentPassword") or ""
     new_password = payload.get("newPassword") or ""
     if len(new_password) < 8:
-        return {"error": "new password must be at least 8 characters"}, 400
+        return {"error": "新密码至少 8 位"}, 400
     user = db.session.get(User, int(get_jwt_identity()))
     if not user or not user.password_hash:
-        return {"error": "password account not found"}, 404
+        return {"error": "当前微信账号未设置教师登录密码"}, 404
     if not user.must_change_password and not check_password_hash(user.password_hash, current_password):
-        return {"error": "current password is incorrect"}, 400
+        return {"error": "当前密码错误"}, 400
     user.password_hash = generate_password_hash(new_password, method="pbkdf2:sha256")
     user.must_change_password = False
     db.session.commit()
-    return {"ok": True}
+    return {"ok": True, "mustChangePassword": False}
 
 
 @mp_bp.post("/auth/bind-phone")
@@ -133,7 +136,11 @@ def bind_phone():
         return {"error": "该手机号已绑定其他微信账号，请联系管理员处理"}, 409
 
     user.phone = phone_number
-    teacher = link_user_to_teacher_by_phone(user, phone_number)
+    try:
+        teacher = link_user_to_teacher_by_phone(user, phone_number)
+    except AuthError as e:
+        db.session.rollback()
+        return {"error": e.message}, e.status_code
     db.session.commit()
 
     return {
@@ -141,6 +148,7 @@ def bind_phone():
         "teacherId": teacher.id if teacher else None,
         "role": user.role,
         "matchedTeacher": bool(teacher),
+        "mustChangePassword": user.must_change_password,
     }
 
 
@@ -172,6 +180,38 @@ def link_teacher():
         "phoneBound": bool(linked_user.phone),
         "avatarUrl": _file_url(linked_user.avatar_url),
         "nickname": linked_user.nickname,
+        "mustChangePassword": linked_user.must_change_password,
+    }
+
+
+@mp_bp.post("/auth/link-teacher-by-password")
+@limiter.limit("5 per minute")
+@jwt_required()
+def link_teacher_by_password():
+    """Link the active WeChat user with a teacher ID number and password."""
+    payload = request.get_json(silent=True) or {}
+    id_number = (payload.get("idNumber") or "").strip().upper()
+    password = payload.get("password") or ""
+    if len(id_number) < 6 or not password:
+        return {"error": "请输入身份证号和密码"}, 400
+    user = db.session.get(User, int(get_jwt_identity()))
+    if user is None:
+        return {"error": "用户不存在"}, 404
+    try:
+        linked_user, teacher = link_wechat_user_to_teacher_by_password(user, id_number, password)
+        db.session.commit()
+    except AuthError as e:
+        db.session.rollback()
+        return {"error": e.message}, e.status_code
+    return {
+        "token": _issue_token(linked_user),
+        "userId": linked_user.id,
+        "teacherId": teacher.id,
+        "role": linked_user.role,
+        "phoneBound": bool(linked_user.phone),
+        "avatarUrl": _file_url(linked_user.avatar_url),
+        "nickname": linked_user.nickname,
+        "mustChangePassword": True,
     }
 
 

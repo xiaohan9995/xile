@@ -168,7 +168,7 @@
             </option>
           </select>
         </label>
-        <p v-if="roleForm.role === 'teacher'" class="role-modal-hint">教师账号使用身份证号登录，初始密码为 Xile + 身份证后六位。请先确认该教师档案已填写身份证号。</p>
+        <p v-if="roleForm.role === 'teacher'" class="role-modal-hint">教师账号使用身份证号登录，初始密码为身份证后六位。请先确认该教师档案已填写身份证号。</p>
         <div class="modal-actions">
           <button class="sync-btn" @click="showRoleModal = false">取消</button>
           <button class="primary-btn" @click="handleSetRole">确认</button>

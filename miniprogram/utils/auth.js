@@ -7,6 +7,7 @@ const USER_ROLE_KEY = 'currentUserRole';
 const PHONE_BOUND_KEY = 'phoneBound';
 const AVATAR_URL_KEY = 'userAvatarUrl';
 const NICKNAME_KEY = 'userNickname';
+const MUST_CHANGE_PASSWORD_KEY = 'mustChangePassword';
 
 const applySession = (data) => {
   if (!data || !data.token) throw new Error('登录响应无效，请重试');
@@ -14,6 +15,7 @@ const applySession = (data) => {
   wx.setStorageSync(USER_ID_KEY, data.userId);
   wx.setStorageSync(USER_ROLE_KEY, data.role || 'student');
   wx.setStorageSync(PHONE_BOUND_KEY, !!data.phoneBound);
+  wx.setStorageSync(MUST_CHANGE_PASSWORD_KEY, !!data.mustChangePassword);
   if (data.avatarUrl) wx.setStorageSync(AVATAR_URL_KEY, data.avatarUrl);
   if (data.nickname) wx.setStorageSync(NICKNAME_KEY, data.nickname);
   if (data.teacherId) wx.setStorageSync(TEACHER_ID_KEY, data.teacherId);
@@ -111,6 +113,9 @@ const isLoggedIn = () => {
   return !!getToken();
 };
 
+const mustChangePassword = () => wx.getStorageSync(MUST_CHANGE_PASSWORD_KEY) === true;
+const setMustChangePassword = (value) => wx.setStorageSync(MUST_CHANGE_PASSWORD_KEY, !!value);
+
 const isPhoneBound = () => {
   return wx.getStorageSync(PHONE_BOUND_KEY) === true;
 };
@@ -160,6 +165,8 @@ const setTeacherIdentity = (teacherId, role) => {
 };
 
 const loginUrl = (pagePath) => `/packageTeacher/login/login?returnUrl=${encodeURIComponent(pagePath)}`;
+const passwordResetUrl = '/packageTeacher/settings/settings?forcePasswordChange=1';
+const isPasswordSettingsPath = (pagePath) => String(pagePath || '').startsWith('/packageTeacher/settings/settings');
 
 const requireLogin = (pagePath) => {
   const app = typeof getApp === 'function' ? getApp() : null;
@@ -172,6 +179,10 @@ const requireLogin = (pagePath) => {
   }
   if (!isLoggedIn()) {
     wx.redirectTo({ url: loginUrl(pagePath) });
+    return false;
+  }
+  if (mustChangePassword() && !isPasswordSettingsPath(pagePath)) {
+    wx.redirectTo({ url: passwordResetUrl });
     return false;
   }
   return true;
@@ -192,6 +203,10 @@ const requireAuth = (pagePath) => {
     wx.redirectTo({ url: loginUrl(pagePath) });
     return false;
   }
+  if (mustChangePassword() && !isPasswordSettingsPath(pagePath)) {
+    wx.redirectTo({ url: passwordResetUrl });
+    return false;
+  }
   return true;
 };
 
@@ -201,6 +216,7 @@ const logout = () => {
   wx.removeStorageSync(USER_ID_KEY);
   wx.removeStorageSync(USER_ROLE_KEY);
   wx.removeStorageSync(PHONE_BOUND_KEY);
+  wx.removeStorageSync(MUST_CHANGE_PASSWORD_KEY);
   wx.removeStorageSync(AVATAR_URL_KEY);
   wx.removeStorageSync(NICKNAME_KEY);
   const app = typeof getApp === 'function' ? getApp() : null;
@@ -226,6 +242,8 @@ module.exports = {
   setNickname,
   isTeacher,
   isLoggedIn,
+  mustChangePassword,
+  setMustChangePassword,
   isPhoneBound,
   setPhoneBound,
   setTeacherIdentity,

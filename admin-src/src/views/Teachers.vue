@@ -192,7 +192,7 @@
           <button type="button" @click="showAccount = false">×</button>
         </div>
         <p class="account-hint">
-          教师账号统一使用身份证号登录，初始密码为 <strong>Xile + 身份证后六位</strong>。
+          教师账号统一使用身份证号登录，初始密码为 <strong>身份证后六位</strong>。
           确认后会重置为该初始密码，教师首次登录必须修改密码；请先在教师档案填写身份证号。
         </p>
         <div class="modal-actions">

@@ -64,6 +64,7 @@ const normalizeUserMessage = (value, fallback = '操作失败，请稍后重试'
 };
 
 const messageForError = (statusCode, code, payload = {}) => {
+  if (code === 'PASSWORD_CHANGE_REQUIRED') return '请先重置初始密码后再继续操作';
   if (code === 'INVALID_HOST') return '云开发环境未关联当前小程序，请完成小程序认证后重试';
   if (statusCode === 401) return '登录已过期，请重新登录';
   if (statusCode === 403) return '当前账号没有执行此操作的权限';

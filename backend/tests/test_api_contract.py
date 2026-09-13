@@ -155,6 +155,9 @@ def test_cloudbase_auth_bridge_rejects_tampered_identity(client, monkeypatch):
 
 
 def test_teacher_can_link_wechat_session_with_an_admin_generated_code(client):
+    teacher = db.session.get(Teacher, 1)
+    teacher.id_number = "110101199001011234"
+    db.session.commit()
     admin_headers = {"Authorization": "Bearer test-admin-token"}
     create_code = client.post("/api/admin/teachers/1/link-code", headers=admin_headers)
     assert create_code.status_code == 201
@@ -175,6 +178,7 @@ def test_teacher_can_link_wechat_session_with_an_admin_generated_code(client):
     assert payload["teacherId"] == 1
     assert payload["role"] == "teacher"
     assert payload["token"]
+    assert payload["mustChangePassword"] is True
     me = client.get("/api/mp/auth/me", headers={"Authorization": f"Bearer {payload['token']}"})
     assert me.status_code == 200
     assert me.get_json()["userId"] == wechat_user_id
@@ -616,12 +620,13 @@ def test_teacher_password_account_and_teaching_record(client):
     )
     assert account.status_code == 201
     assert account.get_json()["username"] == "110101199001011234"
-    assert account.get_json()["initialPassword"] == "Xile11234"
+    assert account.get_json()["initialPassword"] == "011234"
 
-    login = client.post("/api/mp/auth/password-login", json={"username": "110101199001011234", "password": "Xile11234"})
+    login = client.post("/api/mp/auth/password-login", json={"username": "110101199001011234", "password": "011234"})
     assert login.status_code == 200
     assert login.get_json()["mustChangePassword"] is True
     headers = {"Authorization": f"Bearer {login.get_json()['token']}"}
+    assert client.get("/api/mp/stats/overview", headers=headers).status_code == 403
     changed = client.post(
         "/api/mp/auth/change-password", headers=headers,
         json={"currentPassword": "", "newPassword": "changed-pass"},
@@ -636,6 +641,28 @@ def test_teacher_password_account_and_teaching_record(client):
     assert record.status_code == 201
     records = client.get("/api/mp/teaching-records", headers=headers)
     assert records.get_json()["total"] == 1
+
+
+def test_link_teacher_by_id_number_requires_one_time_password_reset(client):
+    admin_headers = {"Authorization": "Bearer test-admin-token"}
+    teacher = db.session.get(Teacher, 1)
+    teacher.id_number = "110101199001011234"
+    db.session.commit()
+    account = client.post("/api/admin/teacher-accounts", headers=admin_headers, json={"teacherId": 1})
+    assert account.status_code == 201
+
+    wechat = client.post("/api/mp/auth/login", json={"code": "link-by-id-number"})
+    linked = client.post(
+        "/api/mp/auth/link-teacher-by-password",
+        headers={"Authorization": f"Bearer {wechat.get_json()['token']}"},
+        json={"idNumber": "110101199001011234", "password": "011234"},
+    )
+    assert linked.status_code == 200
+    assert linked.get_json()["mustChangePassword"] is True
+    assert client.get(
+        "/api/mp/stats/overview",
+        headers={"Authorization": f"Bearer {linked.get_json()['token']}"},
+    ).status_code == 403
 
 
 def test_collaborative_review_requires_assignment_decision_and_publication(client):

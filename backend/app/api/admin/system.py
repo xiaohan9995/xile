@@ -378,7 +378,7 @@ def create_teacher_account():
     if len(id_number) < 6:
         return {"error": "请先在教师档案中填写有效身份证号"}, 400
     username = id_number
-    password = f"Xile{id_number[-6:]}"
+    password = id_number[-6:]
     user = User.query.filter_by(teacher_id=teacher_id).first()
     if user is None:
         user = User(teacher_id=teacher_id, role="teacher")

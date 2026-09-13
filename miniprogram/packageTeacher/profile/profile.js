@@ -100,7 +100,7 @@ Page({
         primaryAction: {
           eyebrow: '教师服务',
           title: '关联教师身份',
-          detail: '输入管理员提供的一次性关联码',
+          detail: '输入教师身份证号和初始密码',
           actionText: '去关联',
           url: '/packageTeacher/link-teacher/link-teacher',
         },
