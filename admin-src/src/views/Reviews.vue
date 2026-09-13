@@ -116,6 +116,21 @@
           </a>
         </div>
 
+        <div v-if="selected.teachingRecords?.length" class="teaching-records">
+          <h3>本次年审引用的教学记录</h3>
+          <div v-for="record in selected.teachingRecords" :key="record.id" class="record-row">
+            <strong>{{ record.title }}</strong><span>{{ record.taughtOn }} · {{ record.platform }}</span>
+            <a v-if="record.evidenceUrl" :href="record.evidenceUrl" target="_blank" rel="noopener">查看佐证</a>
+          </div>
+        </div>
+        <div v-if="selected.serviceRecords?.length" class="teaching-records">
+          <h3>本次年审引用的服务记录</h3>
+          <div v-for="record in selected.serviceRecords" :key="record.id" class="record-row">
+            <strong>{{ record.title }}</strong><span>{{ record.servedOn }} · {{ record.serviceType }}{{ record.location ? ' · ' + record.location : '' }}</span>
+            <a v-if="record.evidenceUrl" :href="record.evidenceUrl" target="_blank" rel="noopener">查看佐证</a>
+          </div>
+        </div>
+
         <div class="reviewer-comment">
           <strong>材料处理提示：</strong>请在“年审工作台”完成成员意见、组长决议和正式发布。
           <RouterLink to="/review-workflow" class="table-action">前往年审工作台</RouterLink>
@@ -210,4 +225,9 @@ function clearSelection() {
   font-size: 13px;
   color: #5a4a28;
 }
+.teaching-records { margin-top: 18px; border-top: 1px solid #eee; padding-top: 14px; }
+.teaching-records h3 { margin: 0 0 10px; font-size: 15px; }
+.record-row { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+.record-row span { color: #65706a; }
+.record-row a { margin-left: auto; color: #426c55; }
 </style>

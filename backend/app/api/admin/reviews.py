@@ -55,6 +55,31 @@ def review_queue():
                 }
                 for file in review.files.order_by("id").all()
             ],
+            "teachingRecords": [
+                {
+                    "id": item.teaching_record.id,
+                    "taughtOn": _date_text(item.teaching_record.taught_on),
+                    "platform": item.teaching_record.platform,
+                    "title": item.teaching_record.title,
+                    "durationHours": float(item.teaching_record.duration_hours) if item.teaching_record.duration_hours is not None else None,
+                    "participantCount": item.teaching_record.participant_count,
+                    "description": item.teaching_record.description,
+                    "evidenceUrl": _file_url(item.teaching_record.evidence_key),
+                }
+                for item in review.teaching_records.order_by("id").all()
+            ],
+            "serviceRecords": [
+                {
+                    "id": item.service_record.id,
+                    "servedOn": _date_text(item.service_record.served_on),
+                    "serviceType": item.service_record.service_type,
+                    "title": item.service_record.title,
+                    "location": item.service_record.location,
+                    "description": item.service_record.description,
+                    "evidenceUrl": _file_url(item.service_record.evidence_key),
+                }
+                for item in review.service_records.order_by("id").all()
+            ],
         }
         for review in reviews
     ]

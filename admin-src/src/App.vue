@@ -33,7 +33,9 @@
               <template v-if="canManage">
                 <span class="menu-label">认证管理</span>
                 <RouterLink to="/teachers"><i>04</i>教师档案</RouterLink>
-                <RouterLink to="/studios"><i>05</i>认证场馆</RouterLink>
+                <RouterLink to="/teaching-records"><i>05</i>教学记录</RouterLink>
+                <RouterLink to="/service-records"><i>06</i>服务记录</RouterLink>
+                <RouterLink to="/studios"><i>07</i>认证场馆</RouterLink>
               </template>
               <template v-if="isSuperAdmin">
                 <span class="menu-label">系统</span>

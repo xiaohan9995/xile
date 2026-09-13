@@ -81,6 +81,8 @@ export function mapAdminReview(review) {
       url: file.url,
       type: file.fileType || '',
     })),
+    teachingRecords: review.teachingRecords || [],
+    serviceRecords: review.serviceRecords || [],
   }
 }
 
@@ -120,6 +122,16 @@ export async function reverseGeocodeMapLocation(latitude, longitude) {
 export async function fetchAdminReviews() {
   const payload = await api.get('/reviews')
   return (payload.items || []).map(mapAdminReview)
+}
+
+export async function fetchAdminTeachingRecords(params = {}) {
+  const payload = await api.get('/teaching-records', params)
+  return payload.items || []
+}
+
+export async function fetchAdminServiceRecords(params = {}) {
+  const payload = await api.get('/service-records', params)
+  return payload.items || []
 }
 
 export async function fetchDashboardCards() {
