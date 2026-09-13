@@ -106,8 +106,7 @@ page {
 }
 
 .wechat-btn:active,
-.account-btn:active,
-.skip-link:active {
+.account-btn:active {
   opacity: 0.8;
   transform: scale(0.98);
 }
@@ -156,15 +155,6 @@ page {
   font-size: 22rpx;
   line-height: 1.65;
   text-align: center;
-}
-
-.skip-link {
-  display: block;
-  width: 100%;
-  height: 88rpx;
-  margin-top: 28rpx;
-  color: var(--color-primary-dark);
-  font-size: 26rpx;
 }
 
 .login-loading {

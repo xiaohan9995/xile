@@ -37,6 +37,25 @@
       >保存喜乐名</button>
     </view>
 
+    <view wx:if="{{isTeacher}}" class="section-heading section-heading--spaced">
+      <text class="section-heading__title">公开资料</text>
+      <text class="section-heading__note">控制师资查询页的展示内容</text>
+    </view>
+    <view wx:if="{{isTeacher}}" class="settings-group">
+      <view class="field-block"><text class="field-label">别名</text><input class="settings-input" maxlength="20" placeholder="未设置时不显示" value="{{alias}}" bindinput="onPublicInput" data-field="alias" /></view>
+      <view class="field-block"><text class="field-label">经常居住地</text><input class="settings-input" maxlength="120" placeholder="最多 3 个，用顿号或逗号分隔" value="{{residencesText}}" bindinput="onPublicInput" data-field="residencesText" /></view>
+      <view class="field-block"><text class="field-label">当前等级认证时间</text><picker mode="date" value="{{currentTierCertifiedOn}}" bindchange="onPublicInput" data-field="currentTierCertifiedOn"><view class="settings-input settings-picker">{{currentTierCertifiedOn || '请选择日期'}}</view></picker></view>
+      <view class="field-block"><text class="field-label">个人简介</text><textarea class="settings-input settings-textarea" maxlength="500" placeholder="未填写时显示无" value="{{teachingSummary}}" bindinput="onPublicInput" data-field="teachingSummary" /></view>
+      <view class="visibility-list">
+        <view class="visibility-row"><text>公开别名</text><switch checked="{{visibility.showAlias}}" color="#426D58" bindchange="onVisibilityChange" data-field="showAlias" /></view>
+        <view class="visibility-row"><text>公开经常居住地</text><switch checked="{{visibility.showResidences}}" color="#426D58" bindchange="onVisibilityChange" data-field="showResidences" /></view>
+        <view class="visibility-row"><text>公开个人简介</text><switch checked="{{visibility.showBio}}" color="#426D58" bindchange="onVisibilityChange" data-field="showBio" /></view>
+        <view class="visibility-row"><text>公开首次认证时间</text><switch checked="{{visibility.showFirstCertifiedOn}}" color="#426D58" bindchange="onVisibilityChange" data-field="showFirstCertifiedOn" /></view>
+        <view class="visibility-row"><text>公开当前等级认证时间</text><switch checked="{{visibility.showCurrentTierCertifiedOn}}" color="#426D58" bindchange="onVisibilityChange" data-field="showCurrentTierCertifiedOn" /></view>
+      </view>
+      <button class="action-button action-button--primary" bindtap="savePublicProfile" loading="{{savingPublicProfile}}" disabled="{{savingPublicProfile}}">保存公开资料</button>
+    </view>
+
     <view class="section-heading section-heading--spaced">
       <text class="section-heading__title">账户安全</text>
       <text class="section-heading__note">仅用于已关联的教师账号</text>

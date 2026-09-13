@@ -24,13 +24,20 @@
     </view>
   </view>
 
-  <view class="upload-section" wx:if="{{deadline || teachingRecords.length}}">
+  <view class="upload-section" wx:if="{{deadline || teachingRecords.length || serviceRecords.length}}">
     <view class="upload-title-row"><text class="upload-section-title">本期准备情况</text><text class="upload-section-sub">{{deadline ? '请在 ' + deadline + ' 前提交' : '可选择已提交的教学记录'}}</text></view>
     <view wx:if="{{teachingRecords.length}}" class="teaching-reference">
       <text class="upload-section-sub">以下教学记录将自动带入，您可按需取消：</text>
       <view wx:for="{{teachingRecords}}" wx:key="id" class="reference-row" bindtap="toggleTeachingRecord" data-index="{{index}}">
         <text class="reference-check">{{item.selected ? '✓' : ''}}</text>
         <view><text class="upload-name">{{item.title}}</text><text class="upload-desc">{{item.taughtOn}} · {{item.platform}}</text></view>
+      </view>
+    </view>
+    <view wx:if="{{serviceRecords.length}}" class="teaching-reference">
+      <text class="upload-section-sub">以下服务记录可按需引用：</text>
+      <view wx:for="{{serviceRecords}}" wx:key="id" class="reference-row" bindtap="toggleServiceRecord" data-index="{{index}}">
+        <text class="reference-check">{{item.selected ? '✓' : ''}}</text>
+        <view><text class="upload-name">{{item.title}}</text><text class="upload-desc">{{item.servedOn}} · {{item.serviceType}}</text></view>
       </view>
     </view>
   </view>

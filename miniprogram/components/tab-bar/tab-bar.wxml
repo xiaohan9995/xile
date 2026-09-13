@@ -1,14 +1,50 @@
 <view class="tab-bar">
-  <view class="tab-item {{active === 'home' ? 'active' : ''}}" bindtap="goHome">
-    <image class="tab-icon-img" src="{{active === 'home' ? '/assets/icons/home-active.png' : '/assets/icons/home.png'}}" />
-    <text>首页</text>
+  <view
+    class="tab-item {{active === 'home' ? 'active' : ''}}"
+    aria-role="button"
+    aria-label="首页"
+    hover-class="tab-item--hover"
+    hover-start-time="0"
+    hover-stay-time="120"
+    bindtap="goHome"
+  >
+    <view class="tab-icon tab-icon--home"></view>
+    <text class="tab-label">首页</text>
   </view>
-  <view class="tab-item {{active === 'studio' ? 'active' : ''}}" bindtap="goStudio">
-    <image class="tab-icon-img" src="{{active === 'studio' ? '/assets/icons/studio-active.png' : '/assets/icons/studio.png'}}" />
-    <text>工作室</text>
+  <view
+    class="tab-item {{active === 'teacher' ? 'active' : ''}}"
+    aria-role="button"
+    aria-label="师资"
+    hover-class="tab-item--hover"
+    hover-start-time="0"
+    hover-stay-time="120"
+    bindtap="goTeacher"
+  >
+    <view class="tab-icon tab-icon--teacher"></view>
+    <text class="tab-label">师资</text>
   </view>
-  <view class="tab-item {{active === 'my' ? 'active' : ''}}" bindtap="goMy">
-    <image class="tab-icon-img" src="{{active === 'my' ? '/assets/icons/my-active.png' : '/assets/icons/my.png'}}" />
-    <text>我的</text>
+  <view
+    class="tab-item {{active === 'studio' ? 'active' : ''}}"
+    aria-role="button"
+    aria-label="工作室"
+    hover-class="tab-item--hover"
+    hover-start-time="0"
+    hover-stay-time="120"
+    bindtap="goStudio"
+  >
+    <view class="tab-icon tab-icon--studio"></view>
+    <text class="tab-label">工作室</text>
+  </view>
+  <view
+    class="tab-item {{active === 'my' ? 'active' : ''}}"
+    aria-role="button"
+    aria-label="我的"
+    hover-class="tab-item--hover"
+    hover-start-time="0"
+    hover-stay-time="120"
+    bindtap="goMy"
+  >
+    <view class="tab-icon tab-icon--my"></view>
+    <text class="tab-label">我的</text>
   </view>
 </view>

@@ -21,8 +21,6 @@
       <button class="account-btn" bindtap="goPasswordLogin">使用教师账号登录</button>
       <text class="security-note">手机号不是登录必填项；如需关联教师档案，可在个人设置中自愿绑定。</text>
     </view>
-
-    <button class="skip-link" bindtap="onSkip">暂时不登录，先逛逛</button>
   </view>
 
   <view class="login-loading" wx:else><text>正在准备登录…</text></view>

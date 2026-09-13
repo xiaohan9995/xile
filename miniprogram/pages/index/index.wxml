@@ -5,8 +5,8 @@
     <view class="home-visual__overlay"></view>
     <view class="home-visual__text">
       <text class="home-visual__eyebrow">JOY YOGA · TEACHER CERTIFICATION</text>
-      <text class="home-visual__title">让每一次练习<br />被认真看见</text>
-      <text class="home-visual__tagline">成长 · 修习 · 传承</text>
+      <text class="home-visual__title">我是被认证的<br />喜乐菩萨</text>
+      <text class="home-visual__tagline">喜乐智慧 · 凤凰传承</text>
     </view>
   </view>
 
@@ -14,12 +14,12 @@
   <view class="home-body">
     <view class="home-intro">
       <text class="section-eyebrow">认证服务</text>
-      <text class="section-title">查询、认证与连接</text>
-      <text class="home-intro__note">教师资质、认证场馆与练习社群，在这里温柔相遇。</text>
+      <text class="section-title">喜乐瑜伽教师管理认证</text>
+      <text class="home-intro__note">当每一滴水珠汇入海洋，当每一位船工挥动船桨，凤凰大法船就会乘风破浪、扬帆远航。</text>
     </view>
 
     <button class="cta-btn" bindtap="goMyCert">
-      <view class="cta-text-group"><text class="cta-title">我的认证</text><text class="cta-subtitle">教师账号可查看证书、年审与教学记录</text></view>
+      <view class="cta-text-group"><text class="cta-title">我的认证</text><text class="cta-subtitle">教师可查看证书、提交教学记录及年审申请</text></view>
       <text class="cta-arrow">›</text>
     </button>
     <!-- Announcements -->
@@ -43,11 +43,11 @@
     <view class="quick-grid">
       <button class="quick-card" bindtap="goSearch">
         <text class="quick-card-title">教师查询</text>
-        <text class="quick-card-desc">查认证教师信息</text>
+        <text class="quick-card-desc">查询认证教师信息</text>
       </button>
       <button class="quick-card" bindtap="goStudios">
         <text class="quick-card-title">瑜伽工作室</text>
-        <text class="quick-card-desc">查看附近认证场馆</text>
+        <text class="quick-card-desc">查询各地喜乐瑜伽场馆</text>
       </button>
     </view>
 

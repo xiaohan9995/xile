@@ -3,7 +3,7 @@ from datetime import date, datetime, timezone
 from sqlalchemy.exc import IntegrityError
 
 from ..extensions import db
-from ..models import AnnualReview, AuditLog, ReviewCycle, ReviewFile, ReviewTeachingRecord, TeachingRecord, Teacher, User
+from ..models import AnnualReview, AuditLog, ReviewCycle, ReviewFile, ReviewServiceRecord, ReviewTeachingRecord, ServiceRecord, TeachingRecord, Teacher, User
 
 
 class ReviewError(Exception):
@@ -12,7 +12,7 @@ class ReviewError(Exception):
         self.status_code = status_code
 
 
-def submit_review(user_id, teacher_id, review_year, files, teaching_record_ids=None):
+def submit_review(user_id, teacher_id, review_year, files, teaching_record_ids=None, service_record_ids=None):
     user = db.session.get(User, user_id)
     if not user or not user.teacher_id:
         raise ReviewError("not a teacher", 403)
@@ -33,8 +33,8 @@ def submit_review(user_id, teacher_id, review_year, files, teaching_record_ids=N
 
     if not isinstance(files, list):
         raise ReviewError("files must be a list", 400)
-    if not files and not teaching_record_ids:
-        raise ReviewError("files or submitted teaching records required", 400)
+    if not files and not teaching_record_ids and not service_record_ids:
+        raise ReviewError("files or submitted activity records required", 400)
 
     next_valid = _calculate_next_valid(teacher)
 
@@ -58,6 +58,8 @@ def submit_review(user_id, teacher_id, review_year, files, teaching_record_ids=N
         for file in review.files.all():
             db.session.delete(file)
         for item in review.teaching_records.all():
+            db.session.delete(item)
+        for item in review.service_records.all():
             db.session.delete(item)
         for opinion in review.opinions.all():
             db.session.delete(opinion)
@@ -92,6 +94,14 @@ def submit_review(user_id, teacher_id, review_year, files, teaching_record_ids=N
             raise ReviewError("teaching records must belong to you and be submitted", 400)
         for record in records:
             review.teaching_records.append(ReviewTeachingRecord(teaching_record_id=record.id))
+
+    selected_service_ids = {int(item) for item in (service_record_ids or []) if str(item).isdigit()}
+    if selected_service_ids:
+        records = ServiceRecord.query.filter(ServiceRecord.teacher_id == teacher.id, ServiceRecord.id.in_(selected_service_ids), ServiceRecord.status == "submitted").all()
+        if len(records) != len(selected_service_ids):
+            raise ReviewError("service records must belong to you and be submitted", 400)
+        for record in records:
+            review.service_records.append(ReviewServiceRecord(service_record_id=record.id))
 
     try:
         db.session.commit()

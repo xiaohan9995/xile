@@ -168,10 +168,7 @@
             </option>
           </select>
         </label>
-        <template v-if="roleForm.role === 'teacher'">
-          <label>教师登录账号<input v-model="roleForm.username" placeholder="教师编号或自定义账号" /></label>
-          <label>初始密码<input v-model="roleForm.password" type="password" placeholder="至少 8 位" /></label>
-        </template>
+        <p v-if="roleForm.role === 'teacher'" class="role-modal-hint">教师账号使用身份证号登录，初始密码为 Xile + 身份证后六位。请先确认该教师档案已填写身份证号。</p>
         <div class="modal-actions">
           <button class="sync-btn" @click="showRoleModal = false">取消</button>
           <button class="primary-btn" @click="handleSetRole">确认</button>
@@ -198,7 +195,7 @@ const showInvite = ref(false)
 const showRoleModal = ref(false)
 const showAdminRoleModal = ref(false)
 const inviteForm = ref({ username: '', password: '', role: 'admin' })
-const roleForm = ref({ userId: null, role: 'student', teacherId: null, currentRole: '', username: '', password: '' })
+const roleForm = ref({ userId: null, role: 'student', teacherId: null, currentRole: '' })
 const adminRoleForm = ref({ id: null, username: '', role: '' })
 const memberPage = ref(1)
 const userPage = ref(1)
@@ -261,8 +258,6 @@ function openRoleModal(user) {
     role: user.role,
     teacherId: user.teacherId || null,
     currentRole: user.role,
-    username: '',
-    password: '',
   }
   showRoleModal.value = true
 }
@@ -283,19 +278,16 @@ async function handleUpdateAdminRole() {
 }
 
 async function handleSetRole() {
-  const { userId, role, teacherId, username, password } = roleForm.value
+  const { userId, role, teacherId } = roleForm.value
   if (role === 'teacher' && !teacherId) {
     alert('请选择关联的教师')
-    return
-  }
-  if (role === 'teacher' && (!username.trim() || password.length < 8)) {
-    alert('请填写教师登录账号和至少 8 位的初始密码')
     return
   }
   try {
     await updateUserRole(userId, role, teacherId)
     if (role === 'teacher') {
-      await createTeacherAccount({ teacherId, username, password })
+      const account = await createTeacherAccount({ teacherId })
+      alert(`教师账号已设置：${account.username}\n初始密码：${account.initialPassword}`)
     }
     showRoleModal.value = false
     await loadUsers()

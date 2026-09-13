@@ -15,6 +15,7 @@ Page({
       { id: 'region', label: '按地区' },
       { id: 'name', label: '按姓名/喜乐名' },
       { id: 'certificate', label: '按证书编号' },
+      { id: 'tier', label: '按认证等级' },
     ],
     searched: false,
     // Filter state
@@ -113,7 +114,7 @@ Page({
   },
 
   async doSearch() {
-    if (this.data.searchMode !== 'region' && !this.data.keyword.trim()) {
+    if ((this.data.searchMode === 'name' || this.data.searchMode === 'certificate') && !this.data.keyword.trim()) {
       this.setData({ searched: false, teachers: [], error: '' });
       return;
     }

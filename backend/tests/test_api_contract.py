@@ -567,13 +567,18 @@ def test_admin_review_decision_endpoint_is_retired_for_every_outcome(client):
 
 def test_teacher_password_account_and_teaching_record(client):
     admin_headers = {"Authorization": "Bearer test-admin-token"}
+    teacher = Teacher.query.get(1)
+    teacher.id_number = "110101199001011234"
+    db.session.commit()
     account = client.post(
         "/api/admin/teacher-accounts", headers=admin_headers,
-        json={"teacherId": 1, "username": "JY20230001", "password": "initial-pass"},
+        json={"teacherId": 1},
     )
     assert account.status_code == 201
+    assert account.get_json()["username"] == "110101199001011234"
+    assert account.get_json()["initialPassword"] == "Xile11234"
 
-    login = client.post("/api/mp/auth/password-login", json={"username": "JY20230001", "password": "initial-pass"})
+    login = client.post("/api/mp/auth/password-login", json={"username": "110101199001011234", "password": "Xile11234"})
     assert login.status_code == 200
     assert login.get_json()["mustChangePassword"] is True
     headers = {"Authorization": f"Bearer {login.get_json()['token']}"}
@@ -582,7 +587,7 @@ def test_teacher_password_account_and_teaching_record(client):
         json={"currentPassword": "", "newPassword": "changed-pass"},
     )
     assert changed.status_code == 200
-    relogin = client.post("/api/mp/auth/password-login", json={"username": "JY20230001", "password": "changed-pass"})
+    relogin = client.post("/api/mp/auth/password-login", json={"username": "110101199001011234", "password": "changed-pass"})
     assert relogin.status_code == 200
     record = client.post(
         "/api/mp/teaching-records", headers=headers,

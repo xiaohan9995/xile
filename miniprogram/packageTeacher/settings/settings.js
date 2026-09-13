@@ -13,6 +13,12 @@ Page({
     currentPassword: '',
     newPassword: '',
     changingPassword: false,
+    alias: '',
+    residencesText: '',
+    teachingSummary: '',
+    currentTierCertifiedOn: '',
+    visibility: { showAlias: false, showResidences: false, showBio: false, showFirstCertifiedOn: true, showCurrentTierCertifiedOn: true },
+    savingPublicProfile: false,
   },
 
   onLoad() {
@@ -29,6 +35,7 @@ Page({
         xileName: data.xileName || '',
         isTeacher: !!data.teacherId,
       });
+      if (data.teacherId) this.loadPublicProfile();
     } catch (err) {
       this.setData({
         nickname: '',
@@ -44,6 +51,44 @@ Page({
 
   onPasswordInput(e) {
     this.setData({ [e.currentTarget.dataset.field]: e.detail.value || '' });
+  },
+
+  async loadPublicProfile() {
+    try {
+      const profile = await request({ url: '/api/mp/teachers/me/public-profile', silent: true });
+      this.setData({
+        alias: profile.alias || '',
+        residencesText: (profile.residences || []).join('、'),
+        teachingSummary: profile.teachingSummary || '',
+        currentTierCertifiedOn: profile.currentTierCertifiedOn || '',
+        visibility: profile.visibility || this.data.visibility,
+      });
+    } catch (error) {
+      wx.showToast({ title: error.message || '公开资料加载失败', icon: 'none' });
+    }
+  },
+
+  onPublicInput(e) { this.setData({ [e.currentTarget.dataset.field]: e.detail.value || '' }); },
+  onVisibilityChange(e) { this.setData({ [`visibility.${e.currentTarget.dataset.field}`]: !!e.detail.value }); },
+
+  async savePublicProfile() {
+    this.setData({ savingPublicProfile: true });
+    try {
+      const residences = (this.data.residencesText || '').split(/[、,，]/).map((item) => item.trim()).filter(Boolean).slice(0, 3);
+      await request({
+        url: '/api/mp/teachers/me/public-profile', method: 'PUT', silent: true,
+        data: {
+          alias: this.data.alias,
+          residences,
+          teachingSummary: this.data.teachingSummary,
+          currentTierCertifiedOn: this.data.currentTierCertifiedOn,
+          visibility: this.data.visibility,
+        },
+      });
+      wx.showToast({ title: '公开资料已保存', icon: 'none' });
+    } catch (error) {
+      wx.showToast({ title: error.message || '公开资料保存失败', icon: 'none' });
+    } finally { this.setData({ savingPublicProfile: false }); }
   },
 
   async changePassword() {

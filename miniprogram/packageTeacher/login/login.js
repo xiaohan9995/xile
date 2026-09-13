@@ -29,10 +29,6 @@ Page({
     }
   },
 
-  onSkip() {
-    wx.showToast({ title: '请先完成微信登录', icon: 'none' });
-  },
-
   goPasswordLogin() {
     wx.navigateTo({
       url: `/packageTeacher/account-login/account-login?returnUrl=${encodeURIComponent(this.data.returnUrl)}`,

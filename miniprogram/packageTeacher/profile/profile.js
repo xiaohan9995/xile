@@ -65,6 +65,7 @@ Page({
         reviewBlockedReason,
         teacher: {
           name: t.name || '',
+          id: t.id || null,
           xileName: t.xileName || '',
           tier: t.tier || '',
           tierName: t.tierName || '',
@@ -82,10 +83,12 @@ Page({
           url: '/packageTeacher/cert-view/cert-view',
         },
         menuItems: [
-          { icon: '档', title: '提交年审材料', subtitle: canSubmitReview ? '上传本期年审所需证明材料' : '年审开放后可提交材料', url: '/packageTeacher/review-apply/review-apply', action: 'submit-review' },
-          { icon: '年', title: '年度记录', subtitle: '年度再教育学分审核录', url: '/packageTeacher/review-records/review-records' },
-          { icon: '服', title: '联系客服', subtitle: '注册、续签及遗失补办协助', url: '' },
-          { icon: '设', title: '个人设置', subtitle: '更新头像、手机号或喜乐名', url: '/packageTeacher/settings/settings' },
+          { icon: '我', title: '我的信息', subtitle: '查看对外公开显示的师资页面', url: `/pages/teacher-detail/teacher-detail?id=${t.id}` },
+          { icon: '教', title: '教学记录', subtitle: '请定期提交你的教学传播活动记录', url: '/packageTeacher/teaching-records/teaching-records' },
+          { icon: '服', title: '服务记录', subtitle: '请定期提交你的服务推广活动记录', url: '/packageTeacher/service-records/service-records' },
+          { icon: '年', title: '年审信息', subtitle: '查看年审进度及提交记录', url: '/packageTeacher/review-records/review-records' },
+          { icon: '设', title: '个人设置', subtitle: '更新头像、密码及对外显示信息', url: '/packageTeacher/settings/settings' },
+          { icon: '询', title: '咨询服务', subtitle: '查询师资管理小助手信息', url: '', action: 'consultation' },
         ],
       });
       // Certificate objects may be private in COS. Always download through
@@ -117,6 +120,10 @@ Page({
         ? '当前认证尚未到期'
         : '当前尚未到年审提交时间';
       wx.showToast({ title, icon: 'none' });
+      return;
+    }
+    if (action === 'consultation') {
+      wx.showToast({ title: '师资管理小助手信息即将开放', icon: 'none' });
       return;
     }
     if (!url) {

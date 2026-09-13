@@ -1,3 +1,4 @@
+import json
 from datetime import date
 
 from ...extensions import db
@@ -22,18 +23,22 @@ def _certification_status(teacher):
 
 
 def _teacher_summary(teacher):
+    settings = _public_profile_settings(teacher)
     return {
         "id": teacher.id,
         "teacherNo": teacher.teacher_no,
-        "name": teacher.real_name,
+        "name": _display_name(teacher),
         "xileName": teacher.xile_name,
+        "alias": teacher.alias if settings["showAlias"] else None,
         "tier": teacher.tier.code,
         "tierName": teacher.tier.name,
         "city": teacher.city,
         "district": teacher.district,
         "avatarUrl": _file_url(teacher.avatar_url),
         "validUntil": _date_text(teacher.valid_until),
-        "certifiedAt": _date_text(teacher.first_certified_on),
+        "certifiedAt": _date_text(teacher.first_certified_on) if settings["showFirstCertifiedOn"] else None,
+        "currentTierCertifiedOn": _date_text(teacher.current_tier_certified_on) if settings["showCurrentTierCertifiedOn"] else None,
+        "residences": _residences(teacher) if settings["showResidences"] else [],
         "certificationStatus": _certification_status(teacher),
     }
 
@@ -47,12 +52,37 @@ def _teacher_profile(teacher):
     profile.update(
         {
             "specialties": specialties,
-            "teachingSummary": teacher.detail.teaching_summary if teacher.detail else None,
+            "teachingSummary": teacher.detail.teaching_summary if teacher.detail and _public_profile_settings(teacher)["showBio"] else None,
             "certificationNote": "该教师已通过喜乐瑜伽教师认证，资质处于有效期内。",
             "certificateUrl": _file_url(teacher.certificate_url),
         }
     )
     return profile
+
+
+_PROFILE_DEFAULTS = {
+    "showAlias": False,
+    "showResidences": False,
+    "showBio": False,
+    "showFirstCertifiedOn": True,
+    "showCurrentTierCertifiedOn": True,
+}
+
+
+def _public_profile_settings(teacher):
+    try:
+        saved = json.loads(teacher.public_profile_settings or "{}")
+    except (TypeError, ValueError):
+        saved = {}
+    return {key: bool(saved.get(key, default)) for key, default in _PROFILE_DEFAULTS.items()}
+
+
+def _residences(teacher):
+    return [item.strip() for item in (teacher.residences or "").split(",") if item.strip()]
+
+
+def _display_name(teacher):
+    return teacher.xile_name or teacher.alias or teacher.real_name
 
 
 def _studio_summary(studio):
@@ -108,6 +138,7 @@ def _review_payload(review):
         "submissionVersion": review.submission_version,
         "submissionDeadline": _date_text(review.cycle.submission_deadline) if review.cycle else None,
         "teachingRecordIds": [item.teaching_record_id for item in review.teaching_records.order_by("id").all()],
+        "serviceRecordIds": [item.service_record_id for item in review.service_records.order_by("id").all()],
         "files": [_file_payload(file) for file in review.files.order_by("id").all()],
     }
     if published:

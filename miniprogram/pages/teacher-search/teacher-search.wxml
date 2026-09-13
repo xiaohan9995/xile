@@ -13,7 +13,7 @@
     </view>
     <view class="search-box">
       <input
-        wx:if="{{searchMode !== 'region'}}"
+        wx:if="{{searchMode === 'name' || searchMode === 'certificate'}}"
         class="search-input"
         value="{{keyword}}"
         placeholder="{{searchMode === 'certificate' ? '请输入完整教师证书编号' : '请输入教师姓名或喜乐名'}}"
@@ -22,7 +22,7 @@
         bindinput="onInput"
         bindconfirm="doSearch"
       />
-      <view wx:else class="region-search-prompt">浏览全部地区认证教师</view>
+      <view wx:else class="region-search-prompt">{{searchMode === 'tier' ? '请选择师资认证等级' : '浏览全部地区认证教师'}}</view>
       <view class="search-btn" bindtap="doSearch">
         <text class="search-btn-icon">🔍</text>
       </view>
@@ -75,5 +75,5 @@
   <!-- Error -->
   <view wx:if="{{error}}" class="error-tip">{{error}}</view>
 
-  <tab-bar active="" />
+  <tab-bar active="teacher" />
 </view>

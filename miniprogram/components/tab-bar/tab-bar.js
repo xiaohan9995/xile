@@ -16,6 +16,10 @@ Component({
       if (this.data.active === 'studio') return;
       wx.reLaunch({ url: '/pages/studios/studios' });
     },
+    goTeacher() {
+      if (this.data.active === 'teacher') return;
+      wx.reLaunch({ url: '/pages/teacher-search/teacher-search' });
+    },
     goMy() {
       if (this.data.active === 'my') return;
       if (!auth.isLoggedIn()) {
