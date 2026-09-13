@@ -9,6 +9,7 @@ Page({
     submitting: false,
     deadline: '',
     teachingRecords: [],
+    serviceRecords: [],
     files: [
       { title: '专业头像照片', desc: '清晰正面免冠证件照，5MB以内', icon: '📷', done: false, fileName: '', tempPath: '', fileKey: '' },
       { title: '培训证书', desc: '权威机构课程证书，PDF/JPG格式', icon: '📄', done: false, fileName: '', tempPath: '', fileKey: '' },
@@ -24,15 +25,18 @@ Page({
 
   async loadPreparation() {
     try {
-      const [certification, records] = await Promise.all([
+      const [certification, records, services] = await Promise.all([
         request({ url: '/api/mp/teachers/me/certification', silent: true }),
         request({ url: '/api/mp/teaching-records', silent: true }),
+        request({ url: '/api/mp/service-records', silent: true }),
       ]);
       const review = (certification.reviews || [])[0] || {};
       const selectedIds = review.teachingRecordIds || (records.items || []).filter((item) => item.status === 'submitted').map((item) => item.id);
+      const selectedServiceIds = review.serviceRecordIds || (services.items || []).filter((item) => item.status === 'submitted').map((item) => item.id);
       this.setData({
         deadline: review.submissionDeadline || '',
         teachingRecords: (records.items || []).filter((item) => item.status === 'submitted').map((item) => ({ ...item, selected: selectedIds.includes(item.id) })),
+        serviceRecords: (services.items || []).filter((item) => item.status === 'submitted').map((item) => ({ ...item, selected: selectedServiceIds.includes(item.id) })),
       });
     } catch (err) {
       console.warn('load review preparation failed', err.code || err.message);
@@ -43,6 +47,11 @@ Page({
   toggleTeachingRecord(e) {
     const index = e.currentTarget.dataset.index;
     this.setData({ [`teachingRecords[${index}].selected`]: !this.data.teachingRecords[index].selected });
+  },
+
+  toggleServiceRecord(e) {
+    const index = e.currentTarget.dataset.index;
+    this.setData({ [`serviceRecords[${index}].selected`]: !this.data.serviceRecords[index].selected });
   },
 
   chooseFile(e) {
@@ -104,8 +113,9 @@ Page({
     const selectedFiles = this.data.files.filter((f) => f.done);
 
     const selectedTeachingRecords = this.data.teachingRecords.filter((item) => item.selected);
-    if (selectedFiles.length === 0 && selectedTeachingRecords.length === 0) {
-      wx.showToast({ title: '请上传材料或引用教学记录', icon: 'none' });
+    const selectedServiceRecords = this.data.serviceRecords.filter((item) => item.selected);
+    if (selectedFiles.length === 0 && selectedTeachingRecords.length === 0 && selectedServiceRecords.length === 0) {
+      wx.showToast({ title: '请上传材料或引用活动记录', icon: 'none' });
       return;
     }
 
@@ -151,6 +161,7 @@ Page({
           specialization: application.specialization || '',
           files: filesPayload,
           teachingRecordIds: selectedTeachingRecords.map((item) => item.id),
+          serviceRecordIds: selectedServiceRecords.map((item) => item.id),
         },
       });
 

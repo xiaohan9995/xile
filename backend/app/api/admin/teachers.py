@@ -1,4 +1,5 @@
 import calendar
+import json
 from io import BytesIO
 from datetime import date, datetime
 
@@ -22,6 +23,8 @@ def teacher_list():
             "teacherNo": t.teacher_no,
             "name": t.real_name,
             "xileName": t.xile_name,
+            "alias": t.alias,
+            "idNumber": t.id_number,
             "tier": t.tier.code if t.tier else None,
             "tierName": t.tier.name if t.tier else None,
             "city": t.city,
@@ -29,6 +32,8 @@ def teacher_list():
             "status": t.status,
             "validUntil": _date_text(t.valid_until),
             "certifiedAt": _date_text(t.first_certified_on),
+            "currentTierCertifiedOn": _date_text(t.current_tier_certified_on),
+            "residences": [item.strip() for item in (t.residences or "").split(",") if item.strip()],
             "avatarUrl": storage_reference(t.avatar_url),
             "certificateUrl": _file_url(t.certificate_url),
             "phone": t.detail.phone if t.detail else None,
@@ -50,6 +55,8 @@ def get_teacher_detail(teacher_id):
         "teacherNo": teacher.teacher_no,
         "name": teacher.real_name,
         "xileName": teacher.xile_name,
+        "alias": teacher.alias,
+        "idNumber": teacher.id_number,
         "tier": teacher.tier.code if teacher.tier else None,
         "tierName": teacher.tier.name if teacher.tier else None,
         "city": teacher.city,
@@ -57,6 +64,9 @@ def get_teacher_detail(teacher_id):
         "status": teacher.status,
         "validUntil": _date_text(teacher.valid_until),
         "certifiedAt": _date_text(teacher.first_certified_on),
+        "currentTierCertifiedOn": _date_text(teacher.current_tier_certified_on),
+        "residences": [item.strip() for item in (teacher.residences or "").split(",") if item.strip()],
+        "publicProfileSettings": json.loads(teacher.public_profile_settings or "{}"),
         "avatarUrl": storage_reference(teacher.avatar_url),
         "certificateUrl": _file_url(teacher.certificate_url),
         "phone": teacher.detail.phone if teacher.detail else None,
@@ -80,6 +90,30 @@ def update_teacher(teacher_id):
         teacher.real_name = str(payload["name"] or "").strip()
     if "xileName" in payload:
         teacher.xile_name = str(payload["xileName"] or "").strip() or None
+    if "alias" in payload:
+        teacher.alias = str(payload["alias"] or "").strip() or None
+    if "idNumber" in payload:
+        id_number = str(payload["idNumber"] or "").strip().upper()
+        if id_number and len(id_number) < 6:
+            return {"error": "身份证号至少需要 6 位"}, 400
+        duplicate = Teacher.query.filter(Teacher.id_number == id_number, Teacher.id != teacher.id).first() if id_number else None
+        if duplicate:
+            return {"error": "该身份证号已关联其他教师"}, 409
+        teacher.id_number = id_number or None
+    if "residences" in payload:
+        residences = payload["residences"]
+        teacher.residences = ",".join(str(item).strip() for item in residences if str(item).strip()) if isinstance(residences, list) else None
+    if "currentTierCertifiedOn" in payload:
+        value = str(payload["currentTierCertifiedOn"] or "").strip().replace(".", "-")
+        try:
+            teacher.current_tier_certified_on = date.fromisoformat(value) if value else None
+        except ValueError:
+            return {"error": "invalid currentTierCertifiedOn"}, 400
+    if "publicProfileSettings" in payload:
+        settings = payload["publicProfileSettings"]
+        if not isinstance(settings, dict):
+            return {"error": "invalid publicProfileSettings"}, 400
+        teacher.public_profile_settings = json.dumps(settings, ensure_ascii=False)
     if "city" in payload:
         teacher.city = str(payload["city"] or "").strip() or None
     if "district" in payload:
@@ -115,6 +149,11 @@ def create_teacher():
     name = (payload.get("name") or "").strip()
     if not name:
         return {"error": "name required"}, 400
+    id_number = (payload.get("idNumber") or "").strip().upper()
+    if id_number and len(id_number) < 6:
+        return {"error": "身份证号至少需要 6 位"}, 400
+    if id_number and Teacher.query.filter_by(id_number=id_number).first():
+        return {"error": "该身份证号已关联其他教师"}, 409
 
     valid_until_str = payload.get("expiryDate")
     valid_until = None
@@ -131,6 +170,7 @@ def create_teacher():
         district=payload.get("district", "").strip(),
         xile_name=payload.get("xileName", "").strip(),
         phone=payload.get("phone", "").strip(),
+        id_number=id_number,
         valid_until=valid_until,
     )
 
@@ -212,6 +252,7 @@ def _parse_import_row(row):
         "validUntil": _cell_str(row, 6),
         "xileName": _cell_str(row, 7),
         "teacherNo": _cell_str(row, 8),
+        "idNumber": _cell_str(row, 9).upper(),
     }
 
 
@@ -225,12 +266,12 @@ def import_template():
         workbook = openpyxl.Workbook()
         sheet = workbook.active
         sheet.title = "教师资料"
-        headers = ["姓名", "手机号", "认证等级", "城市", "地区", "首次认证日期", "有效期至", "喜乐名", "教师编号"]
+        headers = ["姓名", "手机号", "认证等级", "城市", "地区", "首次认证日期", "有效期至", "喜乐名", "教师编号", "身份证号"]
         sheet.append(headers)
-        sheet.append(["张三", "13800000000", "L1", "上海", "浦东新区", "2024-01-01", "2026-12-31", "张三老师", ""])
+        sheet.append(["张三", "13800000000", "L1", "上海", "浦东新区", "2024-01-01", "2026-12-31", "张三老师", "", "310101199001011234"])
         for cell in sheet[1]:
             cell.font = Font(bold=True)
-        for index, width in enumerate([16, 16, 12, 14, 16, 18, 16, 16, 16], start=1):
+        for index, width in enumerate([16, 16, 12, 14, 16, 18, 16, 16, 16, 22], start=1):
             sheet.column_dimensions[openpyxl.utils.get_column_letter(index)].width = width
         output = BytesIO()
         workbook.save(output)
@@ -266,6 +307,10 @@ def import_preview():
     existing_nos = set(
         no for (no,) in db.session.query(Teacher.teacher_no).all()
     )
+    existing_id_numbers = set(
+        number for (number,) in db.session.query(Teacher.id_number).filter(Teacher.id_number.isnot(None)).all()
+    )
+    seen_id_numbers = set()
 
     for idx, row in enumerate(rows, start=2):
         # Skip completely empty rows
@@ -304,6 +349,16 @@ def import_preview():
                 row_errors.append({"rowNumber": idx, "field": "teacherNo", "message": "编号已存在于系统中"})
             else:
                 seen_teacher_nos.add(data["teacherNo"])
+
+        if data["idNumber"]:
+            if len(data["idNumber"]) < 6:
+                row_errors.append({"rowNumber": idx, "field": "idNumber", "message": "身份证号至少需要 6 位"})
+            elif data["idNumber"] in seen_id_numbers:
+                row_errors.append({"rowNumber": idx, "field": "idNumber", "message": "身份证号在文件中重复"})
+            elif data["idNumber"] in existing_id_numbers:
+                row_errors.append({"rowNumber": idx, "field": "idNumber", "message": "身份证号已关联其他教师"})
+            else:
+                seen_id_numbers.add(data["idNumber"])
 
         if row_errors:
             errors.extend(row_errors)
@@ -421,6 +476,7 @@ def import_commit():
             teacher_no=teacher_no,
             real_name=data["name"],
             xile_name=data["xileName"] or None,
+            id_number=data["idNumber"] or None,
             tier_id=tier.id,
             city=data["city"] or None,
             district=data["district"] or None,

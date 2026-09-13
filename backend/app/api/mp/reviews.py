@@ -26,9 +26,10 @@ def submit_review_endpoint():
 
     files = payload.get("files") or []
     teaching_record_ids = payload.get("teachingRecordIds") or []
+    service_record_ids = payload.get("serviceRecordIds") or []
 
     try:
-        review = submit_review(user_id, teacher_id, review_year, files, teaching_record_ids)
+        review = submit_review(user_id, teacher_id, review_year, files, teaching_record_ids, service_record_ids)
     except ReviewError as e:
         return {"error": e.message}, e.status_code
 

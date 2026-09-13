@@ -364,29 +364,40 @@ def update_admin_role(admin_id):
 @require_admin_token
 @require_admin_roles("admin", "super_admin")
 def create_teacher_account():
-    """Create or reset a teacher's initial password account."""
+    """Create or reset a teacher password account using the standard rule."""
     payload = request.get_json(silent=True) or {}
     teacher_id = payload.get("teacherId")
-    username = (payload.get("username") or "").strip()
-    password = payload.get("password") or ""
-    if not teacher_id or not username or len(password) < 8:
-        return {"error": "teacherId, username and an 8-character password are required"}, 400
+    if not teacher_id:
+        return {"error": "请选择教师"}, 400
     teacher = db.session.get(Teacher, teacher_id)
     if not teacher:
-        return {"error": "teacher not found"}, 404
+        return {"error": "教师不存在"}, 404
+
+    # 身份证号仅在管理端保存和使用，不能由浏览器传入账号或密码。
+    id_number = (teacher.id_number or "").strip().upper()
+    if len(id_number) < 6:
+        return {"error": "请先在教师档案中填写有效身份证号"}, 400
+    username = id_number
+    password = f"Xile{id_number[-6:]}"
     user = User.query.filter_by(teacher_id=teacher_id).first()
     if user is None:
         user = User(teacher_id=teacher_id, role="teacher")
         db.session.add(user)
     duplicate = User.query.filter(User.username == username, User.id != user.id).first()
     if duplicate:
-        return {"error": "username already exists"}, 409
+        return {"error": "该身份证号已被其他教师账号使用"}, 409
     user.username = username
     user.password_hash = generate_password_hash(password, method="pbkdf2:sha256")
     user.must_change_password = True
     db.session.add(AuditLog(admin_id=current_admin_id() or 1, action="set_teacher_password", target_type="teacher", target_id=teacher_id))
     db.session.commit()
-    return {"id": user.id, "teacherId": teacher_id, "username": username, "mustChangePassword": True}, 201
+    return {
+        "id": user.id,
+        "teacherId": teacher_id,
+        "username": username,
+        "initialPassword": password,
+        "mustChangePassword": True,
+    }, 201
 
 
 @admin_bp.post("/teachers/<int:teacher_id>/link-code")
@@ -469,6 +480,8 @@ def update_user_role(user_id):
         teacher = db.session.get(Teacher, teacher_id)
         if teacher is None:
             return {"error": "teacher not found"}, 404
+        if len((teacher.id_number or "").strip()) < 6:
+            return {"error": "请先在教师档案中填写有效身份证号"}, 400
         existing_link = User.query.filter(User.teacher_id == teacher_id, User.id != user_id).first()
         if existing_link:
             return {"error": "该教师已关联其他小程序用户"}, 409

@@ -89,6 +89,10 @@
             <input v-model="createDraft.phone" placeholder="请输入手机号" />
           </label>
           <label>
+            身份证号
+            <input v-model="createDraft.idNumber" placeholder="用于教师账号登录及初始密码" />
+          </label>
+          <label>
             等级
             <select v-model="createDraft.level">
               <option value="L0">L0</option>
@@ -132,8 +136,16 @@
             <input v-model="editDraft.xileName" placeholder="喜乐名" />
           </label>
           <label>
+            别名
+            <input v-model="editDraft.alias" placeholder="用于未设置喜乐名时的公开显示" />
+          </label>
+          <label>
             手机号
             <input v-model="editDraft.phone" placeholder="手机号" />
+          </label>
+          <label>
+            身份证号
+            <input v-model="editDraft.idNumber" placeholder="用于教师账号登录及初始密码" />
           </label>
           <label>
             城市
@@ -142,6 +154,14 @@
           <label>
             地区
             <input v-model="editDraft.district" placeholder="区/县" />
+          </label>
+          <label>
+            经常居住地
+            <input v-model="editDraft.residencesText" placeholder="多个地区用逗号分隔" />
+          </label>
+          <label>
+            当前等级认证时间
+            <input v-model="editDraft.currentTierCertifiedOn" placeholder="如 2026-01-01" />
           </label>
           <label>
             管委会备注
@@ -171,22 +191,9 @@
           <h2>设置教师密码 — {{ accountDraft.name }}</h2>
           <button type="button" @click="showAccount = false">×</button>
         </div>
-        <div class="form-grid two">
-          <label>
-            <span class="field-label">登录用户名 <em>*</em></span>
-            <input v-model="accountDraft.username" required placeholder="教师在小程序登录用的用户名" />
-          </label>
-          <label>
-            <span class="field-label">初始密码 <em>*</em></span>
-            <span class="account-password-row">
-              <input v-model="accountDraft.password" required minlength="8" placeholder="至少 8 位" />
-              <button type="button" class="sync-btn" @click="regenPassword">换一个</button>
-            </span>
-          </label>
-        </div>
         <p class="account-hint">
-          微信登录后，建议优先使用「我的 → 关联教师身份」输入管理员生成的关联码。
-          此处仅为需要账号密码登录的教师设置兼容密码；重复设置将重置密码。
+          教师账号统一使用身份证号登录，初始密码为 <strong>Xile + 身份证后六位</strong>。
+          确认后会重置为该初始密码，教师首次登录必须修改密码；请先在教师档案填写身份证号。
         </p>
         <div class="modal-actions">
           <button type="button" class="sync-btn" @click="showAccount = false">取消</button>
@@ -231,6 +238,8 @@ const pageSize = 15
 const createDraft = reactive({
   name: '',
   xileName: '',
+  alias: '',
+  idNumber: '',
   phone: '',
   level: 'L2',
   city: '',
@@ -242,12 +251,16 @@ const editDraft = reactive({
   certNo: '',
   name: '',
   xileName: '',
+  alias: '',
+  idNumber: '',
   phone: '',
   city: '',
   district: '',
   committeeRemark: '',
   avatarUrl: '',
   certificateUrl: '',
+  residencesText: '',
+  currentTierCertifiedOn: '',
 })
 
 async function loadTeachers() {
@@ -293,6 +306,7 @@ watch(filters, () => { currentPage.value = 1 }, { deep: true })
 function openCreate() {
   createDraft.name = ''
   createDraft.xileName = ''
+  createDraft.idNumber = ''
   createDraft.phone = ''
   createDraft.level = 'L2'
   createDraft.city = ''
@@ -305,12 +319,16 @@ function openEdit(teacher) {
   editDraft.certNo = teacher.certNo
   editDraft.name = teacher.name
   editDraft.xileName = teacher.xileName || ''
+  editDraft.alias = teacher.alias || ''
+  editDraft.idNumber = teacher.idNumber || ''
   editDraft.phone = teacher.phone === '未登记' ? '' : (teacher.phone || '')
   editDraft.city = teacher.city || ''
   editDraft.district = teacher.district || ''
   editDraft.committeeRemark = teacher.committeeRemark || ''
   editDraft.avatarUrl = teacher.avatarUrl || ''
   editDraft.certificateUrl = teacher.certificateUrl || ''
+  editDraft.residencesText = Array.isArray(teacher.residences) ? teacher.residences.join(', ') : ''
+  editDraft.currentTierCertifiedOn = teacher.currentTierCertifiedOn || ''
   showEdit.value = true
 }
 
@@ -318,6 +336,7 @@ async function handleCreate() {
   await createTeacher({
     name: createDraft.name,
     xileName: createDraft.xileName,
+    idNumber: createDraft.idNumber,
     phone: createDraft.phone,
     level: createDraft.level,
     city: createDraft.city,
@@ -332,12 +351,16 @@ async function handleUpdate() {
   await updateTeacher(editDraft.id, {
     name: editDraft.name,
     xileName: editDraft.xileName,
+    alias: editDraft.alias,
+    idNumber: editDraft.idNumber,
     phone: editDraft.phone,
     city: editDraft.city,
     district: editDraft.district,
     committeeRemark: editDraft.committeeRemark,
     avatarUrl: editDraft.avatarUrl,
     certificateUrl: editDraft.certificateUrl,
+    residences: editDraft.residencesText.split(/[,，]/).map((item) => item.trim()).filter(Boolean),
+    currentTierCertifiedOn: editDraft.currentTierCertifiedOn,
   })
   showEdit.value = false
   toast('教师信息已更新')
@@ -353,7 +376,7 @@ async function handleDelete(teacher) {
 
 const showAccount = ref(false)
 const showLinkCode = ref(false)
-const accountDraft = reactive({ teacherId: null, name: '', username: '', password: '' })
+const accountDraft = reactive({ teacherId: null, name: '' })
 const linkCodeDraft = reactive({ name: '', code: '', expiresAt: '' })
 
 function formatLinkCodeExpiry(value) {
@@ -370,35 +393,17 @@ function formatLinkCodeExpiry(value) {
   }).format(date).replace(/\//g, '-')
 }
 
-function genPassword() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789'
-  let pwd = ''
-  for (let i = 0; i < 12; i++) pwd += chars[Math.floor(Math.random() * chars.length)]
-  return pwd
-}
-
 function openAccount(teacher) {
   accountDraft.teacherId = teacher.id
   accountDraft.name = teacher.name
-  accountDraft.username = ''
-  accountDraft.password = genPassword()
   showAccount.value = true
 }
 
-function regenPassword() {
-  accountDraft.password = genPassword()
-}
-
 async function handleAssignAccount() {
-  const username = accountDraft.username.trim()
   try {
-    await createTeacherAccount({
-      teacherId: accountDraft.teacherId,
-      username,
-      password: accountDraft.password,
-    })
+    const account = await createTeacherAccount({ teacherId: accountDraft.teacherId })
     showAccount.value = false
-    toast(`账号已分配：${username} / ${accountDraft.password}，请及时告知教师`)
+    toast(`账号：${account.username}；初始密码：${account.initialPassword}`)
   } catch (e) {
     const message = e?.response?.data?.error || e?.message || '分配失败，请重试'
     toast(message, 'info')
@@ -454,16 +459,6 @@ async function uploadTeacherAsset(event, assetType, targetField) {
   color: var(--brand-green);
   font-weight: 800;
 }
-.account-password-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.account-password-row input {
-  flex: 1;
-}
-
 .account-hint {
   margin: 4px 0 0;
   font-size: 12px;

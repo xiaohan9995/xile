@@ -9,3 +9,4 @@ from . import studios  # noqa: F401, E402
 from . import reviews  # noqa: F401, E402
 from . import uploads  # noqa: F401, E402
 from . import teaching_records  # noqa: F401, E402
+from . import service_records  # noqa: F401, E402

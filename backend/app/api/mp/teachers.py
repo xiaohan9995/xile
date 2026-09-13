@@ -1,3 +1,4 @@
+import json
 from datetime import date
 import os
 
@@ -17,6 +18,8 @@ from .helpers import (
     _studio_summary,
     _teacher_profile,
     _teacher_summary,
+    _public_profile_settings,
+    _residences,
     escape_like,
 )
 from . import mp_bp
@@ -103,7 +106,7 @@ def search_teachers():
     city = request.args.get("city", "").strip()
     tier = request.args.get("tier", "").strip()
     mode = request.args.get("mode", "name").strip()
-    if mode not in ("name", "certificate", "region"):
+    if mode not in ("name", "certificate", "region", "tier"):
         return {"error": "invalid search mode"}, 400
     try:
         page = max(int(request.args.get("page", 1)), 1)
@@ -199,6 +202,59 @@ def get_my_certification():
         teacher.avatar_url = user.avatar_url
         db.session.commit()
     return _certification_payload(teacher, include_reviews=True)
+
+
+@mp_bp.get("/teachers/me/public-profile")
+@jwt_required()
+def get_my_public_profile():
+    user = db.session.get(User, int(get_jwt_identity()))
+    if not user or not user.teacher_id:
+        return {"error": "仅已关联教师可维护公开资料"}, 403
+    teacher = Teacher.query.filter(Teacher.id == user.teacher_id, Teacher.status != "hidden").first_or_404()
+    return {
+        "xileName": teacher.xile_name or "",
+        "alias": teacher.alias or "",
+        "residences": _residences(teacher),
+        "teachingSummary": teacher.detail.teaching_summary if teacher.detail else "",
+        "currentTierCertifiedOn": _date_text(teacher.current_tier_certified_on),
+        "visibility": _public_profile_settings(teacher),
+    }
+
+
+@mp_bp.put("/teachers/me/public-profile")
+@jwt_required()
+def update_my_public_profile():
+    user = db.session.get(User, int(get_jwt_identity()))
+    if not user or not user.teacher_id:
+        return {"error": "仅已关联教师可维护公开资料"}, 403
+    teacher = Teacher.query.filter(Teacher.id == user.teacher_id, Teacher.status != "hidden").first_or_404()
+    payload = request.get_json(silent=True) or {}
+    if "alias" in payload:
+        teacher.alias = str(payload["alias"] or "").strip()[:32] or None
+    if "residences" in payload:
+        residences = payload["residences"]
+        if not isinstance(residences, list):
+            return {"error": "常住地格式无效"}, 400
+        teacher.residences = ",".join(str(item).strip()[:64] for item in residences if str(item).strip()) or None
+    if "teachingSummary" in payload:
+        if not teacher.detail:
+            from ...models import TeacherDetail
+            teacher.detail = TeacherDetail(teacher_id=teacher.id)
+        teacher.detail.teaching_summary = str(payload["teachingSummary"] or "").strip() or None
+    if "currentTierCertifiedOn" in payload:
+        value = str(payload["currentTierCertifiedOn"] or "").strip()
+        try:
+            teacher.current_tier_certified_on = date.fromisoformat(value) if value else None
+        except ValueError:
+            return {"error": "当前等级认证时间格式无效"}, 400
+    if "visibility" in payload:
+        visibility = payload["visibility"]
+        if not isinstance(visibility, dict):
+            return {"error": "公开设置格式无效"}, 400
+        allowed = {"showAlias", "showResidences", "showBio", "showFirstCertifiedOn", "showCurrentTierCertifiedOn"}
+        teacher.public_profile_settings = json.dumps({key: bool(visibility.get(key, default)) for key, default in _public_profile_settings(teacher).items() if key in allowed}, ensure_ascii=False)
+    db.session.commit()
+    return get_my_public_profile()
 
 
 @mp_bp.get("/teachers/<int:teacher_id>/certification")

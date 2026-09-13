@@ -18,6 +18,8 @@ from .review_opinion import ReviewOpinion
 from .teaching_record import TeachingRecord
 from .review_teaching_record import ReviewTeachingRecord
 from .teacher_link_code import TeacherLinkCode
+from .service_record import ServiceRecord
+from .review_service_record import ReviewServiceRecord
 
 __all__ = [
     "TeacherTier",
@@ -40,4 +42,6 @@ __all__ = [
     "TeachingRecord",
     "ReviewTeachingRecord",
     "TeacherLinkCode",
+    "ServiceRecord",
+    "ReviewServiceRecord",
 ]

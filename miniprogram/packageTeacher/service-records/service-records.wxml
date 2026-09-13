@@ -1,0 +1,19 @@
+<view class="page-shell service-page">
+  <view class="page-header" style="padding-top:{{statusBarHeight}}px;"><view class="page-header__back" bindtap="goBack">‹</view><text class="page-header__title">服务记录</text><navigator class="page-header__right page-header__home" url="/pages/index/index" open-type="reLaunch">首页</navigator></view>
+  <view class="content">
+    <view class="intro"><text class="section-eyebrow">SERVICE LOG</text><text class="intro__title">记录每一次服务</text><text class="intro__text">已提交的服务推广活动可在年审申请时作为佐证引用。</text><button class="btn-primary" bindtap="toggleForm">{{showForm ? '收起表单' : '新增服务记录'}}</button></view>
+    <view wx:if="{{showForm}}" class="form-card">
+      <text class="form-card__title">填写本次服务</text><text class="form-card__hint">日期、服务类型和活动名称为必填项</text>
+      <picker mode="date" value="{{form.servedOn}}" bindchange="input" data-field="servedOn"><view class="field">{{form.servedOn || '选择服务日期'}}</view></picker>
+      <picker mode="selector" range="{{types}}" value="{{typeIndex}}" bindchange="chooseType"><view class="field">{{types[typeIndex]}}</view></picker>
+      <input class="field" placeholder="服务活动名称" value="{{form.title}}" bindinput="input" data-field="title" />
+      <input class="field" placeholder="服务地点或对象（可选）" value="{{form.location}}" bindinput="input" data-field="location" />
+      <textarea class="field field--area" placeholder="服务内容说明（可选）" value="{{form.description}}" bindinput="input" data-field="description" />
+      <view class="evidence-row" bindtap="chooseEvidence"><text>添加佐证附件（可选）</text><text wx:if="{{form.evidenceName}}">{{form.evidenceName}}</text></view>
+      <view class="record-actions"><button class="btn-secondary" bindtap="saveDraft" loading="{{saving}}">保存草稿</button><button class="btn-primary" bindtap="submit" loading="{{saving}}">提交记录</button></view>
+    </view>
+    <view wx:if="{{!loading && records.length === 0}}" class="empty"><text class="empty__mark">01</text><text>暂无服务记录</text><text>第一条服务记录可成为年审材料的一部分。</text></view>
+    <view wx:for="{{records}}" wx:key="id" class="record-card"><text class="record-index">{{item.status === 'draft' ? '草稿' : '已提交'}}</text><view><text class="record-title">{{item.title}}</text><text class="record-meta">{{item.servedOn}} · {{item.serviceType}}</text><text wx:if="{{item.location}}" class="record-meta">{{item.location}}</text></view><text wx:if="{{item.description}}" class="record-description">{{item.description}}</text></view>
+  </view>
+  <tab-bar active="my" />
+</view>

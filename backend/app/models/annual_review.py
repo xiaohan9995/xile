@@ -34,3 +34,4 @@ class AnnualReview(db.Model):
     files = db.relationship("ReviewFile", backref="review", lazy="dynamic")
     opinions = db.relationship("ReviewOpinion", backref="review", lazy="dynamic", cascade="all, delete-orphan")
     teaching_records = db.relationship("ReviewTeachingRecord", backref="review", lazy="dynamic", cascade="all, delete-orphan")
+    service_records = db.relationship("ReviewServiceRecord", backref="review", lazy="dynamic", cascade="all, delete-orphan")
