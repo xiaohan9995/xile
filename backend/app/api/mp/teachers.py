@@ -123,13 +123,13 @@ def search_teachers():
 
     query = Teacher.query.filter(Teacher.status != "hidden")
     if mode == "certificate" and keyword:
-        query = query.filter(Teacher.teacher_no == keyword)
+        query = query.filter(Teacher.certificate_no == keyword)
     elif mode == "name" and keyword:
         like_keyword = f"%{escape_like(keyword)}%"
         query = query.filter(
             (Teacher.real_name.like(like_keyword))
             | (Teacher.xile_name.like(like_keyword))
-            | (Teacher.teacher_no.like(like_keyword))
+            | (Teacher.certificate_no.like(like_keyword))
         )
     if city:
         query = query.filter(Teacher.city == city)
@@ -303,7 +303,7 @@ def generate_certificate_image():
             return send_file(
                 BytesIO(content),
                 mimetype=content_type.split(";", 1)[0],
-                download_name=f"cert_{teacher.teacher_no}.png",
+                download_name=f"cert_{teacher.certificate_no or teacher.id}.png",
                 max_age=0,
             )
         except StorageNotConfiguredError:
@@ -346,7 +346,7 @@ def generate_certificate_image():
     cert_date = teacher.first_certified_on.strftime("%Y年%m月%d日") if teacher.first_certified_on else "--"
     valid_date = teacher.valid_until.strftime("%Y年%m月%d日") if teacher.valid_until else "--"
 
-    for line in [f"姓名：{teacher.real_name}", f"编号：{teacher.teacher_no}", f"等级：{tier_code} {tier_name}", f"认证日期：{cert_date}", f"有效期至：{valid_date}"]:
+    for line in [f"姓名：{teacher.real_name}", f"编号：{teacher.certificate_no or '--'}", f"等级：{tier_code} {tier_name}", f"认证日期：{cert_date}", f"有效期至：{valid_date}"]:
         draw.text((120, y), line, fill="#1F2521", font=font_body)
         y += 55
 
@@ -369,7 +369,7 @@ def generate_certificate_image():
         try:
             teacher.certificate_url = upload_to_cos(
                 buffer,
-                f"teacher-certificates/generated/{teacher.teacher_no}.png",
+                f"teacher-certificates/generated/{teacher.certificate_no or teacher.id}.png",
                 "image/png",
             )
             db.session.commit()
@@ -377,7 +377,7 @@ def generate_certificate_image():
             return send_file(
                 BytesIO(content),
                 mimetype=content_type.split(";", 1)[0],
-                download_name=f"cert_{teacher.teacher_no}.png",
+                download_name=f"cert_{teacher.certificate_no or teacher.id}.png",
                 max_age=0,
             )
         except StorageNotConfiguredError:
@@ -385,4 +385,4 @@ def generate_certificate_image():
     if not (current_app.debug or current_app.testing):
         return {"error": "对象存储未配置，无法生成电子证书"}, 503
 
-    return send_file(buffer, mimetype="image/png", download_name=f"cert_{teacher.teacher_no}.png")
+    return send_file(buffer, mimetype="image/png", download_name=f"cert_{teacher.certificate_no or teacher.id}.png")

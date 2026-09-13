@@ -26,7 +26,7 @@ def review_queue():
             "id": review.id,
             "teacherId": review.teacher_id,
             "teacherName": review.teacher.real_name if review.teacher else None,
-            "teacherNo": review.teacher.teacher_no if review.teacher else None,
+            "teacherNo": review.teacher.certificate_no if review.teacher else None,
             "xileName": review.teacher.xile_name if review.teacher else None,
             "tier": review.teacher.tier.code if review.teacher and review.teacher.tier else None,
             "city": review.teacher.city if review.teacher else None,

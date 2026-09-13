@@ -93,6 +93,10 @@
             <input v-model="createDraft.idNumber" placeholder="用于教师账号登录及初始密码" />
           </label>
           <label>
+            证书编号
+            <input v-model="createDraft.certNo" placeholder="未认证教师留空" />
+          </label>
+          <label>
             等级
             <select v-model="createDraft.level">
               <option value="L0">L0</option>
@@ -146,6 +150,10 @@
           <label>
             身份证号
             <input v-model="editDraft.idNumber" placeholder="用于教师账号登录及初始密码" />
+          </label>
+          <label>
+            证书编号
+            <input v-model="editDraft.certNo" placeholder="未认证教师留空" />
           </label>
           <label>
             城市
@@ -240,6 +248,7 @@ const createDraft = reactive({
   xileName: '',
   alias: '',
   idNumber: '',
+  certNo: '',
   phone: '',
   level: 'L2',
   city: '',
@@ -307,6 +316,7 @@ function openCreate() {
   createDraft.name = ''
   createDraft.xileName = ''
   createDraft.idNumber = ''
+  createDraft.certNo = ''
   createDraft.phone = ''
   createDraft.level = 'L2'
   createDraft.city = ''
@@ -337,6 +347,7 @@ async function handleCreate() {
     name: createDraft.name,
     xileName: createDraft.xileName,
     idNumber: createDraft.idNumber,
+    certificateNo: createDraft.certNo,
     phone: createDraft.phone,
     level: createDraft.level,
     city: createDraft.city,
@@ -353,6 +364,7 @@ async function handleUpdate() {
     xileName: editDraft.xileName,
     alias: editDraft.alias,
     idNumber: editDraft.idNumber,
+    certificateNo: editDraft.certNo,
     phone: editDraft.phone,
     city: editDraft.city,
     district: editDraft.district,

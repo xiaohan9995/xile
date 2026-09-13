@@ -204,7 +204,7 @@ def link_user_to_teacher_by_phone(user, phone_number):
     # not turn an incomplete historical record into a 500/400 login failure;
     # once an administrator creates the ID-number account, its normal
     # must-change-password policy still applies.
-    if (teacher.id_number or "").strip():
+    if (teacher.teacher_no or "").strip():
         _ensure_initial_teacher_password(user, teacher)
     return teacher
 
@@ -301,7 +301,7 @@ def _ensure_initial_teacher_password(user, teacher):
     """Give legacy link flows a usable one-time password when none exists."""
     if user.password_hash:
         return
-    id_number = (teacher.id_number or "").strip().upper()
+    id_number = (teacher.teacher_no or "").strip().upper()
     if len(id_number) < 6:
         raise AuthError("教师档案缺少有效身份证号，请联系管理员", 400)
     duplicate = User.query.filter(User.username == id_number, User.id != user.id).first()
@@ -318,7 +318,7 @@ def link_wechat_user_to_teacher_by_password(user, id_number, password):
         raise AuthError("请先使用微信登录再关联教师身份", 403)
     normalized_id_number = "".join(str(id_number or "").strip().upper().split())
     teacher = Teacher.query.filter(
-        Teacher.id_number == normalized_id_number,
+        Teacher.teacher_no == normalized_id_number,
         Teacher.status != "hidden",
     ).first()
     if not teacher:

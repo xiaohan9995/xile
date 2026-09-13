@@ -105,7 +105,8 @@ def seed_demo_data():
 
     teachers = [
         Teacher(
-            teacher_no="JY20230001",
+            teacher_no="310101199001011231",
+            certificate_no="JY20230001",
             real_name="张三",
             xile_name="善悦",
             tier=tiers["L3"],
@@ -117,7 +118,8 @@ def seed_demo_data():
             avatar_url="/static/demo/teacher-zhangsan.jpg",
         ),
         Teacher(
-            teacher_no="JY20230002",
+            teacher_no="310101199002021232",
+            certificate_no="JY20230002",
             real_name="李四",
             xile_name="清心",
             tier=tiers["L2"],
@@ -129,7 +131,8 @@ def seed_demo_data():
             avatar_url="/static/demo/teacher-lisi.jpg",
         ),
         Teacher(
-            teacher_no="JY20230003",
+            teacher_no="310101199003031233",
+            certificate_no="JY20230003",
             real_name="王五",
             xile_name="自在",
             tier=tiers["L1"],
@@ -141,7 +144,8 @@ def seed_demo_data():
             avatar_url="/static/demo/teacher-wangwu.jpg",
         ),
         Teacher(
-            teacher_no="JY20230004",
+            teacher_no="310101199004041234",
+            certificate_no="JY20230004",
             real_name="海六",
             xile_name="明净",
             tier=tiers["L4"],
@@ -153,7 +157,8 @@ def seed_demo_data():
             avatar_url="/static/demo/teacher-hailiu.jpg",
         ),
         Teacher(
-            teacher_no="JY20230005",
+            teacher_no="310101199005051235",
+            certificate_no="JY20230005",
             real_name="畅琦",
             xile_name="喜乐",
             tier=tiers["L5"],

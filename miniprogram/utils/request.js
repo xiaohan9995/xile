@@ -57,6 +57,8 @@ const normalizeUserMessage = (value, fallback = '操作失败，请稍后重试'
   if (/internal\s+server\s+error|server\s+error|服务器内部错误/.test(lower)) return '服务暂时不可用，请稍后重试';
   if (/accessdenied|access denied|forbidden|拒绝访问/.test(lower)) return '图片暂时无法访问，请稍后重试';
   if (/unauthorized|未授权/.test(lower)) return '登录已过期，请重新登录';
+  if (/invalid\s+(username\s+or\s+password|credentials?)|用户名或密码错误/.test(lower)) return '身份证号或密码错误';
+  if (/username\s+and\s+password\s+required|身份证号和密码.*(必填|请输入)/.test(lower)) return '请输入身份证号和密码';
   if (/network|timeout|网络|超时/.test(lower)) return '网络连接失败，请检查网络后重试';
   // Toasts should remain readable even if an upstream service returns a long
   // diagnostic string (request IDs and XML are not useful to end users).

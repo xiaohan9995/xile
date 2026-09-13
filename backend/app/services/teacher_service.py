@@ -22,18 +22,18 @@ def refresh_status(teacher):
         db.session.commit()
 
 
-def generate_teacher_no():
+def generate_certificate_no():
     year = date.today().year
     prefix = f"JY{year}"
     existing = {
-        teacher_no for (teacher_no,) in db.session.query(Teacher.teacher_no)
-        .filter(Teacher.teacher_no.like(f"{prefix}%"))
+        certificate_no for (certificate_no,) in db.session.query(Teacher.certificate_no)
+        .filter(Teacher.certificate_no.like(f"{prefix}%"))
         .all()
     }
     sequences = []
     pattern = re.compile(rf"^{re.escape(prefix)}(\d+)$")
-    for teacher_no in existing:
-        match = pattern.match(teacher_no or "")
+    for certificate_no in existing:
+        match = pattern.match(certificate_no or "")
         if match:
             sequences.append(int(match.group(1)))
 
@@ -47,7 +47,8 @@ def generate_teacher_no():
 
 
 def create_teacher(name, tier_code="L1", city=None, district=None, xile_name=None,
-                   phone=None, valid_until=None, id_number=None):
+                   phone=None, valid_until=None, id_number=None, certificate_no=None,
+                   certified_on=None):
     tier_code = (tier_code or "L1").strip().upper()
     if not tier_code.startswith("L"):
         tier_code = "L1"
@@ -59,19 +60,23 @@ def create_teacher(name, tier_code="L1", city=None, district=None, xile_name=Non
         year = date.today().year
         valid_until = date(year + 3, 12, 31)
 
-    # A concurrent create can select the same next number between the read and
-    # commit. Retry with a freshly generated number after rolling back.
+    id_number = (id_number or "").strip().upper()
+    if len(id_number) < 6:
+        raise ValueError("身份证号至少需要 6 位")
+    # A concurrent certificate-number allocation can collide between the read
+    # and commit. Teacher numbers themselves are ID credentials and supplied
+    # by the administrator.
     for _ in range(3):
         teacher = Teacher(
-            teacher_no=generate_teacher_no(),
+            teacher_no=id_number,
+            certificate_no=certificate_no or (generate_certificate_no() if certified_on else None),
             real_name=name,
             xile_name=xile_name or None,
-            id_number=id_number or None,
             tier_id=tier.id,
             city=city or None,
             district=district or None,
             status="active",
-            first_certified_on=date.today(),
+            first_certified_on=certified_on,
             valid_until=valid_until,
         )
         db.session.add(teacher)
@@ -84,4 +89,4 @@ def create_teacher(name, tier_code="L1", city=None, district=None, xile_name=Non
         except IntegrityError:
             db.session.rollback()
 
-    raise RuntimeError("教师编号生成失败，请稍后重试")
+    raise RuntimeError("教师身份证号或证书编号重复，请稍后重试")

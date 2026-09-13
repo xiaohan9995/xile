@@ -6,10 +6,10 @@ class Teacher(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     teacher_no = db.Column(db.String(32), unique=True, nullable=False, index=True)
+    certificate_no = db.Column(db.String(32), unique=True, nullable=True, index=True)
     real_name = db.Column(db.String(32), nullable=False, index=True)
     xile_name = db.Column(db.String(32), index=True)
     alias = db.Column(db.String(32), index=True)
-    id_number = db.Column(db.String(32), unique=True, index=True)
     tier_id = db.Column(db.Integer, db.ForeignKey("teacher_tiers.id"), nullable=False, index=True)
     city = db.Column(db.String(32), index=True)
     district = db.Column(db.String(32))

@@ -26,7 +26,7 @@ def _teacher_summary(teacher):
     settings = _public_profile_settings(teacher)
     return {
         "id": teacher.id,
-        "teacherNo": teacher.teacher_no,
+        "teacherNo": teacher.certificate_no,
         "name": _display_name(teacher),
         "xileName": teacher.xile_name,
         "alias": teacher.alias if settings["showAlias"] else None,
