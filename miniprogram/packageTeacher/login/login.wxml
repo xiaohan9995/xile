@@ -12,13 +12,13 @@
       <text class="login-card__heading">微信一键登录</text>
       <text class="login-card__sub">登录后即可浏览认证服务。讲师可继续查看证书、年审与教学记录。</text>
 
-      <button class="wechat-btn" bindtap="onWechatLogin" loading="{{loading}}" disabled="{{loading}}">
-        <image class="wechat-btn__icon" src="/assets/icons/wechat.svg" mode="aspectFit" alt="" />
+      <button class="btn-primary" bindtap="onWechatLogin" loading="{{loading}}" disabled="{{loading}}">
+        <image class="login-btn__icon" src="/assets/icons/wechat.svg" mode="aspectFit" alt="" />
         <text>使用微信登录</text>
       </button>
 
       <view class="login-divider"><text>或</text></view>
-      <button class="account-btn" bindtap="goPasswordLogin">使用教师账号登录</button>
+      <button class="btn-secondary" bindtap="goPasswordLogin">使用教师账号登录</button>
       <text class="security-note">手机号不是登录必填项；如需关联教师档案，可在个人设置中自愿绑定。</text>
     </view>
   </view>

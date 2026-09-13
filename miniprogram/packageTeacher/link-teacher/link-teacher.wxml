@@ -23,7 +23,7 @@
       <text class="code-label code-label--password">初始密码</text>
       <input class="code-input code-input--password" password value="{{password}}" maxlength="64" placeholder="身份证号后六位" placeholder-class="code-placeholder" bindinput="onPasswordInput" />
       <text class="code-note">每位教师只能关联一个微信账号；关联后必须立即设置新密码。</text>
-      <button class="link-button" bindtap="submit" loading="{{submitting}}" disabled="{{submitting}}">确认关联</button>
+      <button class="btn-primary" bindtap="submit" loading="{{submitting}}" disabled="{{submitting}}">确认关联</button>
     </view>
 
     <view class="support-row">

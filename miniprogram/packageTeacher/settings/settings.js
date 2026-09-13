@@ -6,6 +6,7 @@ const app = getApp();
 Page({
   data: {
     statusBarHeight: 20,
+    themeColor: '#426d58',
     nickname: '',
     xileName: '',
     isTeacher: false,

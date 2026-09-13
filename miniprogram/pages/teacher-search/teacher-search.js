@@ -4,7 +4,7 @@ const auth = require('../../utils/auth');
 const app = getApp();
 let _searchTimer = null;
 
-const TIER_OPTIONS = ['全部登记', 'L0', 'L1', 'L2', 'L3', 'L4', 'L5'];
+const TIER_OPTIONS = ['全部登记', 'L0', 'L1', 'L2', 'L3', 'L4'];
 
 Page({
   data: {

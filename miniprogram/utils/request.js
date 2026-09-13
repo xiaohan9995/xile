@@ -68,7 +68,9 @@ const normalizeUserMessage = (value, fallback = '操作失败，请稍后重试'
 // A 401 returned while submitting credentials means the credentials were not
 // accepted. It is not an expired existing session and must not clear storage.
 const isCredentialLoginRequest = (url = '') => (
-  url === '/api/mp/auth/password-login' || url === '/api/mp/auth/cloudbase-login'
+  url === '/api/mp/auth/password-login'
+  || url === '/api/mp/auth/cloudbase-login'
+  || url === '/api/mp/auth/link-teacher-by-password'
 );
 
 const messageForError = (statusCode, code, payload = {}, options = {}) => {

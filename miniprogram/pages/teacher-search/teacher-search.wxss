@@ -12,16 +12,17 @@
 }
 
 .search-mode-row { display:flex; flex-wrap:wrap; gap:12rpx; margin-bottom:20rpx; }
-.search-mode { flex:1 1 42%; min-height:72rpx; display:flex; align-items:center; justify-content:center; border-radius:16rpx; background:#fff; border:1rpx solid var(--color-line); color:var(--color-muted); font-size:23rpx; }
-.search-mode--active { border-color:var(--color-primary); background:rgba(93,114,97,.1); color:var(--color-primary-dark); font-weight:700; }
+.search-mode { flex:1 1 42%; min-height:72rpx; display:flex; align-items:center; justify-content:center; border-radius:var(--radius-base); background:var(--color-card); border:1rpx solid var(--color-line); color:var(--color-muted); font-size:24rpx; transition:background .2s ease; }
+.search-mode:active { background:var(--color-surface); }
+.search-mode--active { border-color:var(--color-primary); background:rgba(66,109,88,.1); color:var(--color-primary-dark); font-weight:700; }
 
 .search-box {
   display: grid;
   grid-template-columns: 1fr 88rpx;
   height: 88rpx;
   border: 1rpx solid var(--color-line);
-  border-radius: 24rpx;
-  background: #fbfaf7;
+  border-radius: var(--radius-md);
+  background: var(--color-card);
   overflow: hidden;
 }
 
@@ -50,6 +51,10 @@
   color: #fff;
 }
 
+.search-btn:active {
+  background: var(--color-primary-dark);
+}
+
 .search-btn-icon {
   font-size: 32rpx;
   color: #FFFFFF;
@@ -65,17 +70,23 @@
 .filter-pill {
   flex: 1;
   height: 80rpx;
-  border-radius: 40rpx;
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24rpx;
+  font-size: 26rpx;
+  font-weight: 500;
   color: var(--color-muted);
   background: rgba(255, 255, 255, 0.62);
+  transition: background 0.2s ease;
+}
+
+.filter-pill:active {
+  background: rgba(66, 109, 88, 0.12);
 }
 
 .filter-pill--active {
-  background: rgba(120, 136, 122, 0.12);
+  background: rgba(66, 109, 88, 0.14);
   color: var(--color-primary-dark);
   font-weight: 600;
 }
@@ -89,42 +100,8 @@
 }
 
 /* ===== Empty State ===== */
-.empty-state {
-  margin-top: 80rpx;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: 12rpx;
-}
-
-.empty-text {
-  font-size: 28rpx;
-  color: var(--color-text);
-  font-weight: 600;
-}
-
-.empty-hint {
-  font-size: 24rpx;
-  color: var(--color-muted);
-}
-
-/* ===== Load More ===== */
-.load-more {
-  padding: 32rpx 0;
-  text-align: center;
-}
-
-.load-more-text {
-  font-size: 24rpx;
-  color: var(--color-muted);
-}
-
-.error-tip {
-  padding: 24rpx 32rpx;
-  font-size: 24rpx;
-  color: var(--color-danger);
-  text-align: center;
-}
+/* .empty-state / .empty-text / .empty-hint / .load-more / .error-tip
+   are provided globally in app.wxss */
 
 .card-location-text {
   font-size: 22rpx;

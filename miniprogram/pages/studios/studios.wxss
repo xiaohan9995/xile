@@ -14,7 +14,7 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  box-shadow: 0 44rpx 84rpx rgba(95, 115, 101, 0.2);
+  box-shadow: var(--shadow-elevated);
 }
 
 .studio-hero__bg {
@@ -39,9 +39,11 @@
 }
 
 .studio-hero__eyebrow {
-  font-size: 24rpx;
+  display: block;
+  font-size: 20rpx;
+  font-weight: 700;
   color: rgba(255, 255, 255, 0.82);
-  letter-spacing: 2rpx;
+  letter-spacing: 3rpx;
 }
 
 .studio-hero__heading {
@@ -57,7 +59,7 @@
   align-self: flex-start;
   margin-top: 12rpx;
   padding: 12rpx 24rpx;
-  border-radius: 999rpx;
+  border-radius: var(--radius-full);
   background: rgba(255, 255, 255, 0.22);
 }
 
@@ -75,9 +77,9 @@
   display: grid;
   grid-template-columns: 1fr 88rpx;
   height: 88rpx;
-  border-radius: 24rpx;
+  border-radius: var(--radius-md);
   border: 1rpx solid var(--color-line);
-  background: #fff;
+  background: var(--color-card);
   overflow: hidden;
 }
 
@@ -96,8 +98,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-primary-dark);
+  background: var(--color-primary);
   color: #fff;
+}
+
+.search-box__btn:active {
+  background: var(--color-primary-dark);
 }
 
 .search-box__btn-icon {
@@ -118,15 +124,20 @@
   height: 80rpx;
   padding: 0 28rpx;
   margin-right: 16rpx;
-  border-radius: 36rpx;
+  border-radius: var(--radius-full);
   background: rgba(255, 255, 255, 0.62);
   color: var(--color-muted);
   font-size: 26rpx;
   font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.filter-pill:active {
+  background: rgba(66, 109, 88, 0.12);
 }
 
 .filter-pill--active {
-  background: rgba(143, 165, 141, 0.18);
+  background: rgba(66, 109, 88, 0.14);
   color: var(--color-primary-dark);
   font-weight: 600;
 }
@@ -143,8 +154,8 @@
 .empty-card {
   margin: 40rpx 32rpx;
   padding: 80rpx 40rpx;
-  background: #fff;
-  border-radius: var(--radius-xl);
+  background: var(--color-card);
+  border-radius: var(--radius-md);
   border: 1rpx solid var(--color-line);
   display: flex;
   flex-direction: column;
@@ -172,20 +183,16 @@
 .empty-action {
   margin-top: 28rpx;
   padding: 12rpx 36rpx;
-  border-radius: 999rpx;
-  background: var(--color-primary-dark);
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
   color: #fff;
   font-size: 24rpx;
   font-weight: 700;
 }
 
-/* ---- Loading ---- */
-.load-more {
-  padding: 32rpx 0;
-  text-align: center;
+.empty-action:active {
+  opacity: 0.85;
 }
 
-.load-more-text {
-  font-size: 24rpx;
-  color: var(--color-muted);
-}
+/* ---- Loading ---- */
+/* .load-more / .load-more-text are provided globally in app.wxss */

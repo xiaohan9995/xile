@@ -13,7 +13,6 @@
   <!-- Body content -->
   <view class="home-body">
     <view class="home-intro">
-      <text class="section-eyebrow">认证服务</text>
       <text class="section-title">喜乐瑜伽教师管理认证</text>
       <text class="home-intro__note">当每一滴水珠汇入海洋，当每一位船工挥动船桨，凤凰大法船就会乘风破浪、扬帆远航。</text>
     </view>

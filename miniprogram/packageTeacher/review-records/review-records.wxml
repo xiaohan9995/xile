@@ -51,7 +51,7 @@
           <text wx:if="{{item.finalTier}}" class="detail-text">核定等级：{{item.finalTier}}</text>
           <text wx:if="{{item.nextValidUntil}}" class="detail-text">新有效期：{{item.nextValidUntil}}</text>
           <text wx:if="{{item.publishedAt}}" class="detail-text">发布时间：{{item.publishedAt}}</text>
-          <button wx:if="{{item.statusClass === 'status-rejected'}}" class="resubmit-btn" catchtap="resubmit" data-id="{{item.id}}">补充材料并重新提交</button>
+          <button wx:if="{{item.statusClass === 'status-rejected'}}" class="btn-secondary" catchtap="resubmit" data-id="{{item.id}}">补充材料并重新提交</button>
           <text wx:if="{{item.statusClass === 'status-submitted'}}" class="detail-text">材料正在处理中，正式发布前不会展示未定稿意见。</text>
         </view>
       </view>

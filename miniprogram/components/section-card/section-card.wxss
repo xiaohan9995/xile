@@ -23,6 +23,10 @@
   font-weight: 600;
 }
 
+.section-card__extra:active {
+  opacity: 0.6;
+}
+
 .section-card__body {
   width: 100%;
 }

@@ -66,7 +66,7 @@
 
     <!-- Actions -->
     <view class="cert-actions" wx:if="{{certImageUrl}}">
-      <button class="cert-save-btn" bindtap="saveCert">保存到相册</button>
+      <button class="btn-primary" bindtap="saveCert">保存到相册</button>
     </view>
 
     <!-- Note -->

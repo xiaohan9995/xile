@@ -34,7 +34,7 @@
 .empty-state__btn {
   margin-top: 36rpx;
   padding: 16rpx 48rpx;
-  border-radius: 999rpx;
+  border-radius: var(--radius-full);
   background: var(--color-primary);
   transition: opacity 0.2s ease;
 }

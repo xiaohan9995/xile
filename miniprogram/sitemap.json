@@ -14,6 +14,7 @@
     { "action": "allow", "page": "packageTeacher/review-apply/review-apply" },
     { "action": "allow", "page": "packageTeacher/review-records/review-records" },
     { "action": "allow", "page": "packageTeacher/teaching-records/teaching-records" },
+    { "action": "allow", "page": "packageTeacher/service-records/service-records" },
     { "action": "allow", "page": "packageTeacher/usage-guide/usage-guide" },
     { "action": "allow", "page": "packageTeacher/settings/settings" },
     { "action": "allow", "page": "packageTeacher/submission-success/submission-success" }

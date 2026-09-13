@@ -21,7 +21,7 @@
   line-height: 48rpx;
   border-radius: 50%;
   text-align: center;
-  background: #e5e7eb;
+  background: var(--color-surface);
   color: #fff;
   font-size: 22rpx;
   font-weight: 800;
@@ -54,7 +54,7 @@
   width: 60rpx;
   height: 2rpx;
   margin: 0 12rpx;
-  background: #e5e7eb;
+  background: var(--color-surface);
 }
 
 .step-line--done {

@@ -50,6 +50,19 @@ def assert_equal(actual, expected, label):
         raise AssertionError(f"{label}: expected {expected!r}, got {actual!r}")
 
 
+def mp_login(teacher_id=1):
+    """Return a mini-program JWT using the development mock login code."""
+    _, payload = request_json(
+        "/api/mp/auth/login",
+        method="POST",
+        data={"code": f"dev-mock-code-{teacher_id}"},
+    )
+    token = payload.get("token")
+    if not token:
+        raise AssertionError("mini-program login did not return a token")
+    return token
+
+
 def main():
     with tempfile.TemporaryDirectory(prefix="xile-backend-smoke-") as tmpdir:
         db_path = Path(tmpdir) / "xile-smoke.db"
@@ -58,15 +71,17 @@ def main():
             "PYTHONPATH": str(ROOT),
             "MYSQL_DATABASE_URI": f"sqlite:///{db_path.as_posix()}",
             "ADMIN_DEV_TOKEN": "dev-admin-token",
-            "FLASK_DEBUG": "0",
         }
         command = [
             sys.executable,
             "-c",
             (
                 "from backend.app import create_app;"
-                "app=create_app({'SEED_DEMO_DATA': True, 'ADMIN_DEV_TOKEN': 'dev-admin-token'});"
-                f"app.run(host='127.0.0.1', port={PORT}, debug=False, use_reloader=False)"
+                # DEBUG must stay enabled: the development mock login in
+                # services/auth_service.py only applies when app.debug is true,
+                # and Flask.run(debug=...) would overwrite it.
+                "app=create_app({'SEED_DEMO_DATA': True, 'ADMIN_DEV_TOKEN': 'dev-admin-token', 'DEBUG': True});"
+                f"app.run(host='127.0.0.1', port={PORT}, use_reloader=False, use_debugger=False)"
             ),
         ]
         process = subprocess.Popen(
@@ -81,16 +96,36 @@ def main():
         try:
             wait_for_server(process)
 
-            _, teachers = request_json("/api/mp/teachers/search?q=%E5%BC%A0")
-            assert_equal(teachers["total"], 1, "teacher search total")
-            assert_equal(teachers["items"][0]["name"], "张三", "teacher search name")
+            # Mini-program business endpoints require a session token.
+            try:
+                request_json("/api/mp/teachers/search?q=%E5%BC%A0")
+            except urllib.error.HTTPError as error:
+                assert_equal(error.code, 401, "teacher search without token")
+            else:
+                raise AssertionError("teacher search without token: expected 401")
 
-            _, certification = request_json("/api/mp/teachers/2/certification")
-            assert_equal(certification["teacher"]["name"], "李四", "certification teacher name")
+            mp_headers = {"Authorization": f"Bearer {mp_login(1)}"}
+
+            _, teachers = request_json("/api/mp/teachers/search?q=%E5%BC%A0", headers=mp_headers)
+            assert_equal(teachers["total"], 1, "teacher search total")
+            assert_equal(teachers["items"][0]["name"], "善悦", "teacher search name")
+
+            # Non-owners only receive the public summary, so the review history
+            # has to be read through the owner endpoint instead.
+            _, public_certification = request_json("/api/mp/teachers/2/certification", headers=mp_headers)
+            assert_equal(public_certification["teacher"]["teacherNo"], "JY20230002", "public certification teacher no")
+            if "reviews" in public_certification:
+                raise AssertionError("public certification leaked review history")
+
+            _, certification = request_json(
+                "/api/mp/teachers/me/certification",
+                headers={"Authorization": f"Bearer {mp_login(2)}"},
+            )
+            assert_equal(certification["teacher"]["name"], "清心", "certification teacher name")
             assert_equal(certification["reviews"][0]["status"], "submitted", "certification review status")
 
-            _, studios = request_json("/api/mp/studios")
-            assert_equal(studios["total"], 2, "open studios total")
+            _, studios = request_json("/api/mp/studios", headers=mp_headers)
+            assert_equal(studios["total"], 3, "open studios total")
 
             _, login = request_json(
                 "/api/admin/login",

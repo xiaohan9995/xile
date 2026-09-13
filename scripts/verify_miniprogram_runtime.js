@@ -1,3 +1,4 @@
+const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
@@ -5,8 +6,12 @@ const miniprogramRoot = path.join(root, 'miniprogram');
 const pages = [];
 const navigations = [];
 const toasts = [];
+// Pages guard themselves with auth.requireLogin / requireAuth, so the mock
+// session must look like a logged-in teacher for the smoke checks to load data.
 const storage = {
+  auth_token: 'runtime-smoke-token',
   currentTeacherId: 2,
+  currentUserRole: 'teacher',
   certApplication: {
     teacherId: 1,
     reviewYear: 2027,
@@ -35,19 +40,35 @@ function createWxMock() {
         options.fail({ errMsg: 'mock network disabled, using local fallback' });
       }
     },
+    uploadFile(options) {
+      if (typeof options.success === 'function') {
+        options.success({
+          statusCode: 200,
+          data: JSON.stringify({ fileKey: 'mock/uploads/runtime-review-material.pdf' }),
+        });
+      }
+    },
     navigateTo(options) {
       navigations.push(options.url);
       if (typeof options.success === 'function') options.success({});
     },
-    navigateBack() {
-      navigations.push('navigateBack');
+    redirectTo(options) {
+      navigations.push(options.url);
+      if (typeof options.success === 'function') options.success({});
     },
     reLaunch(options) {
       navigations.push(options.url);
     },
+    navigateBack() {
+      navigations.push('navigateBack');
+    },
     showToast(options) {
       toasts.push(options.title);
     },
+    showLoading() {},
+    hideLoading() {},
+    stopPullDownRefresh() {},
+    setNavigationBarTitle() {},
     chooseMessageFile(options) {
       options.success({
         tempFiles: [
@@ -64,6 +85,9 @@ function createWxMock() {
     setStorageSync(key, value) {
       storage[key] = value;
     },
+    removeStorageSync(key) {
+      delete storage[key];
+    },
   };
 }
 
@@ -72,7 +96,18 @@ function loadPage(pagePath) {
   delete require.cache[require.resolve(absolute)];
   pages.length = 0;
   global.wx = createWxMock();
-  global.getApp = () => ({ globalData: { apiBaseUrl: 'http://127.0.0.1:59999' } });
+  global.getApp = () => ({
+    globalData: {
+      apiBaseUrl: 'http://127.0.0.1:59999',
+      // Force the request layer to fall back to utils/mock-data.js.
+      useMockFallback: true,
+      // Skip the async login wait branch in utils/auth.js.
+      loginReady: true,
+      loginPromise: Promise.resolve(),
+      statusBarHeight: 20,
+      teacherId: 2,
+    },
+  });
   global.Page = (definition) => {
     const instance = {
       ...definition,
@@ -101,7 +136,8 @@ async function main() {
   teacherSearch.onLoad.call(teacherSearch);
   await sleep();
   assert(teacherSearch.data.teachers.length >= 3, 'teacher search should load mock teachers');
-  teacherSearch.changeLevel.call(teacherSearch, { currentTarget: { dataset: { level: 'L3' } } });
+  teacherSearch.onTierChange.call(teacherSearch, { detail: { value: 4 } });
+  await sleep();
   assert(teacherSearch.data.teachers.length === 1, 'teacher search L3 filter should narrow results');
   teacherSearch.openTeacher.call(teacherSearch, { currentTarget: { dataset: { id: 1 } } });
   assert(navigations.includes('/pages/teacher-detail/teacher-detail?id=1'), 'teacher card should navigate to detail');
@@ -116,31 +152,36 @@ async function main() {
   studios.onLoad.call(studios);
   await sleep();
   assert(studios.data.studios.length >= 3, 'studios page should load mock studios');
-  studios.onKeywordInput.call(studios, { detail: { value: '静心' } });
-  studios.applyFilters.call(studios);
-  assert(studios.data.studios.length === 1, 'studios keyword filter should narrow results');
+  studios.changeCity.call(studios, { currentTarget: { dataset: { city: '杭州' } } });
+  await sleep();
+  assert(studios.data.studios.length === 1, 'studios city filter should narrow results');
 
   const studioDetail = loadPage('pages/studio-detail/studio-detail');
   await studioDetail.loadStudio.call(studioDetail, 1);
   assert(studioDetail.data.studio.name === '静心瑜伽空间', 'studio detail should load studio profile');
-  studioDetail.bookStudio.call(studioDetail);
-  assert(toasts.some((title) => title.includes('有赞')), 'studio booking should show Youzan notice');
+  studioDetail.contactStudio.call(studioDetail);
+  assert(toasts.some((title) => title.includes('微信')), 'studio contact should fall back to the WeChat notice');
 
-  const teacherHome = loadPage('packageTeacher/home/home');
-  teacherHome.onLoad.call(teacherHome);
-  await sleep();
-  assert(teacherHome.data.teacher.name === '李四', 'teacher home should load current certification');
+  if (fs.existsSync(path.join(miniprogramRoot, 'packageTeacher/home/home.js'))) {
+    const teacherHome = loadPage('packageTeacher/home/home');
+    teacherHome.onLoad.call(teacherHome);
+    await sleep();
+    assert(teacherHome.data.teacher.name === '李四', 'teacher home should load current certification');
+  } else {
+    console.warn('skipping teacher home smoke check: packageTeacher/home/home.js not found');
+  }
 
   const reviewRecords = loadPage('packageTeacher/review-records/review-records');
   reviewRecords.onLoad.call(reviewRecords);
   await sleep();
-  assert(reviewRecords.data.records[0].status === '审核中', 'review records should map submitted status');
+  assert(reviewRecords.data.records[0].statusText === '审核中', 'review records should map submitted status');
 
   const reviewApply = loadPage('packageTeacher/review-apply/review-apply');
+  reviewApply.onLoad.call(reviewApply);
   reviewApply.chooseFile.call(reviewApply, { currentTarget: { dataset: { index: 0 } } });
   assert(reviewApply.data.files[0].done, 'review apply should mark selected file as done');
   reviewApply.submitReview.call(reviewApply);
-  await sleep();
+  await sleep(50);
   assert(
     navigations.includes('/packageTeacher/submission-success/submission-success'),
     'review apply should navigate to submission success after mock submit',

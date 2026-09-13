@@ -15,12 +15,11 @@ from .models import (
 
 
 DEFAULT_TEACHER_TIERS = (
-    {"code": "L0", "name": "见习教师", "review_cycle_years": 2, "review_required": True, "sort_order": 0},
-    {"code": "L1", "name": "认证教师", "review_cycle_years": 2, "review_required": True, "sort_order": 1},
-    {"code": "L2", "name": "资深教师", "review_cycle_years": 2, "review_required": True, "sort_order": 2},
-    {"code": "L3", "name": "认证导师", "review_cycle_years": 2, "review_required": True, "sort_order": 3},
-    {"code": "L4", "name": "高级导师", "review_cycle_years": 3, "review_required": True, "sort_order": 4},
-    {"code": "L5", "name": "荣誉导师", "review_cycle_years": None, "review_required": False, "sort_order": 5},
+    {"code": "L0", "name": "顾问", "review_cycle_years": 2, "review_required": True, "sort_order": 0},
+    {"code": "L1", "name": "初级喜乐瑜伽教师", "review_cycle_years": 2, "review_required": True, "sort_order": 1},
+    {"code": "L2", "name": "中级喜乐瑜伽教师", "review_cycle_years": 2, "review_required": True, "sort_order": 2},
+    {"code": "L3", "name": "高级喜乐瑜伽教师", "review_cycle_years": 2, "review_required": True, "sort_order": 3},
+    {"code": "L4", "name": "导师", "review_cycle_years": 3, "review_required": True, "sort_order": 4},
 )
 
 DEFAULT_SYSTEM_CONFIGS = {
@@ -161,7 +160,7 @@ def seed_demo_data():
             certificate_no="JY20230005",
             real_name="畅琦",
             xile_name="喜乐",
-            tier=tiers["L5"],
+            tier=tiers["L4"],
             city="广州市",
             district="天河区",
             status="active",
@@ -301,7 +300,7 @@ def seed_demo_data():
     if not Announcement.query.first():
         db.session.add_all([
             Announcement(title="2026年度年审通知", content="请各位教师于7月31日前完成年度审核材料提交", display_order=3),
-            Announcement(title="L4高级导师认证开放申请", content="符合条件的L3导师可提交晋升申请", display_order=2),
+            Announcement(title="L4导师认证开放申请", content="符合条件的L3高级喜乐瑜伽教师可提交晋升申请", display_order=2),
             Announcement(title="暑期工作坊报名中", content="8月杭州站·阴瑜伽深度研修班，名额有限", display_order=1),
         ])
 
