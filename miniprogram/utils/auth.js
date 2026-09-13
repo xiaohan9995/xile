@@ -88,6 +88,9 @@ const loginWithWechat = async () => {
 const loginWithPassword = (username, password) => request({
   url: '/api/mp/auth/password-login',
   method: 'POST',
+  // The login page renders the error once. Avoid a second generic toast from
+  // the shared request layer when credentials are rejected.
+  silent: true,
   data: { username, password },
 }).then((data) => {
   applySession({ ...data, phoneBound: true });

@@ -63,9 +63,18 @@ const normalizeUserMessage = (value, fallback = '操作失败，请稍后重试'
   return raw.length > 32 ? fallback : raw;
 };
 
-const messageForError = (statusCode, code, payload = {}) => {
+// A 401 returned while submitting credentials means the credentials were not
+// accepted. It is not an expired existing session and must not clear storage.
+const isCredentialLoginRequest = (url = '') => (
+  url === '/api/mp/auth/password-login' || url === '/api/mp/auth/cloudbase-login'
+);
+
+const messageForError = (statusCode, code, payload = {}, options = {}) => {
   if (code === 'PASSWORD_CHANGE_REQUIRED') return '请先重置初始密码后再继续操作';
   if (code === 'INVALID_HOST') return '云开发环境未关联当前小程序，请完成小程序认证后重试';
+  if (statusCode === 401 && isCredentialLoginRequest(options.url)) {
+    return normalizeUserMessage(payload.error || payload.message, '身份证号或密码错误');
+  }
   if (statusCode === 401) return '登录已过期，请重新登录';
   if (statusCode === 403) return '当前账号没有执行此操作的权限';
   if (statusCode === 404) return '服务地址不存在，请稍后重试';
@@ -74,11 +83,11 @@ const messageForError = (statusCode, code, payload = {}) => {
   return normalizeUserMessage(payload.error || payload.message, `请求失败 (${statusCode || '网络异常'})`);
 };
 
-const toRequestError = (response = {}) => {
+const toRequestError = (response = {}, options = {}) => {
   const payload = response.data || response;
   const statusCode = response.statusCode || 0;
   const code = readErrorCode(payload);
-  return new RequestError(messageForError(statusCode, code, payload), {
+  return new RequestError(messageForError(statusCode, code, payload, options), {
     statusCode,
     code,
     requestId: readRequestId(response),
@@ -121,7 +130,7 @@ const request = (options) => {
         delay(RETRY_DELAY * (retryCount + 1)).then(() => request({ ...options, _retry: retryCount + 1 }).then(resolve).catch(reject));
         return;
       }
-      if (error.statusCode === 401) handleAuthError();
+      if (error.statusCode === 401 && !isCredentialLoginRequest(options.url)) handleAuthError();
       showError(error, silent);
       reject(error);
     };
@@ -142,7 +151,7 @@ const request = (options) => {
         resolve(response.data);
         return;
       }
-      retryOrReject(toRequestError(response));
+      retryOrReject(toRequestError(response, options));
     };
 
     const handleFail = (error) => {
@@ -151,7 +160,7 @@ const request = (options) => {
         header: error && error.header,
         requestId: error && error.requestId,
         data: error || {},
-      });
+      }, options);
       if (!normalized.code && !normalized.statusCode) normalized.message = '网络连接失败，请检查网络后重试';
       fallbackOrReject(normalized);
     };

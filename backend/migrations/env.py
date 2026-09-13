@@ -34,6 +34,31 @@ def get_metadata():
     return target_db.metadata
 
 
+def ensure_alembic_version_capacity(connection):
+    """Upgrade legacy Alembic metadata before a long revision is recorded.
+
+    Some early production databases created ``alembic_version.version_num``
+    with a short VARCHAR length.  Alembic applies a migration's DDL before it
+    records the new revision, so a long revision identifier then leaves the
+    database half-upgraded and prevents the container from starting.
+    """
+    if connection.dialect.name not in {"mysql", "mariadb"}:
+        return
+
+    inspector = sa.inspect(connection)
+    if not inspector.has_table("alembic_version"):
+        return
+    version_column = next(
+        (column for column in inspector.get_columns("alembic_version") if column["name"] == "version_num"),
+        None,
+    )
+    if version_column is None or (getattr(version_column["type"], "length", None) or 0) >= 255:
+        return
+
+    logger.warning("Expanding legacy alembic_version.version_num to VARCHAR(255)")
+    connection.execute(sa.text("ALTER TABLE alembic_version MODIFY COLUMN version_num VARCHAR(255) NOT NULL"))
+
+
 def run_migrations_offline():
     url = config.get_main_option("sqlalchemy.url")
     context.configure(url=url, target_metadata=get_metadata(), literal_binds=True)
@@ -58,6 +83,7 @@ def run_migrations_online():
             if not lock_acquired:
                 raise RuntimeError("Timed out waiting for the database migration lock")
         try:
+            ensure_alembic_version_capacity(connection)
             context.configure(connection=connection, target_metadata=get_metadata())
             with context.begin_transaction():
                 context.run_migrations()
