@@ -71,7 +71,7 @@
                 <text class="featured-avatar-initial">{{item.name[0]}}</text>
               </view>
             </view>
-            <text class="featured-name">{{item.xileName || item.name}}</text>
+            <text class="featured-name">{{item.xileName || item.realName || item.name}}</text>
             <text class="featured-tier">{{item.tier}} {{item.tierName}}</text>
           </view>
         </view>

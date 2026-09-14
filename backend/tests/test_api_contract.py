@@ -271,7 +271,39 @@ def test_teacher_detail_returns_public_certification_profile(client):
     assert payload["specialties"] == ["阴瑜伽", "流瑜伽", "产后瑜伽"]
     assert payload["certifiedAt"] == "2023.01.01"
     assert payload["certificationNote"] == "该教师已通过喜乐瑜伽教师认证，资质处于有效期内。"
+    assert payload["realName"] is None
     assert "phone" not in payload
+
+
+def test_teacher_profile_returns_real_name_when_no_xile_name_is_set(client):
+    teacher = db.session.get(Teacher, 1)
+    teacher.xile_name = None
+    teacher.alias = "善悦"
+    db.session.commit()
+
+    token = _login_as_teacher(client, 1)
+    response = client.get("/api/mp/teachers/1/summary", headers={"Authorization": f"Bearer {token}"})
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert payload["xileName"] is None
+    assert payload["realName"] == "张三"
+
+
+def test_teacher_profile_treats_imported_placeholder_as_missing_xile_name(client):
+    teacher = db.session.get(Teacher, 1)
+    teacher.xile_name = "无"
+    teacher.alias = None
+    db.session.commit()
+
+    token = _login_as_teacher(client, 1)
+    response = client.get("/api/mp/teachers/1/summary", headers={"Authorization": f"Bearer {token}"})
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert payload["xileName"] is None
+    assert payload["name"] == "张三"
+    assert payload["realName"] == "张三"
 
 
 def test_studio_list_returns_open_studios_with_tags(client):

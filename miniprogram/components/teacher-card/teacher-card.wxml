@@ -14,7 +14,7 @@
 
   <view class="teacher-card__body">
     <view class="teacher-card__title-row">
-      <text class="teacher-card__name">{{teacher.xileName || teacher.name}}</text>
+      <text class="teacher-card__name">{{teacher.xileName || teacher.realName || teacher.name}}</text>
       <view class="teacher-card__badge" wx:if="{{teacher.tierName}}">
         <text class="teacher-card__badge-icon">✓</text>
         <text class="teacher-card__badge-text">{{teacher.tier}} {{teacher.tierName}}</text>
