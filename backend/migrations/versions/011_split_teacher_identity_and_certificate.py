@@ -18,6 +18,7 @@ def upgrade():
     bind = op.get_bind()
     inspector = sa.inspect(bind)
     columns = {column["name"] for column in inspector.get_columns("teachers")}
+    has_id_number = "id_number" in columns
     if "certificate_no" not in columns:
         op.add_column("teachers", sa.Column("certificate_no", sa.String(length=32), nullable=True))
         op.create_index("ix_teachers_certificate_no", "teachers", ["certificate_no"], unique=True)
@@ -27,7 +28,17 @@ def upgrade():
     # older teachers, so it must only take precedence when it was explicitly
     # populated.  The new certificate number is intentionally left blank:
     # it is a separate, optional business field going forward.
-    identity_sql = "UPPER(COALESCE(NULLIF(TRIM(id_number), ''), TRIM(teacher_no)))"
+    #
+    # A previous deployment attempt may have already dropped ``id_number``
+    # (MySQL DDL commits immediately) while crashing before Alembic could
+    # stamp the revision.  In that half-applied state ``teacher_no`` already
+    # holds the identity number, so re-running must not reference the
+    # removed column.
+    if has_id_number:
+        identity_sql = "UPPER(COALESCE(NULLIF(TRIM(id_number), ''), TRIM(teacher_no)))"
+    else:
+        identity_sql = "UPPER(TRIM(teacher_no))"
+
     missing = bind.execute(sa.text(
         f"SELECT COUNT(*) FROM teachers WHERE {identity_sql} IS NULL OR {identity_sql} = ''"
     )).scalar()
@@ -50,11 +61,14 @@ def upgrade():
             "请先在管理后台修正后再部署。"
         )
 
-    bind.execute(sa.text("UPDATE teachers SET certificate_no = NULL"))
-    bind.execute(sa.text(f"UPDATE teachers SET teacher_no = {identity_sql}"))
+    if has_id_number:
+        bind.execute(sa.text("UPDATE teachers SET certificate_no = NULL"))
+        bind.execute(sa.text(f"UPDATE teachers SET teacher_no = {identity_sql}"))
 
     # Existing password accounts are deliberately reset because their login
     # name has changed from the old field to the ID-number teacher_no.
+    # Re-running after an interrupted attempt is safe: the reset is
+    # deterministic and repairs any half-finished user updates.
     accounts = bind.execute(sa.text("SELECT users.id, teachers.teacher_no FROM users JOIN teachers ON teachers.id = users.teacher_id WHERE users.role = 'teacher'"))
     for user_id, teacher_no in accounts:
         bind.execute(
@@ -62,10 +76,11 @@ def upgrade():
             {"id": user_id, "username": teacher_no, "password_hash": generate_password_hash(teacher_no[-6:], method="pbkdf2:sha256")},
         )
 
-    indexes = {item["name"] for item in inspector.get_indexes("teachers")}
-    if "ix_teachers_id_number" in indexes:
-        op.drop_index("ix_teachers_id_number", table_name="teachers")
-    op.drop_column("teachers", "id_number")
+    if has_id_number:
+        indexes = {item["name"] for item in inspector.get_indexes("teachers")}
+        if "ix_teachers_id_number" in indexes:
+            op.drop_index("ix_teachers_id_number", table_name="teachers")
+        op.drop_column("teachers", "id_number")
 
 
 def downgrade():
