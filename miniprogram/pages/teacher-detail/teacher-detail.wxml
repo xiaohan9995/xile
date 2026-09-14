@@ -11,10 +11,10 @@
     <view class="profile-head">
       <image class="profile-avatar" src="{{teacher.avatarUrl}}" mode="aspectFill" />
       <view class="profile-info">
-        <text class="profile-name">{{teacher.name}}</text>
+        <text class="profile-name">{{teacher.xileName || teacher.realName || teacher.name || '—'}}</text>
         <view class="profile-tier">
           <view class="level-badge">{{teacher.tier || 'L'}}</view>
-          <text class="tier-label">{{teacher.tierName}}</text>
+          <text class="tier-label">{{teacher.tierName || '—'}}</text>
         </view>
         <text class="profile-status {{teacher.certificationStatus === '已过期' ? 'status-expired' : teacher.certificationStatus === '即将到期' ? 'status-expiring' : ''}}">{{teacher.certificationStatus || '未知'}}</text>
       </view>
@@ -24,27 +24,27 @@
     <view class="info-card">
       <view class="info-row">
         <text class="info-dt">喜乐名</text>
-        <text class="info-dd">{{teacher.xileName}}</text>
+        <text class="info-dd">{{teacher.xileName || teacher.realName || teacher.name || '—'}}</text>
       </view>
       <view class="info-row">
         <text class="info-dt">教师编号</text>
-        <text class="info-dd">{{teacher.teacherNo}}</text>
+        <text class="info-dd">{{teacher.teacherNo || '—'}}</text>
       </view>
       <view class="info-row">
         <text class="info-dt">认证等级</text>
-        <text class="info-dd">{{teacher.tierName}}</text>
+        <text class="info-dd">{{teacher.tierName || '—'}}</text>
       </view>
       <view class="info-row">
         <text class="info-dt">认证时间</text>
-        <text class="info-dd">{{teacher.certifiedAt}}</text>
+        <text class="info-dd">{{teacher.certifiedAt || '—'}}</text>
       </view>
       <view class="info-row">
         <text class="info-dt">有效期至</text>
-        <text class="info-dd">{{teacher.validUntil}}</text>
+        <text class="info-dd">{{teacher.validUntil || '—'}}</text>
       </view>
       <view class="info-row">
         <text class="info-dt">所属地区</text>
-        <text class="info-dd">{{teacher.city}} {{teacher.district}}</text>
+        <text class="info-dd">{{teacher.city || '—'}}{{teacher.district ? ' · ' + teacher.district : ''}}</text>
       </view>
       <view class="info-row">
         <text class="info-dt">擅长方向</text>

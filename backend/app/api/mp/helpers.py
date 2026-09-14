@@ -28,7 +28,8 @@ def _teacher_summary(teacher):
         "id": teacher.id,
         "teacherNo": teacher.certificate_no,
         "name": _display_name(teacher),
-        "xileName": teacher.xile_name,
+        "xileName": _public_xile_name(teacher),
+        "realName": _public_real_name(teacher),
         "alias": teacher.alias if settings["showAlias"] else None,
         "tier": teacher.tier.code,
         "tierName": teacher.tier.name,
@@ -81,8 +82,35 @@ def _residences(teacher):
     return [item.strip() for item in (teacher.residences or "").split(",") if item.strip()]
 
 
+# Spreadsheets filled by the committee often use a filler such as 无 when a
+# public 喜乐名 has not been assigned yet; those must not leak into the profile.
+_NAME_PLACEHOLDERS = {
+    "", "无", "暂无", "未知", "待定", "空", "没有", "none", "null", "n/a", "na", "-", "--", "—", "/",
+}
+
+
+def _clean_name(value):
+    text = (value or "").strip()
+    return "" if text.lower() in _NAME_PLACEHOLDERS else text
+
+
 def _display_name(teacher):
-    return teacher.xile_name or teacher.alias or teacher.real_name
+    return _clean_name(teacher.xile_name) or _clean_name(teacher.alias) or _clean_name(teacher.real_name) or None
+
+
+def _public_xile_name(teacher):
+    """Return the 喜乐名, treating imported fillers such as 无 as unset."""
+    return _clean_name(teacher.xile_name) or None
+
+
+def _public_real_name(teacher):
+    """Expose the legal name only when the teacher has no 喜乐名.
+
+    喜乐名 is the public identity of a teacher, so the legal name stays private
+    whenever one exists. It is returned as a display fallback for teachers who
+    have not set a 喜乐名 yet, so their profile never renders nameless.
+    """
+    return None if _clean_name(teacher.xile_name) else (_clean_name(teacher.real_name) or None)
 
 
 def _studio_summary(studio):
