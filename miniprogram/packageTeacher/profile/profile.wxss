@@ -182,49 +182,6 @@
 .primary-status-card--account .primary-status-card__action { color: #fff; }
 .primary-status-card--account .primary-status-card__detail { color: rgba(255, 255, 255, 0.76); }
 
-.quick-status {
-  display: flex;
-  align-items: stretch;
-  margin-top: 20rpx;
-  padding: 24rpx 20rpx;
-  background: var(--color-gold-light);
-  border-radius: var(--radius-base);
-}
-
-.quick-status__item { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; }
-.quick-status__divider { width: 1rpx; margin: 4rpx 16rpx; background: rgba(137, 101, 43, 0.2); }
-.quick-status__label { color: var(--color-muted); font-size: 21rpx; }
-.quick-status__value { margin-top: 7rpx; color: var(--color-text); font-size: 25rpx; font-weight: 800; }
-
-.certificate-preview {
-  width: 100%;
-  min-width: 100%;
-  max-width: none;
-  margin: 24rpx 0 0;
-  padding: 28rpx;
-  text-align: left;
-  box-sizing: border-box;
-  border: 1rpx solid rgba(137, 101, 43, 0.2);
-  border-radius: var(--radius-md);
-  background: var(--color-card);
-  box-shadow: var(--shadow-card);
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
-
-.certificate-preview:active { transform: scale(0.98); opacity: 0.84; }
-.certificate-preview__header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20rpx; }
-.certificate-preview__eyebrow { display: block; color: var(--color-gold); font-size: 20rpx; font-weight: 700; letter-spacing: 3rpx; }
-.certificate-preview__title { display: block; margin-top: 6rpx; color: var(--color-text); font-size: 30rpx; font-weight: 800; }
-.certificate-preview__link { color: var(--color-primary-dark); font-size: 23rpx; font-weight: 700; }
-.certificate-preview__sheet { overflow: hidden; min-height: 240rpx; border: 1rpx solid #e9ddc5; border-radius: var(--radius-base); background: #fffcf5; }
-.certificate-preview__image { display: block; width: 100%; height: auto; min-height: 240rpx; }
-.certificate-preview__placeholder { min-height: 240rpx; padding: 24rpx; display: flex; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box; background: linear-gradient(135deg, #fffdf8, #f7efdf); }
-.certificate-preview__seal { width: 56rpx; height: 56rpx; display: flex; align-items: center; justify-content: center; border: 2rpx solid var(--color-gold); border-radius: 50%; color: var(--color-gold); font-size: 30rpx; font-weight: 800; }
-.certificate-preview__org { margin-top: 14rpx; color: var(--color-muted); font-size: 20rpx; letter-spacing: 2rpx; }
-.certificate-preview__name { margin-top: 6rpx; color: var(--color-text); font-size: 34rpx; font-weight: 800; }
-.certificate-preview__tier { margin-top: 4rpx; color: var(--color-gold); font-size: 22rpx; font-weight: 700; }
-.certificate-preview__loading { margin-top: 14rpx; color: var(--color-muted); font-size: 20rpx; }
-
 .section-heading {
   display: flex;
   align-items: flex-end;
@@ -275,13 +232,9 @@
   .profile-body { background: #172019; }
   .identity-card { background: #223127; border-color: #405445; }
   .identity-card--teacher { background: linear-gradient(135deg, #244a35 0%, #386448 100%); }
-  .identity-name, .primary-status-card__title, .quick-status__value, .section-heading__title, .menu-title { color: #f1f5f1; }
+  .identity-name, .primary-status-card__title, .section-heading__title, .menu-title { color: #f1f5f1; }
   .identity-role { color: #b9d2c0; }
-  .identity-bio, .primary-status-card__detail, .quick-status__label, .section-heading__note, .menu-subtitle, .menu-arrow { color: #b9c5bb; }
+  .identity-bio, .primary-status-card__detail, .section-heading__note, .menu-subtitle, .menu-arrow { color: #b9c5bb; }
   .primary-status-card, .menu-list { background: #202b22; border-color: #405445; }
   .primary-status-card--account { background: linear-gradient(125deg, #294d38 0%, #3b684c 100%); border-color: transparent; }
-  .quick-status { background: #322a1c; }
-  .certificate-preview { background: #202b22; border-color: #584a31; }
-  .certificate-preview__title, .certificate-preview__name { color: #f1f5f1; }
-  .certificate-preview__sheet { border-color: #584a31; }
 }

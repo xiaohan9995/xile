@@ -67,11 +67,20 @@
 .teacher-card__title-row {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12rpx;
-  flex-wrap: wrap;
+}
+
+.teacher-card__meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
 }
 
 .teacher-card__name {
+  flex: 1;
+  min-width: 0;
   font-size: 30rpx;
   font-weight: 700;
   color: var(--color-text);
@@ -103,14 +112,15 @@
 }
 
 .teacher-card__cert-no,
-.teacher-card__valid,
 .teacher-card__location {
   font-size: 22rpx;
   color: var(--color-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.teacher-card__cert-no,
-.teacher-card__valid {
+.teacher-card__cert-no {
   font-family: "Menlo", "SF Mono", monospace;
 }
 

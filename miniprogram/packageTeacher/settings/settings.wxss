@@ -37,6 +37,93 @@
   line-height: 1.55;
 }
 
+/* ===== Avatar ===== */
+.settings-group--avatar {
+  padding-top: 4rpx;
+  padding-bottom: 4rpx;
+}
+
+.avatar-row {
+  display: flex;
+  align-items: center;
+  padding: 26rpx 0;
+}
+
+.avatar-editor {
+  position: relative;
+  width: 112rpx;
+  height: 112rpx;
+  min-width: 112rpx;
+  max-width: 112rpx;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.avatar-editor:active {
+  opacity: 0.82;
+  transform: scale(0.96);
+}
+
+.avatar-img {
+  width: 112rpx;
+  height: 112rpx;
+  box-sizing: border-box;
+  border: 4rpx solid var(--color-surface);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.avatar-img--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #d8e5da;
+}
+
+.avatar-initial {
+  color: var(--color-primary-dark);
+  font-size: 48rpx;
+  font-weight: 800;
+}
+
+.avatar-badge {
+  position: absolute;
+  right: -10rpx;
+  bottom: -10rpx;
+  width: 40rpx;
+  height: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3rpx solid var(--color-card);
+  border-radius: 50%;
+  background: var(--color-primary-dark);
+  color: #fff;
+  font-size: 18rpx;
+  font-weight: 700;
+}
+
+.avatar-row__info {
+  flex: 1;
+  min-width: 0;
+  margin-left: 24rpx;
+}
+
+.avatar-row__title {
+  display: block;
+  color: var(--color-text);
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.avatar-row__note {
+  display: block;
+  margin-top: 6rpx;
+  color: var(--color-muted);
+  font-size: 22rpx;
+  line-height: 1.5;
+}
+
 .section-heading {
   display: flex;
   align-items: flex-end;
@@ -165,6 +252,9 @@
   .section-heading__note,
   .logout-note { color: #b9c5bb; }
   .settings-group { border-color: #405445; background: #202b22; }
+  .avatar-row__title { color: #f1f5f1; }
+  .avatar-img { border-color: #18231b; }
+  .avatar-img--placeholder { background: #294133; }
   .field-divider { background: #405445; }
   .settings-input { border-color: #405445; background: #18231b; color: #f1f5f1; }
   .settings-group .btn-secondary { border-color: #476653; background: #294133; color: #d8eadc; }

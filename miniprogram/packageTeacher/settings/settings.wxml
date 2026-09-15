@@ -9,7 +9,29 @@
     <view class="settings-intro">
       <text class="settings-intro__eyebrow">ACCOUNT SETTINGS</text>
       <text class="settings-intro__title">个人资料与安全</text>
-      <text class="settings-intro__description">管理公开喜乐名与教师账号密码</text>
+      <text class="settings-intro__description">管理对外展示的资料与教师账号密码</text>
+    </view>
+
+    <view wx:if="{{!mustChangePassword}}" class="settings-group settings-group--avatar">
+      <view class="avatar-row">
+        <button
+          class="avatar-editor"
+          open-type="chooseAvatar"
+          bindchooseavatar="onChooseAvatar"
+          disabled="{{avatarUploading}}"
+          aria-label="更换头像"
+        >
+          <image wx:if="{{avatarUrl}}" class="avatar-img" src="{{avatarUrl}}" mode="aspectFill" />
+          <view wx:else class="avatar-img avatar-img--placeholder">
+            <text class="avatar-initial">{{nickname[0] || '我'}}</text>
+          </view>
+          <view class="avatar-badge">{{avatarUploading ? '…' : '换'}}</view>
+        </button>
+        <view class="avatar-row__info">
+          <text class="avatar-row__title">个人头像</text>
+          <text class="avatar-row__note">{{avatarUploading ? '正在上传…' : '点击左侧头像更换，师资查询页将同步展示'}}</text>
+        </view>
+      </view>
     </view>
 
     <view wx:if="{{mustChangePassword}}" class="section-heading">
@@ -18,45 +40,15 @@
     </view>
 
     <view wx:if="{{isTeacher && !mustChangePassword}}" class="section-heading">
-      <text class="section-heading__title">个人资料</text>
-      <text class="section-heading__note">喜乐名会展示在“我的”页面</text>
-    </view>
-    <view wx:if="{{isTeacher && !mustChangePassword}}" class="settings-group">
-      <view class="field-block">
-        <text class="field-label">喜乐名</text>
-        <input
-          class="settings-input"
-          type="nickname"
-          maxlength="20"
-          confirm-type="done"
-          placeholder="请输入喜乐名"
-          value="{{nickname}}"
-          bindinput="onNicknameInput"
-        />
-      </view>
-      <button
-        class="btn-primary"
-        bindtap="onSaveNickname"
-        loading="{{savingNickname}}"
-        disabled="{{savingNickname}}"
-      >保存喜乐名</button>
-    </view>
-
-    <view wx:if="{{isTeacher && !mustChangePassword}}" class="section-heading section-heading--spaced">
       <text class="section-heading__title">公开资料</text>
       <text class="section-heading__note">控制师资查询页的展示内容</text>
     </view>
     <view wx:if="{{isTeacher && !mustChangePassword}}" class="settings-group">
-      <view class="field-block"><text class="field-label">别名</text><input class="settings-input" maxlength="20" placeholder="未设置时不显示" value="{{alias}}" bindinput="onPublicInput" data-field="alias" /></view>
       <view class="field-block"><text class="field-label">经常居住地</text><input class="settings-input" maxlength="120" placeholder="最多 3 个，用顿号或逗号分隔" value="{{residencesText}}" bindinput="onPublicInput" data-field="residencesText" /></view>
-      <view class="field-block"><text class="field-label">当前等级认证时间</text><picker mode="date" value="{{currentTierCertifiedOn}}" bindchange="onPublicInput" data-field="currentTierCertifiedOn"><view class="settings-input settings-picker">{{currentTierCertifiedOn || '请选择日期'}}</view></picker></view>
-      <view class="field-block"><text class="field-label">个人简介</text><textarea class="settings-input settings-textarea" maxlength="500" placeholder="未填写时显示无" value="{{teachingSummary}}" bindinput="onPublicInput" data-field="teachingSummary" /></view>
+      <view class="field-block"><text class="field-label">个人简介</text><textarea class="settings-input settings-textarea" maxlength="100" placeholder="100 字以内，未填写时显示无" value="{{teachingSummary}}" bindinput="onPublicInput" data-field="teachingSummary" /></view>
       <view class="visibility-list">
-        <view class="visibility-row"><text>公开别名</text><switch checked="{{visibility.showAlias}}" color="{{themeColor}}" bindchange="onVisibilityChange" data-field="showAlias" /></view>
-        <view class="visibility-row"><text>公开经常居住地</text><switch checked="{{visibility.showResidences}}" color="{{themeColor}}" bindchange="onVisibilityChange" data-field="showResidences" /></view>
-        <view class="visibility-row"><text>公开个人简介</text><switch checked="{{visibility.showBio}}" color="{{themeColor}}" bindchange="onVisibilityChange" data-field="showBio" /></view>
-        <view class="visibility-row"><text>公开首次认证时间</text><switch checked="{{visibility.showFirstCertifiedOn}}" color="{{themeColor}}" bindchange="onVisibilityChange" data-field="showFirstCertifiedOn" /></view>
-        <view class="visibility-row"><text>公开当前等级认证时间</text><switch checked="{{visibility.showCurrentTierCertifiedOn}}" color="{{themeColor}}" bindchange="onVisibilityChange" data-field="showCurrentTierCertifiedOn" /></view>
+        <view class="visibility-row"><text>显示姓名</text><switch checked="{{visibility.showRealName}}" color="{{themeColor}}" bindchange="onVisibilityChange" data-field="showRealName" /></view>
+        <view class="visibility-row"><text>显示别名</text><switch checked="{{visibility.showAlias}}" color="{{themeColor}}" bindchange="onVisibilityChange" data-field="showAlias" /></view>
       </view>
       <button class="btn-primary" bindtap="savePublicProfile" loading="{{savingPublicProfile}}" disabled="{{savingPublicProfile}}">保存公开资料</button>
     </view>

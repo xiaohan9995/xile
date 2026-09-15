@@ -12,7 +12,7 @@
           class="avatar-wrap avatar-editor"
           open-type="chooseAvatar"
           bindchooseavatar="onChooseAvatar"
-          disabled="{{avatarUploading}}"
+          disabled="{{avatarUploading || isGuest}}"
           aria-label="更换头像"
         >
           <image wx:if="{{teacher.avatarUrl || user.avatarUrl}}" class="avatar-img" src="{{teacher.avatarUrl || user.avatarUrl}}" mode="aspectFill" alt="{{user.nickname || teacher.name || '微信用户'}}的头像" />
@@ -25,7 +25,7 @@
         <view class="identity-info">
           <text class="identity-name">{{teacher.xileName || user.nickname || teacher.name || '微信用户'}}</text>
           <view class="identity-role">
-            <text wx:if="{{isTeacher}}">认证姓名 {{teacher.name}} · {{teacher.tier}} {{teacher.tierName}}</text>
+            <text wx:if="{{isTeacher}}">{{teacher.tier}} {{teacher.tierName}}</text>
             <text wx:else>微信用户 · 尚未关联讲师档案</text>
           </view>
           <text class="identity-bio" wx:if="{{isTeacher && teacher.bio}}">{{teacher.bio}}</text>
@@ -46,41 +46,9 @@
       </view>
     </button>
 
-    <view class="quick-status" wx:if="{{isTeacher}}">
-      <view class="quick-status__item">
-        <text class="quick-status__label">认证有效期</text>
-        <text class="quick-status__value">{{teacher.validUntil}}</text>
-      </view>
-      <view class="quick-status__divider"></view>
-      <view class="quick-status__item">
-        <text class="quick-status__label">剩余有效天数</text>
-        <text class="quick-status__value">{{teacher.daysLeft}} 天</text>
-      </view>
-    </view>
-
-    <button wx:if="{{isTeacher}}" class="certificate-preview" bindtap="onMenuTap" data-url="/packageTeacher/cert-view/cert-view">
-      <view class="certificate-preview__header">
-        <view>
-          <text class="certificate-preview__eyebrow">OFFICIAL CERTIFICATE</text>
-          <text class="certificate-preview__title">我的认证证书</text>
-        </view>
-        <text class="certificate-preview__link">查看详情 ›</text>
-      </view>
-      <view class="certificate-preview__sheet">
-        <image wx:if="{{certImageUrl}}" class="certificate-preview__image" src="{{certImageUrl}}" mode="widthFix" alt="{{teacher.name}}的电子认证证书" />
-        <view wx:else class="certificate-preview__placeholder">
-          <text class="certificate-preview__seal">喜</text>
-          <text class="certificate-preview__org">喜乐瑜伽教师认证中心</text>
-          <text class="certificate-preview__name">{{teacher.name}}</text>
-          <text class="certificate-preview__tier">{{teacher.tier}} {{teacher.tierName}}</text>
-          <text class="certificate-preview__loading">{{certImageLoading ? '正在生成电子证书' : '点击查看电子证书'}}</text>
-        </view>
-      </view>
-    </button>
-
     <view class="section-heading">
-      <text class="section-heading__title">{{isTeacher ? '讲师服务' : '账户与服务'}}</text>
-      <text class="section-heading__note">{{isTeacher ? '管理你的认证资料与年度记录' : '管理个人资料，获取认证协助'}}</text>
+      <text class="section-heading__title">{{isTeacher || isGuest ? '讲师服务' : '账户与服务'}}</text>
+      <text class="section-heading__note">{{isTeacher || isGuest ? '管理你的认证资料与年度记录' : '管理个人资料，获取认证协助'}}</text>
     </view>
 
     <view class="menu-list">

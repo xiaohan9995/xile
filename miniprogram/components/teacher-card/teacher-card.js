@@ -6,6 +6,15 @@ Component({
     },
   },
 
+  observers: {
+    'teacher': function (teacher) {
+      if (!teacher) return;
+      const displayName = teacher.xileName || teacher.realName || teacher.name || '';
+      const location = [teacher.city, teacher.district].filter(Boolean).join(' · ');
+      this.setData({ displayName: displayName || '—', location });
+    },
+  },
+
   methods: {
     onTap() {
       const { id } = this.data.teacher;

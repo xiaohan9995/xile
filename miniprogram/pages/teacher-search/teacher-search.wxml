@@ -11,9 +11,8 @@
     <view class="search-mode-row">
       <view wx:for="{{searchModes}}" wx:key="id" class="search-mode {{searchMode === item.id ? 'search-mode--active' : ''}}" bindtap="switchMode" data-mode="{{item.id}}">{{item.label}}</view>
     </view>
-    <view class="search-box">
+    <view class="search-box" wx:if="{{searchMode === 'name' || searchMode === 'certificate'}}">
       <input
-        wx:if="{{searchMode === 'name' || searchMode === 'certificate'}}"
         class="search-input"
         value="{{keyword}}"
         placeholder="{{searchMode === 'certificate' ? '请输入完整教师证书编号' : '请输入教师姓名或喜乐名'}}"
@@ -22,25 +21,25 @@
         bindinput="onInput"
         bindconfirm="doSearch"
       />
-      <view wx:else class="region-search-prompt">{{searchMode === 'tier' ? '请选择师资认证等级' : '浏览全部地区认证教师'}}</view>
       <view class="search-btn" bindtap="doSearch">
         <text class="search-btn-icon">🔍</text>
       </view>
     </view>
 
-    <!-- Filter row with real pickers -->
-    <view class="filter-row">
-      <picker wx:if="{{searchMode !== 'certificate'}}" mode="selector" range="{{tierOptions}}" value="{{tierIndex}}" bindchange="onTierChange">
-        <view class="filter-pill {{tierIndex > 0 ? 'filter-pill--active' : ''}}">
-          {{tierIndex > 0 ? tierOptions[tierIndex] : '全部登记'}}
-        </view>
-      </picker>
-      <picker mode="selector" range="{{cityOptions}}" value="{{cityIndex}}" bindchange="onCityChange">
+    <!-- Filter row with real pickers: region→city, tier→level; hidden for name/certificate -->
+    <view class="filter-row" wx:if="{{searchMode === 'region' || searchMode === 'tier'}}">
+      <!-- 按地区 filters by city; 按认证等级 filters by level. -->
+      <picker wx:if="{{searchMode === 'region'}}" mode="selector" range="{{cityOptions}}" value="{{cityIndex}}" bindchange="onCityChange">
         <view class="filter-pill {{cityIndex > 0 ? 'filter-pill--active' : ''}}">
-          {{cityIndex > 0 ? cityOptions[cityIndex] : '全部地区'}}
+          {{cityIndex > 0 ? cityOptions[cityIndex] : '浏览全部'}}
         </view>
       </picker>
-      <view class="filter-pill" wx:if="{{tierIndex > 0 || cityIndex > 0}}" bindtap="resetFilters">
+      <picker wx:else mode="selector" range="{{tierOptions}}" value="{{tierIndex}}" bindchange="onTierChange">
+        <view class="filter-pill {{tierIndex > 0 ? 'filter-pill--active' : ''}}">
+          {{tierIndex > 0 ? tierOptions[tierIndex] : '浏览全部'}}
+        </view>
+      </picker>
+      <view class="filter-pill filter-pill--reset" wx:if="{{tierIndex > 0 || cityIndex > 0}}" bindtap="resetFilters">
         重置
       </view>
     </view>

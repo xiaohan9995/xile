@@ -3,16 +3,44 @@ const auth = require('../../utils/auth');
 
 const app = getApp();
 
+// WeChat avatars (qlogo.cn) go through the backend proxy; API-relative
+// storage paths ("/uploads/avatars/...") need the API base URL prefixed so
+// the <image> tag can load them.
 const displayAvatarUrl = (url) => {
-  if (!url || !/^https:\/\/(?:thirdwx|wx)\.qlogo\.cn\//i.test(url)) return url || '';
+  if (!url) return '';
   const baseUrl = app.globalData.apiBaseUrl || '';
-  return baseUrl ? `${baseUrl}/api/mp/auth/avatar-proxy?url=${encodeURIComponent(url)}` : url;
+  if (/^https:\/\/(?:thirdwx|wx)\.qlogo\.cn\//i.test(url)) {
+    return baseUrl ? `${baseUrl}/api/mp/auth/avatar-proxy?url=${encodeURIComponent(url)}` : url;
+  }
+  if (/^https?:\/\//i.test(url)) return url;
+  return baseUrl ? `${baseUrl}${url}` : url;
+};
+
+// Guests (not logged in yet) browse the same 讲师服务 list so they can see
+// what a teacher account offers; every entry stays non-navigable for them.
+const teacherMenuItems = (teacherId) => [
+  { icon: '我', title: '我的信息', subtitle: '查看对外公开显示的师资页面', url: `/pages/teacher-detail/teacher-detail?id=${teacherId || ''}` },
+  { icon: '教', title: '教学记录', subtitle: '请定期提交你的教学传播活动记录', url: '/packageTeacher/teaching-records/teaching-records' },
+  { icon: '服', title: '服务记录', subtitle: '请定期提交你的服务推广活动记录', url: '/packageTeacher/service-records/service-records' },
+  { icon: '年', title: '年审信息', subtitle: '查看年审进度及提交申请', url: '/packageTeacher/review-records/review-records' },
+  { icon: '设', title: '个人设置', subtitle: '更新头像、密码及对外显示信息', url: '/packageTeacher/settings/settings' },
+  { icon: '询', title: '咨询服务', subtitle: '查询师资管理小助手信息', url: '', action: 'consultation' },
+];
+
+const GUEST_PRIMARY_ACTION = {
+  eyebrow: '教师服务',
+  title: '关联教师身份',
+  detail: '登录后查看你的认证资料与年度记录',
+  actionText: '去登录',
+  url: '/packageTeacher/login/login?returnUrl=%2FpackageTeacher%2Fprofile%2Fprofile',
+  action: 'login',
 };
 
 Page({
   data: {
     statusBarHeight: 20,
     isTeacher: false,
+    isGuest: false,
     teacher: {
       name: '',
       xileName: '',
@@ -28,8 +56,6 @@ Page({
       avatarUrl: '',
     },
     primaryAction: {},
-    certImageUrl: '',
-    certImageLoading: false,
     avatarUploading: false,
     canSubmitReview: false,
     reviewBlockedReason: '',
@@ -37,8 +63,15 @@ Page({
   },
 
   onLoad() {
-    if (!auth.requireLogin('/packageTeacher/profile/profile')) return;
     this.setData({ statusBarHeight: app.globalData.statusBarHeight });
+    if (!auth.isLoggedIn()) {
+      this.setData({
+        isGuest: true,
+        primaryAction: GUEST_PRIMARY_ACTION,
+        menuItems: teacherMenuItems(null),
+      });
+      return;
+    }
     this.loadProfile();
   },
 
@@ -73,7 +106,6 @@ Page({
           bio: t.bio || '',
           validUntil: t.validUntil || '--',
           daysLeft: t.daysLeft || 0,
-          certificateUrl: t.certificateUrl || '',
         },
         primaryAction: {
           eyebrow: '认证状态',
@@ -82,18 +114,8 @@ Page({
           actionText: '查看证书',
           url: '/packageTeacher/cert-view/cert-view',
         },
-        menuItems: [
-          { icon: '我', title: '我的信息', subtitle: '查看对外公开显示的师资页面', url: `/pages/teacher-detail/teacher-detail?id=${t.id}` },
-          { icon: '教', title: '教学记录', subtitle: '请定期提交你的教学传播活动记录', url: '/packageTeacher/teaching-records/teaching-records' },
-          { icon: '服', title: '服务记录', subtitle: '请定期提交你的服务推广活动记录', url: '/packageTeacher/service-records/service-records' },
-          { icon: '年', title: '年审信息', subtitle: '查看年审进度及提交记录', url: '/packageTeacher/review-records/review-records' },
-          { icon: '设', title: '个人设置', subtitle: '更新头像、密码及对外显示信息', url: '/packageTeacher/settings/settings' },
-          { icon: '询', title: '咨询服务', subtitle: '查询师资管理小助手信息', url: '', action: 'consultation' },
-        ],
+        menuItems: teacherMenuItems(t.id),
       });
-      // Certificate objects may be private in COS. Always download through
-      // the authenticated endpoint so the card receives a readable temp file.
-      this.loadCertificatePreview();
     } catch (err) {
       this.setData({
         isTeacher: false,
@@ -115,6 +137,14 @@ Page({
   onMenuTap(e) {
     const url = e.currentTarget.dataset.url;
     const action = e.currentTarget.dataset.action;
+    if (this.data.isGuest) {
+      if (action === 'login' && url) {
+        wx.navigateTo({ url });
+        return;
+      }
+      wx.showToast({ title: '登录后可查看教师服务', icon: 'none' });
+      return;
+    }
     if (action === 'submit-review' && !this.data.canSubmitReview) {
       const title = this.data.reviewBlockedReason === 'certification-valid'
         ? '当前认证尚未到期'
@@ -175,27 +205,6 @@ Page({
       .finally(() => {
         this.setData({ avatarUploading: false });
       });
-  },
-
-  async loadCertificatePreview() {
-    this.setData({ certImageLoading: true, certImageUrl: '' });
-    try {
-      const baseUrl = app.globalData.apiBaseUrl;
-      const token = auth.getToken();
-      const result = await new Promise((resolve, reject) => {
-        wx.downloadFile({
-          url: `${baseUrl}/api/mp/teachers/me/certificate-image`,
-          header: { Authorization: `Bearer ${token}` },
-          success: (response) => (response.statusCode === 200 ? resolve(response) : reject(response)),
-          fail: reject,
-        });
-      });
-      this.setData({ certImageUrl: result.tempFilePath });
-    } catch (err) {
-      this.setData({ certImageUrl: this.data.teacher.certificateUrl || '' });
-    } finally {
-      this.setData({ certImageLoading: false });
-    }
   },
 
   goBack() {

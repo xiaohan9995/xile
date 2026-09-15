@@ -9,7 +9,10 @@
   <view wx:if="{{teacher}}" class="detail-body">
     <!-- Profile head -->
     <view class="profile-head">
-      <image class="profile-avatar" src="{{teacher.avatarUrl}}" mode="aspectFill" />
+      <image wx:if="{{teacher.avatarUrl}}" class="profile-avatar" src="{{teacher.avatarUrl}}" mode="aspectFill" />
+      <view wx:else class="profile-avatar profile-avatar--placeholder">
+        <text class="profile-avatar-initial">{{teacherInitial}}</text>
+      </view>
       <view class="profile-info">
         <text class="profile-name">{{teacher.xileName || teacher.realName || teacher.name || '—'}}</text>
         <view class="profile-tier">
@@ -24,32 +27,38 @@
     <view class="info-card">
       <view class="info-row">
         <text class="info-dt">喜乐名</text>
-        <text class="info-dd">{{teacher.xileName || teacher.realName || teacher.name || '—'}}</text>
+        <text class="info-dd">{{teacher.xileName || '—'}}</text>
       </view>
       <view class="info-row">
-        <text class="info-dt">教师编号</text>
-        <text class="info-dd">{{teacher.teacherNo || '—'}}</text>
+        <text class="info-dt">姓名/常用名</text>
+        <text class="info-dd">{{commonName || '—'}}</text>
       </view>
       <view class="info-row">
         <text class="info-dt">认证等级</text>
         <text class="info-dd">{{teacher.tierName || '—'}}</text>
       </view>
       <view class="info-row">
-        <text class="info-dt">认证时间</text>
-        <text class="info-dd">{{teacher.certifiedAt || '—'}}</text>
+        <text class="info-dt">首次教师认证年份</text>
+        <text class="info-dd">{{firstCertifiedYear || '—'}}</text>
       </view>
       <view class="info-row">
-        <text class="info-dt">有效期至</text>
+        <text class="info-dt">当前等级认证年份</text>
+        <text class="info-dd">{{currentTierCertifiedYear || '—'}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-dt">等级认证有效期至</text>
         <text class="info-dd">{{teacher.validUntil || '—'}}</text>
       </view>
       <view class="info-row">
-        <text class="info-dt">所属地区</text>
-        <text class="info-dd">{{teacher.city || '—'}}{{teacher.district ? ' · ' + teacher.district : ''}}</text>
+        <text class="info-dt">经常居住地</text>
+        <text class="info-dd">{{residencesText || '—'}}</text>
       </view>
-      <view class="info-row">
-        <text class="info-dt">擅长方向</text>
-        <text class="info-dd">{{specialtiesText}}</text>
-      </view>
+    </view>
+
+    <!-- Bio -->
+    <view class="bio-card">
+      <text class="bio-title">个人简介</text>
+      <text class="bio-text">{{teacher.teachingSummary || '—'}}</text>
     </view>
 
     <!-- Certificate card -->

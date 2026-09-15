@@ -4,7 +4,7 @@ const auth = require('../../utils/auth');
 const app = getApp();
 let _searchTimer = null;
 
-const TIER_OPTIONS = ['全部登记', 'L0', 'L1', 'L2', 'L3', 'L4'];
+const TIER_OPTIONS = ['浏览全部', 'L1', 'L2', 'L3', 'L4', 'L5'];
 
 Page({
   data: {
@@ -12,18 +12,17 @@ Page({
     keyword: '',
     searchMode: 'region',
     searchModes: [
-      { id: 'region', label: '按地区' },
       { id: 'name', label: '按姓名/喜乐名' },
       { id: 'certificate', label: '按证书编号' },
       { id: 'tier', label: '按认证等级' },
+      { id: 'region', label: '按地区' },
     ],
     searched: false,
     // Filter state
     tierOptions: TIER_OPTIONS,
     tierIndex: 0,
-    cityOptions: ['全部'],
+    cityOptions: ['浏览全部'],
     cityIndex: 0,
-    showFilterPanel: false,
     // Results
     teachers: [],
     loading: false,
@@ -36,7 +35,6 @@ Page({
   onLoad() {
     if (!auth.requireLogin('/pages/teacher-search/teacher-search')) return;
     this.setData({ statusBarHeight: app.globalData.statusBarHeight });
-    this.loadCityOptions();
     this.doSearch();
   },
 
@@ -59,7 +57,18 @@ Page({
   switchMode(e) {
     const mode = e.currentTarget.dataset.mode;
     if (mode === this.data.searchMode) return;
-    this.setData({ searchMode: mode, keyword: '', page: 1, hasMore: true, teachers: [], searched: false, error: '' });
+    this.setData({
+      searchMode: mode,
+      keyword: '',
+      // Filters belong to a single mode; never carry one into another.
+      tierIndex: 0,
+      cityIndex: 0,
+      page: 1,
+      hasMore: true,
+      teachers: [],
+      searched: false,
+      error: '',
+    });
     this.doSearch();
   },
 
@@ -69,10 +78,6 @@ Page({
       this.setData({ page: 1, hasMore: true, teachers: [] });
       this.doSearch();
     }, 400);
-  },
-
-  toggleFilter() {
-    this.setData({ showFilterPanel: !this.data.showFilterPanel });
   },
 
   onTierChange(e) {
@@ -88,17 +93,6 @@ Page({
   resetFilters() {
     this.setData({ tierIndex: 0, cityIndex: 0, page: 1, hasMore: true, teachers: [] });
     this.doSearch();
-  },
-
-  async loadCityOptions() {
-    try {
-      const payload = await request({ url: '/api/mp/teachers/search?q=&page=1&pageSize=1' });
-      if (payload.cities && payload.cities.length) {
-        this.setData({ cityOptions: ['全部'].concat(payload.cities) });
-      }
-    } catch (e) {
-      // keep default
-    }
   },
 
   _buildUrl(page) {
@@ -128,7 +122,7 @@ Page({
         page: 1,
       });
       if (payload.cities && payload.cities.length && this.data.cityOptions.length <= 1) {
-        this.setData({ cityOptions: ['全部'].concat(payload.cities) });
+        this.setData({ cityOptions: ['浏览全部'].concat(payload.cities) });
       }
     } catch (err) {
       this.setData({ error: '查询失败，请稍后重试' });

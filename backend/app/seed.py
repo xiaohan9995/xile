@@ -15,11 +15,11 @@ from .models import (
 
 
 DEFAULT_TEACHER_TIERS = (
-    {"code": "L0", "name": "顾问", "review_cycle_years": 2, "review_required": True, "sort_order": 0},
-    {"code": "L1", "name": "初级喜乐瑜伽教师", "review_cycle_years": 2, "review_required": True, "sort_order": 1},
-    {"code": "L2", "name": "中级喜乐瑜伽教师", "review_cycle_years": 2, "review_required": True, "sort_order": 2},
-    {"code": "L3", "name": "高级喜乐瑜伽教师", "review_cycle_years": 2, "review_required": True, "sort_order": 3},
-    {"code": "L4", "name": "导师", "review_cycle_years": 3, "review_required": True, "sort_order": 4},
+    {"code": "L1", "name": "喜乐顾问", "review_cycle_years": 2, "review_required": True, "sort_order": 1},
+    {"code": "L2", "name": "喜乐瑜伽初级教师", "review_cycle_years": 2, "review_required": True, "sort_order": 2},
+    {"code": "L3", "name": "喜乐健康生活管理师（喜乐瑜伽中级教师）", "review_cycle_years": 2, "review_required": True, "sort_order": 3},
+    {"code": "L4", "name": "喜乐智慧生命教练（喜乐瑜伽高级教师）", "review_cycle_years": 2, "review_required": True, "sort_order": 4},
+    {"code": "L5", "name": "喜乐生命工程师（喜乐智慧导师）", "review_cycle_years": 3, "review_required": True, "sort_order": 5},
 )
 
 DEFAULT_SYSTEM_CONFIGS = {
@@ -108,7 +108,7 @@ def seed_demo_data():
             certificate_no="JY20230001",
             real_name="张三",
             xile_name="善悦",
-            tier=tiers["L3"],
+            tier=tiers["L4"],
             city="上海市",
             district="静安区",
             status="active",
@@ -121,7 +121,7 @@ def seed_demo_data():
             certificate_no="JY20230002",
             real_name="李四",
             xile_name="清心",
-            tier=tiers["L2"],
+            tier=tiers["L3"],
             city="北京市",
             district="朝阳区",
             status="active",
@@ -134,7 +134,7 @@ def seed_demo_data():
             certificate_no="JY20230003",
             real_name="王五",
             xile_name="自在",
-            tier=tiers["L1"],
+            tier=tiers["L2"],
             city="杭州市",
             district="西湖区",
             status="hidden",
@@ -147,7 +147,7 @@ def seed_demo_data():
             certificate_no="JY20230004",
             real_name="海六",
             xile_name="明净",
-            tier=tiers["L4"],
+            tier=tiers["L5"],
             city="深圳市",
             district="南山区",
             status="active",
@@ -160,7 +160,7 @@ def seed_demo_data():
             certificate_no="JY20230005",
             real_name="畅琦",
             xile_name="喜乐",
-            tier=tiers["L4"],
+            tier=tiers["L5"],
             city="广州市",
             district="天河区",
             status="active",
@@ -300,7 +300,7 @@ def seed_demo_data():
     if not Announcement.query.first():
         db.session.add_all([
             Announcement(title="2026年度年审通知", content="请各位教师于7月31日前完成年度审核材料提交", display_order=3),
-            Announcement(title="L4导师认证开放申请", content="符合条件的L3高级喜乐瑜伽教师可提交晋升申请", display_order=2),
+            Announcement(title="L5喜乐生命工程师认证开放申请", content="符合条件的L4喜乐智慧生命教练可提交晋升申请", display_order=2),
             Announcement(title="暑期工作坊报名中", content="8月杭州站·阴瑜伽深度研修班，名额有限", display_order=1),
         ])
 

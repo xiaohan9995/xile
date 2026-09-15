@@ -1,11 +1,10 @@
-from datetime import date
-
 from flask import request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 
 from ...extensions import db
 from ...models import ServiceRecord, User
 from . import mp_bp
+from .helpers import _parse_record_date
 
 
 def _current_teacher_id():
@@ -16,7 +15,7 @@ def _current_teacher_id():
 def _payload(record):
     return {
         "id": record.id,
-        "servedOn": record.served_on.isoformat() if record.served_on else "",
+        "servedOn": record.served_on.strftime("%Y-%m") if record.served_on else "",
         "serviceType": record.service_type,
         "title": record.title,
         "location": record.location,
@@ -29,7 +28,7 @@ def _payload(record):
 def _validate(payload, status):
     raw_served_on = (payload.get("servedOn") or "").strip()
     try:
-        served_on = date.fromisoformat(raw_served_on) if raw_served_on else None
+        served_on = _parse_record_date(raw_served_on) if raw_served_on else None
     except ValueError:
         return None, "请选择有效的服务日期"
     service_type = (payload.get("serviceType") or "").strip()
