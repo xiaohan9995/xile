@@ -5,7 +5,7 @@
     <view class="home-visual__overlay"></view>
     <view class="home-visual__text">
       <text class="home-visual__eyebrow">JOY YOGA · TEACHER CERTIFICATION</text>
-      <text class="home-visual__title">我是被认证的<br />喜乐菩萨</text>
+      <text class="home-visual__title">喜乐瑜伽 · 教师认证中心</text>
       <text class="home-visual__tagline">喜乐智慧 · 凤凰传承</text>
     </view>
   </view>
@@ -14,7 +14,7 @@
   <view class="home-body">
     <view class="home-intro">
       <text class="section-title">喜乐瑜伽教师管理认证</text>
-      <text class="home-intro__note">当每一滴水珠汇入海洋，当每一位船工挥动船桨，凤凰大法船就会乘风破浪、扬帆远航。</text>
+      <text class="home-intro__note">浪漫开悟  智慧勇敢  富贵成佛  慈悲爱心</text>
     </view>
 
     <button class="cta-btn" bindtap="goMyCert">
@@ -50,32 +50,16 @@
       </button>
     </view>
 
-    <!-- Featured Teachers -->
-    <view class="featured-card" wx:if="{{featuredTeachers.length > 0 || featuredLoading}}">
-      <view class="featured-header">
-        <text class="featured-title">认证讲师</text>
-        <text class="featured-more" bindtap="goSearch">查看全部</text>
+    <!-- Affirmation -->
+    <view class="affirmation">
+      <view class="affirmation__orn">
+        <view class="affirmation__orn-line"></view>
+        <text class="affirmation__orn-star">✦</text>
+        <view class="affirmation__orn-line"></view>
       </view>
-      <scroll-view scroll-x class="featured-scroll" enhanced show-scrollbar="{{false}}">
-        <view class="featured-scroll__content">
-          <view
-            wx:for="{{featuredTeachers}}"
-            wx:key="id"
-            class="featured-teacher"
-            bindtap="openTeacher"
-            data-id="{{item.id}}"
-          >
-            <view class="featured-avatar-wrap">
-              <image wx:if="{{item.avatarUrl}}" class="featured-avatar" src="{{item.avatarUrl}}" mode="aspectFill" />
-              <view wx:else class="featured-avatar featured-avatar--placeholder">
-                <text class="featured-avatar-initial">{{item.name[0]}}</text>
-              </view>
-            </view>
-            <text class="featured-name">{{item.xileName || item.realName || item.name}}</text>
-            <text class="featured-tier">{{item.tier}} {{item.tierName}}</text>
-          </view>
-        </view>
-      </scroll-view>
+      <text class="affirmation__title">我是被认证的喜乐菩萨</text>
+      <text class="affirmation__line">我自豪地赞叹自己的选择</text>
+      <text class="affirmation__line">我全然地安住在喜乐智慧的祝福中</text>
     </view>
 
     <view class="homepage-state" wx:if="{{homepageLoading}}"><text>正在加载认证内容</text></view>

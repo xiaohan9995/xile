@@ -226,7 +226,7 @@ def test_featured_teachers_show_up_to_ten_and_sort_by_tier_desc(client):
     assert len(payload["items"]) <= 10
     assert payload["page"] == 1
     assert payload["pageSize"] == 10
-    assert [item["tier"] for item in payload["items"]] == ["L4", "L4", "L3", "L2"]
+    assert [item["tier"] for item in payload["items"]] == ["L5", "L5", "L4", "L3"]
     assert "hasMore" in payload
 
 
@@ -239,7 +239,7 @@ def test_teacher_search_filters_by_name_and_hides_private_fields(client):
     assert payload["total"] == 1
     teacher = payload["items"][0]
     assert teacher["name"] == "善悦"
-    assert teacher["tier"] == "L3"
+    assert teacher["tier"] == "L4"
     assert teacher["certificationStatus"] == "认证有效"
     assert teacher["validUntil"] == "2028.12.31"
     assert teacher["certifiedAt"] == "2023.01.01"
@@ -271,7 +271,9 @@ def test_teacher_detail_returns_public_certification_profile(client):
     assert payload["specialties"] == ["阴瑜伽", "流瑜伽", "产后瑜伽"]
     assert payload["certifiedAt"] == "2023.01.01"
     assert payload["certificationNote"] == "该教师已通过喜乐瑜伽教师认证，资质处于有效期内。"
-    assert payload["realName"] is None
+    # 显示姓名 defaults to on in 个人设置, so the legal name is public unless
+    # the teacher turns the switch off.
+    assert payload["realName"] == "张三"
     assert "phone" not in payload
 
 
@@ -501,7 +503,7 @@ def test_admin_teacher_list_returns_private_roster(client):
     teacher = next(t for t in payload["items"] if t["teacherNo"] == "JY20230001")
     assert teacher["name"] == "张三"
     assert teacher["phone"] == "13800000000"
-    assert teacher["tier"] == "L3"
+    assert teacher["tier"] == "L4"
     assert teacher["certifiedAt"] == "2023.01.01"
 
 
@@ -713,7 +715,7 @@ def test_collaborative_review_requires_assignment_decision_and_publication(clien
     assert cycle.status_code == 201
     group = client.post(
         "/api/admin/review-groups", headers=headers,
-        json={"name": "L2 审核组", "leaderId": 1, "memberIds": [1], "tierScope": ["L2"]},
+        json={"name": "L3 审核组", "leaderId": 1, "memberIds": [1], "tierScope": ["L3"]},
     )
     assert group.status_code == 201
     assignment = client.post(
@@ -738,7 +740,7 @@ def test_collaborative_review_requires_assignment_decision_and_publication(clien
 def test_group_decision_requires_member_opinions_and_can_be_returned(client):
     headers = {"Authorization": "Bearer test-admin-token"}
     cycle = client.post("/api/admin/review-cycles", headers=headers, json={"name": "退回测试批次", "startDate": "2026-01-01", "submissionDeadline": "2026-07-31"})
-    group = client.post("/api/admin/review-groups", headers=headers, json={"name": "退回测试审核组", "leaderId": 1, "memberIds": [1], "tierScope": ["L2"]})
+    group = client.post("/api/admin/review-groups", headers=headers, json={"name": "退回测试审核组", "leaderId": 1, "memberIds": [1], "tierScope": ["L3"]})
     client.post("/api/admin/reviews/1/assignment", headers=headers, json={"cycleId": cycle.get_json()["id"], "groupId": group.get_json()["id"]})
     blocked = client.post("/api/admin/reviews/1/group-decision", headers=headers, json={"conclusion": "approved", "decision": "缺少意见"})
     assert blocked.status_code == 409

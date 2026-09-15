@@ -67,13 +67,19 @@ def upgrade():
 
     # Existing password accounts are deliberately reset because their login
     # name has changed from the old field to the ID-number teacher_no.
-    # Re-running after an interrupted attempt is safe: the reset is
-    # deterministic and repairs any half-finished user updates.
-    accounts = bind.execute(sa.text("SELECT users.id, teachers.teacher_no FROM users JOIN teachers ON teachers.id = users.teacher_id WHERE users.role = 'teacher'"))
-    for user_id, teacher_no in accounts:
+    #
+    # The reset must stay idempotent: resetting unconditionally forces every
+    # teacher to change a password they may already have replaced. Skip the
+    # accounts that already sign in with the identity number so a re-run after
+    # an interrupted attempt only repairs the rows it has not converted yet.
+    accounts = bind.execute(sa.text("SELECT users.id, users.username, teachers.teacher_no FROM users JOIN teachers ON teachers.id = users.teacher_id WHERE users.role = 'teacher'"))
+    for user_id, username, teacher_no in accounts:
+        identity_no = (teacher_no or "").strip().upper()
+        if not identity_no or (username or "").strip().upper() == identity_no:
+            continue
         bind.execute(
             sa.text("UPDATE users SET username = :username, password_hash = :password_hash, must_change_password = 1, session_version = COALESCE(session_version, 0) + 1 WHERE id = :id"),
-            {"id": user_id, "username": teacher_no, "password_hash": generate_password_hash(teacher_no[-6:], method="pbkdf2:sha256")},
+            {"id": user_id, "username": identity_no, "password_hash": generate_password_hash(identity_no[-6:], method="pbkdf2:sha256")},
         )
 
     if has_id_number:

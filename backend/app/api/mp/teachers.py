@@ -256,7 +256,7 @@ def update_my_public_profile():
         visibility = payload["visibility"]
         if not isinstance(visibility, dict):
             return {"error": "公开设置格式无效"}, 400
-        allowed = {"showAlias", "showResidences", "showBio", "showFirstCertifiedOn", "showCurrentTierCertifiedOn"}
+        allowed = {"showRealName", "showAlias", "showResidences", "showBio", "showFirstCertifiedOn", "showCurrentTierCertifiedOn"}
         teacher.public_profile_settings = json.dumps({key: bool(visibility.get(key, default)) for key, default in _public_profile_settings(teacher).items() if key in allowed}, ensure_ascii=False)
     db.session.commit()
     return get_my_public_profile()

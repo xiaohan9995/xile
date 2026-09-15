@@ -3,11 +3,18 @@ const auth = require('../../utils/auth');
 
 const app = getApp();
 
+// Dates arrive as "YYYY.MM.DD"; only the year is shown for certification years.
+const yearOf = (value) => (value ? String(value).slice(0, 4) : '');
+
 Page({
   data: {
     statusBarHeight: 20,
     teacher: null,
-    specialtiesText: '',
+    teacherInitial: '?',
+    commonName: '',
+    firstCertifiedYear: '',
+    currentTierCertifiedYear: '',
+    residencesText: '',
     loading: false,
     error: '',
   },
@@ -24,9 +31,14 @@ Page({
     this.setData({ loading: true, error: '' });
     try {
       const teacher = await request({ url: `/api/mp/teachers/${id}/summary` });
+      const displayName = teacher.xileName || teacher.realName || teacher.name || '';
       this.setData({
         teacher,
-        specialtiesText: (teacher.specialties || []).join('、') || '未填写',
+        teacherInitial: displayName ? displayName.charAt(0) : '?',
+        commonName: teacher.alias || teacher.realName || '',
+        firstCertifiedYear: yearOf(teacher.certifiedAt),
+        currentTierCertifiedYear: yearOf(teacher.currentTierCertifiedOn),
+        residencesText: (teacher.residences || []).join('、'),
       });
     } catch (err) {
       this.setData({ error: '教师详情暂时无法加载，请稍后重试' });

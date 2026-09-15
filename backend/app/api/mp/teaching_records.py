@@ -1,11 +1,10 @@
-from datetime import date
-
 from flask import request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 
 from ...extensions import db
 from ...models import TeachingRecord, User
 from . import mp_bp
+from .helpers import _parse_record_date
 
 
 def _current_teacher():
@@ -15,7 +14,7 @@ def _current_teacher():
 
 def _payload(record):
     return {
-        "id": record.id, "taughtOn": record.taught_on.isoformat(), "platform": record.platform,
+        "id": record.id, "taughtOn": record.taught_on.strftime("%Y-%m"), "platform": record.platform,
         "title": record.title, "durationHours": float(record.duration_hours) if record.duration_hours is not None else None,
         "participantCount": record.participant_count, "description": record.description,
         "evidenceKey": record.evidence_key, "status": record.status,
@@ -47,8 +46,10 @@ def create_teaching_record():
     if status not in ("draft", "submitted"):
         return {"error": "valid status required"}, 400
     try:
-        taught_on = date.fromisoformat(payload.get("taughtOn", ""))
+        taught_on = _parse_record_date(payload.get("taughtOn", ""))
     except ValueError:
+        return {"error": "valid taughtOn required"}, 400
+    if taught_on is None:
         return {"error": "valid taughtOn required"}, 400
     platform, title = (payload.get("platform") or "").strip(), (payload.get("title") or "").strip()
     if status == "submitted" and (not platform or not title):
@@ -74,7 +75,10 @@ def update_teaching_record(record_id):
         return {"error": "submitted records cannot return to draft"}, 409
     try:
         if payload.get("taughtOn"):
-            record.taught_on = date.fromisoformat(payload["taughtOn"])
+            parsed = _parse_record_date(payload["taughtOn"])
+            if parsed is None:
+                return {"error": "valid taughtOn required"}, 400
+            record.taught_on = parsed
     except ValueError:
         return {"error": "valid taughtOn required"}, 400
     for key, attr in (("platform", "platform"), ("title", "title"), ("durationHours", "duration_hours"), ("participantCount", "participant_count"), ("description", "description"), ("evidenceKey", "evidence_key")):

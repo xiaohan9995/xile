@@ -20,6 +20,21 @@
   width: 152rpx;
   height: 152rpx;
   border-radius: 50%;
+  border: 2rpx solid var(--color-surface);
+  box-sizing: border-box;
+}
+
+.profile-avatar--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary-light);
+}
+
+.profile-avatar-initial {
+  font-size: 60rpx;
+  font-weight: 700;
+  color: var(--color-primary);
 }
 
 .profile-info {
@@ -87,7 +102,7 @@
 
 .info-row {
   display: grid;
-  grid-template-columns: 144rpx 1fr;
+  grid-template-columns: 220rpx 1fr;
   gap: 20rpx;
   padding: 12rpx 0;
 }
@@ -102,6 +117,31 @@
   font-size: 24rpx;
   color: var(--color-text);
   line-height: 1.55;
+}
+
+/* ===== Bio card ===== */
+.bio-card {
+  margin-top: 20rpx;
+  padding: 24rpx 28rpx 28rpx;
+  background: var(--color-card);
+  border-radius: var(--radius-md);
+  border: 1rpx solid var(--color-line);
+}
+
+.bio-title {
+  display: block;
+  font-size: 26rpx;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.bio-text {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  line-height: 1.7;
+  color: var(--color-muted);
+  white-space: pre-wrap;
 }
 
 /* ===== Certificate card ===== */

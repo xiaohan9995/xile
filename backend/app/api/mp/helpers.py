@@ -62,12 +62,22 @@ def _teacher_profile(teacher):
 
 
 _PROFILE_DEFAULTS = {
-    "showAlias": False,
-    "showResidences": False,
-    "showBio": False,
+    # 姓名 and 别名 are shown on the public teacher page by default; a teacher
+    # can still hide them from 个人设置.
+    "showRealName": True,
+    "showAlias": True,
+    # 经常居住地 and 个人简介 are always public: 个人设置 no longer offers a
+    # visibility switch for them, and the teacher page has to show what the
+    # teacher filled in.
+    "showResidences": True,
+    "showBio": True,
     "showFirstCertifiedOn": True,
     "showCurrentTierCertifiedOn": True,
 }
+
+# Keys the teacher can no longer toggle in 个人设置. Stored values are ignored
+# so a profile saved while the switches still existed keeps rendering.
+_ALWAYS_PUBLIC_PROFILE_KEYS = ("showResidences", "showBio")
 
 
 def _public_profile_settings(teacher):
@@ -75,7 +85,10 @@ def _public_profile_settings(teacher):
         saved = json.loads(teacher.public_profile_settings or "{}")
     except (TypeError, ValueError):
         saved = {}
-    return {key: bool(saved.get(key, default)) for key, default in _PROFILE_DEFAULTS.items()}
+    settings = {key: bool(saved.get(key, default)) for key, default in _PROFILE_DEFAULTS.items()}
+    for key in _ALWAYS_PUBLIC_PROFILE_KEYS:
+        settings[key] = True
+    return settings
 
 
 def _residences(teacher):
@@ -104,13 +117,17 @@ def _public_xile_name(teacher):
 
 
 def _public_real_name(teacher):
-    """Expose the legal name only when the teacher has no 喜乐名.
+    """Expose the legal name when the teacher opted in from 个人设置.
 
-    喜乐名 is the public identity of a teacher, so the legal name stays private
-    whenever one exists. It is returned as a display fallback for teachers who
-    have not set a 喜乐名 yet, so their profile never renders nameless.
+    喜乐名 / 别名 is the public identity, so the legal name stays private by
+    default. It is still returned as a display fallback for teachers who have
+    not been given a 喜乐名 yet, so their profile never renders nameless.
     """
-    return None if _clean_name(teacher.xile_name) else (_clean_name(teacher.real_name) or None)
+    if not _clean_name(teacher.xile_name):
+        return _clean_name(teacher.real_name) or None
+    if not _public_profile_settings(teacher)["showRealName"]:
+        return None
+    return _clean_name(teacher.real_name) or None
 
 
 def _studio_summary(studio):
@@ -138,6 +155,26 @@ def _datetime_text(value):
 
 def _date_text(value):
     return value.strftime("%Y.%m.%d") if value else None
+
+
+def _parse_record_date(value):
+    """Parse a record date that the mini program submits as YYYY-MM.
+
+    Teaching and service records are collected with a month picker, so the day
+    is not part of the value any more. Store it as the first of the month and
+    keep accepting a legacy full date.
+    """
+    text = (value or "").strip()
+    if not text:
+        return None
+    try:
+        return date.fromisoformat(text)
+    except ValueError:
+        pass
+    try:
+        return date.fromisoformat(f"{text}-01")
+    except ValueError:
+        raise ValueError(text)
 
 
 def _file_payload(file):

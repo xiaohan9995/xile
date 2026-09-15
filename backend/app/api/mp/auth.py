@@ -234,6 +234,14 @@ def auth_me():
     user = db.session.get(User, user_id)
     if not user:
         return {"error": "user not found"}, 404
+    # Backfill the user avatar from the linked teacher record. Avatars can be
+    # set on the teacher by an administrator or legacy flows (the mini program
+    # previously only synced user→teacher); mirror that so pages reading the
+    # user record (e.g. settings) show the same avatar.
+    teacher = db.session.get(Teacher, user.teacher_id) if user.teacher_id else None
+    if teacher and teacher.avatar_url and not user.avatar_url:
+        user.avatar_url = teacher.avatar_url
+        db.session.commit()
     return {
         "userId": user.id,
         "teacherId": user.teacher_id,
@@ -242,7 +250,7 @@ def auth_me():
         "phone": user.phone,
         "avatarUrl": _file_url(user.avatar_url),
         "nickname": user.nickname,
-        "xileName": (db.session.get(Teacher, user.teacher_id).xile_name if user.teacher_id else None),
+        "xileName": (teacher.xile_name if teacher else None),
         "mustChangePassword": user.must_change_password,
     }
 
