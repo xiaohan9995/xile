@@ -37,6 +37,25 @@
   line-height: 1.55;
 }
 
+.settings-group--guest {
+  padding-top: 28rpx;
+}
+
+.guest-note__title {
+  display: block;
+  color: var(--color-text);
+  font-size: 30rpx;
+  font-weight: 800;
+}
+
+.guest-note__detail {
+  display: block;
+  margin-top: 10rpx;
+  color: var(--color-muted);
+  font-size: 23rpx;
+  line-height: 1.55;
+}
+
 /* ===== Avatar ===== */
 .settings-group--avatar {
   padding-top: 4rpx;
@@ -247,10 +266,12 @@
   .settings-page { background: #172019; }
   .settings-intro__title,
   .section-heading__title,
-  .field-label { color: #f1f5f1; }
+  .field-label,
+  .guest-note__title { color: #f1f5f1; }
   .settings-intro__description,
   .section-heading__note,
-  .logout-note { color: #b9c5bb; }
+  .logout-note,
+  .guest-note__detail { color: #b9c5bb; }
   .settings-group { border-color: #405445; background: #202b22; }
   .avatar-row__title { color: #f1f5f1; }
   .avatar-img { border-color: #18231b; }

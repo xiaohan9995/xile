@@ -7,6 +7,7 @@ Page({
   data: {
     statusBarHeight: 20,
     studio: null,
+    ownerTeacherRealName: '',
     loading: false,
     error: '',
   },
@@ -23,16 +24,20 @@ Page({
     this.setData({ loading: true, error: '' });
     try {
       const studio = await request({ url: `/api/mp/studios/${id}` });
+      const ownerTeacherName = studio.ownerTeacherName || '认证导师';
+      const ownerTeacherRealName = studio.ownerTeacherRealName || '';
       this.setData({
         studio: {
           ...studio,
           coverImage: studio.imageUrl || studio.coverUrl || 'https://images.unsplash.com/photo-1593810450967-f9c42742e326?auto=format&fit=crop&w=720&q=86',
-          ownerTeacherName: studio.ownerTeacherName || '认证导师',
+          ownerTeacherName,
           openingHours: studio.openingHours || '10:00 - 21:00',
           contactText: studio.contactText || '微信/电话预约',
           tags: studio.tags || [],
           status: studio.status || '开放中',
         },
+        // Only surface the legal name when it differs from the public name.
+        ownerTeacherRealName: ownerTeacherRealName && ownerTeacherRealName !== ownerTeacherName ? ownerTeacherRealName : '',
       });
     } catch (err) {
       this.setData({ error: '工作室详情暂时无法加载' });

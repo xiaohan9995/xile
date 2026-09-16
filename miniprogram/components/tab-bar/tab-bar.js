@@ -1,5 +1,3 @@
-const auth = require('../../utils/auth');
-
 Component({
   properties: {
     active: {
@@ -22,10 +20,8 @@ Component({
     },
     goMy() {
       if (this.data.active === 'my') return;
-      if (!auth.isLoggedIn()) {
-        wx.navigateTo({ url: auth.loginUrl('/packageTeacher/profile/profile') });
-        return;
-      }
+      // Guests land on the profile shell too: it renders the same 讲师服务
+      // entries, and each second-level entry is intercepted inside the page.
       wx.reLaunch({ url: '/packageTeacher/profile/profile' });
     },
   },

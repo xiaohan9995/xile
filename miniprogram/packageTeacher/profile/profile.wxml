@@ -1,12 +1,12 @@
 <view class="page-shell profile-page">
   <view class="page-header" style="padding-top:{{statusBarHeight}}px;">
     <view class="page-header__back" bindtap="goBack">‹</view>
-    <text class="page-header__title">{{isTeacher ? '我的认证' : '我的'}}</text>
+    <text class="page-header__title">我的认证</text>
     <view class="page-header__right"></view>
   </view>
 
   <view class="profile-body">
-    <view class="identity-card {{isTeacher ? 'identity-card--teacher' : ''}}">
+    <view class="identity-card identity-card--teacher {{isGuest ? 'identity-card--guest' : ''}}">
       <view class="identity-card__top">
         <button
           class="avatar-wrap avatar-editor"
@@ -19,7 +19,7 @@
           <view wx:else class="avatar-img avatar-img--placeholder">
             <text class="avatar-initial">{{teacher.xileName[0] || user.nickname[0] || teacher.name[0] || '我'}}</text>
           </view>
-          <view class="avatar-badge avatar-badge--edit">{{avatarUploading ? '…' : '换'}}</view>
+          <view wx:if="{{!isGuest}}" class="avatar-badge avatar-badge--edit">{{avatarUploading ? '…' : '换'}}</view>
         </button>
 
         <view class="identity-info">
@@ -29,12 +29,18 @@
             <text wx:else>微信用户 · 尚未关联讲师档案</text>
           </view>
           <text class="identity-bio" wx:if="{{isTeacher && teacher.bio}}">{{teacher.bio}}</text>
-          <text class="identity-bio" wx:else>{{isTeacher ? '认证信息已同步至喜乐瑜伽教师服务' : '点击头像即可更换个人图像'}}</text>
+          <text class="identity-bio" wx:elif="{{isTeacher}}">认证信息已同步至喜乐瑜伽教师服务</text>
+          <text class="identity-bio" wx:else>认证信息已同步至喜乐瑜伽教师服务</text>
         </view>
       </view>
     </view>
 
-    <button class="primary-status-card {{isTeacher ? 'primary-status-card--teacher' : 'primary-status-card--account'}}" bindtap="onMenuTap" data-url="{{primaryAction.url}}">
+    <button
+      class="primary-status-card primary-status-card--account"
+      bindtap="onMenuTap"
+      data-url="{{primaryAction.url}}"
+      data-primary="1"
+    >
       <view class="primary-status-card__content">
         <text class="primary-status-card__eyebrow">{{primaryAction.eyebrow}}</text>
         <text class="primary-status-card__title">{{primaryAction.title}}</text>
@@ -47,15 +53,15 @@
     </button>
 
     <view class="section-heading">
-      <text class="section-heading__title">{{isTeacher || isGuest ? '讲师服务' : '账户与服务'}}</text>
-      <text class="section-heading__note">{{isTeacher || isGuest ? '管理你的认证资料与年度记录' : '管理个人资料，获取认证协助'}}</text>
+      <text class="section-heading__title">讲师服务</text>
+      <text class="section-heading__note">管理你的认证资料与年度记录</text>
     </view>
 
     <view class="menu-list">
       <button
         wx:for="{{menuItems}}"
         wx:key="title"
-        class="menu-item"
+        class="menu-item {{item.locked ? 'menu-item--locked' : ''}}"
         bindtap="onMenuTap"
         data-url="{{item.url}}"
         data-action="{{item.action}}"
@@ -67,7 +73,8 @@
             <text class="menu-subtitle">{{item.subtitle}}</text>
           </view>
         </view>
-        <text class="menu-arrow">›</text>
+        <text class="menu-lock" wx:if="{{item.locked}}">仅教师</text>
+        <text class="menu-arrow" wx:else>›</text>
       </button>
     </view>
   </view>

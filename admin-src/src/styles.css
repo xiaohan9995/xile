@@ -1006,6 +1006,26 @@ button {
   min-width: 0;
 }
 
+.form-grid.two > label.field-full {
+  grid-column: 1 / -1;
+}
+
+.admin-modal textarea.field-textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 80px;
+  border: 1px solid #e7ebe8;
+  border-radius: 13px;
+  padding: 10px 12px;
+  outline: 0;
+  color: #34445c;
+  background: #fafafa;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  resize: vertical;
+}
+
 .admin-modal input[type="file"] {
   min-width: 0;
   padding: 7px 10px;

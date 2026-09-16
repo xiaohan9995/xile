@@ -89,30 +89,7 @@
   white-space: nowrap;
 }
 
-.teacher-card__badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4rpx;
-  padding: 4rpx 12rpx;
-  border-radius: var(--radius-sm);
-  background: var(--color-gold-light);
-  white-space: nowrap;
-}
-
-.teacher-card__badge-icon {
-  font-size: 18rpx;
-  color: var(--color-gold);
-  font-weight: 700;
-}
-
-.teacher-card__badge-text {
-  font-size: 20rpx;
-  font-weight: 600;
-  color: var(--color-gold);
-}
-
-.teacher-card__cert-no,
-.teacher-card__location {
+.teacher-card__real-name {
   font-size: 22rpx;
   color: var(--color-muted);
   overflow: hidden;
@@ -120,8 +97,41 @@
   white-space: nowrap;
 }
 
-.teacher-card__cert-no {
-  font-family: "Menlo", "SF Mono", monospace;
+.teacher-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6rpx;
+  flex-shrink: 0;
+  max-width: 240rpx;
+  padding: 8rpx 18rpx;
+  border-radius: var(--radius-sm);
+  background: var(--color-gold-light);
+  white-space: nowrap;
+}
+
+.teacher-card__badge-icon {
+  flex-shrink: 0;
+  font-size: 24rpx;
+  color: var(--color-gold);
+  font-weight: 700;
+}
+
+.teacher-card__badge-text {
+  min-width: 0;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--color-gold);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.teacher-card__location {
+  font-size: 22rpx;
+  color: var(--color-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Arrow */

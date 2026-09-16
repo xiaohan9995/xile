@@ -38,9 +38,12 @@ Page({
   },
 
   onShow() {
-    if (auth.isLoggedIn()) {
-      this.loadRecords();
+    // Guard re-entry so a guest cannot keep the annual-review records on screen.
+    if (!auth.isLoggedIn() || !auth.isTeacher()) {
+      auth.requireAuth('/packageTeacher/review-records/review-records');
+      return;
     }
+    this.loadRecords();
   },
 
   onPullDownRefresh() {

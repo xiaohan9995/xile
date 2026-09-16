@@ -145,7 +145,8 @@ def _studio_summary(studio):
         "intro": studio.intro,
         "openingHours": studio.opening_hours,
         "contactText": studio.contact_text,
-        "ownerTeacherName": studio.owner.real_name if studio.owner and studio.owner.status != "hidden" else None,
+        "ownerTeacherName": _display_name(studio.owner) if studio.owner and studio.owner.status != "hidden" else None,
+        "ownerTeacherRealName": _public_real_name(studio.owner) if studio.owner and studio.owner.status != "hidden" else None,
     }
 
 

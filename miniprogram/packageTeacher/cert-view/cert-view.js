@@ -19,6 +19,14 @@ Page({
     this.loadCert();
   },
 
+  onShow() {
+    // Returning from login (or after a session expiry) must not leave a stale
+    // certificate rendered for a guest.
+    if (!auth.isLoggedIn() || !auth.isTeacher()) {
+      auth.requireAuth('/packageTeacher/cert-view/cert-view');
+    }
+  },
+
   async loadCert() {
     try {
       const payload = await request({ url: '/api/mp/teachers/me/certification' });

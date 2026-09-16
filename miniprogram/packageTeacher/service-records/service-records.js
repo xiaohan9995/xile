@@ -12,7 +12,14 @@ Page({
     if (!auth.requireAuth('/packageTeacher/service-records/service-records')) return;
     this.setData({ statusBarHeight: app.globalData.statusBarHeight }); this.loadRecords();
   },
-  onShow() { if (auth.isLoggedIn()) this.loadRecords(); },
+  onShow() {
+    // Guard re-entry so a guest cannot keep teacher records on screen.
+    if (!auth.isLoggedIn() || !auth.isTeacher()) {
+      auth.requireAuth('/packageTeacher/service-records/service-records');
+      return;
+    }
+    this.loadRecords();
+  },
   async loadRecords() {
     this.setData({ loading: true });
     try { const data = await request({ url: '/api/mp/service-records' }); this.setData({ records: data.items || [] }); }

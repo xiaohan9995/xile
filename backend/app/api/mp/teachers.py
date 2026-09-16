@@ -137,7 +137,20 @@ def search_teachers():
         query = query.join(Teacher.tier).filter_by(code=tier)
 
     total = query.count()
-    teachers = query.order_by(Teacher.valid_until.desc(), Teacher.id.asc()).offset((page - 1) * page_size).limit(page_size).all()
+    # Default ordering is tier-descending so the highest certified levels show
+    # first when browsing without filters; valid_until/id keep the order stable.
+    if not tier:
+        query = query.join(Teacher.tier)
+    teachers = (
+        query.order_by(
+            TeacherTier.sort_order.desc(),
+            Teacher.valid_until.desc(),
+            Teacher.id.asc(),
+        )
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+        .all()
+    )
 
     cities = [row[0] for row in db.session.query(db.distinct(Teacher.city)).filter(
         Teacher.status != "hidden", Teacher.city.isnot(None)

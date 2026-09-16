@@ -157,6 +157,14 @@ Page({
   },
 
   goBack() {
-    wx.navigateBack();
+    // 教师查询 is a tab-bar destination reached via wx.reLaunch, so it is
+    // usually the only page on the stack and navigateBack() would be a no-op.
+    // Fall back to the 首页 tab whenever there is nothing to pop.
+    const pages = getCurrentPages();
+    if (pages.length > 1) {
+      wx.navigateBack();
+      return;
+    }
+    wx.reLaunch({ url: '/pages/index/index' });
   },
 });

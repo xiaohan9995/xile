@@ -16,8 +16,9 @@ const displayAvatarUrl = (url) => {
   return baseUrl ? `${baseUrl}${url}` : url;
 };
 
-// Guests (not logged in yet) browse the same 讲师服务 list so they can see
-// what a teacher account offers; every entry stays non-navigable for them.
+// The 讲师服务 list is identical for guests and logged-in teachers so the
+// 我的认证 page looks the same in both states. Only 个人设置 is reachable for a
+// guest — every other entry is a second-level page and gets intercepted.
 const teacherMenuItems = (teacherId) => [
   { icon: '我', title: '我的信息', subtitle: '查看对外公开显示的师资页面', url: `/pages/teacher-detail/teacher-detail?id=${teacherId || ''}` },
   { icon: '教', title: '教学记录', subtitle: '请定期提交你的教学传播活动记录', url: '/packageTeacher/teaching-records/teaching-records' },
@@ -27,14 +28,39 @@ const teacherMenuItems = (teacherId) => [
   { icon: '询', title: '咨询服务', subtitle: '查询师资管理小助手信息', url: '', action: 'consultation' },
 ];
 
+// 个人设置 and 关联教师身份 stay open to guests; they are the only second-level
+// entries a guest may enter, so they keep their normal arrow instead of the
+// lock hint.
+const GUEST_OPEN_URLS = [
+  '/packageTeacher/settings/settings',
+  '/packageTeacher/link-teacher/link-teacher',
+];
+
+// 咨询服务 has no url (it is handled by the consultation action) but is safe
+// for guests, so it must not be marked locked.
+const GUEST_OPEN_ACTIONS = ['consultation'];
+
 const GUEST_PRIMARY_ACTION = {
-  eyebrow: '教师服务',
-  title: '关联教师身份',
-  detail: '登录后查看你的认证资料与年度记录',
-  actionText: '去登录',
-  url: '/packageTeacher/login/login?returnUrl=%2FpackageTeacher%2Fprofile%2Fprofile',
-  action: 'login',
+  eyebrow: '认证状态',
+  title: '电子认证证书',
+  detail: '登录后可查看证书详情',
+  actionText: '查看证书',
+  url: '/packageTeacher/cert-view/cert-view',
 };
+
+// Guests render the exact same 讲师服务 entries as a logged-in teacher. The
+// list comes from one source so nothing leaks, and each entry is intercepted
+// in onMenuTap before navigation.
+const GUEST_MENU_ITEMS = teacherMenuItems(null).map((item) => ({
+  ...item,
+  locked: GUEST_OPEN_URLS.indexOf(item.url) === -1
+    && GUEST_OPEN_ACTIONS.indexOf(item.action) === -1,
+}));
+
+// A logged-in user who has not linked a teacher record yet (the certification
+// endpoint answers 403 "not a teacher") sees the same full list as a teacher.
+// Only 个人设置 is reachable, so the entries are marked locked the same way.
+const UNLINKED_MENU_ITEMS = GUEST_MENU_ITEMS;
 
 Page({
   data: {
@@ -64,22 +90,41 @@ Page({
 
   onLoad() {
     this.setData({ statusBarHeight: app.globalData.statusBarHeight });
-    if (!auth.isLoggedIn()) {
-      this.setData({
-        isGuest: true,
-        primaryAction: GUEST_PRIMARY_ACTION,
-        menuItems: teacherMenuItems(null),
-      });
-      return;
-    }
-    this.loadProfile();
+    this.refresh();
   },
 
   onShow() {
+    // Re-evaluate on every show: logging in or out from 个人设置 must flip the
+    // page between the guest and teacher states without a manual reload.
+    this.refresh();
+  },
+
+  refresh() {
     this.setData({
       'user.avatarUrl': displayAvatarUrl(auth.getAvatarUrl()),
       'user.nickname': auth.getNickname(),
     });
+    if (!auth.isLoggedIn()) {
+      this.setData({
+        isTeacher: false,
+        isGuest: true,
+        teacher: {
+          name: '',
+          xileName: '',
+          tier: '',
+          tierName: '',
+          avatarUrl: '',
+          bio: '',
+          validUntil: '--',
+          daysLeft: 0,
+        },
+        primaryAction: GUEST_PRIMARY_ACTION,
+        menuItems: GUEST_MENU_ITEMS,
+      });
+      return;
+    }
+    this.setData({ isGuest: false });
+    this.loadProfile();
   },
 
   async loadProfile() {
@@ -117,8 +162,12 @@ Page({
         menuItems: teacherMenuItems(t.id),
       });
     } catch (err) {
+      // Logged in but no teacher record is linked yet. Keep the 讲师服务 list
+      // identical to the teacher/guest view instead of collapsing it to two
+      // entries, and reuse the guest interception so only 个人设置 opens.
       this.setData({
         isTeacher: false,
+        isGuest: true,
         primaryAction: {
           eyebrow: '教师服务',
           title: '关联教师身份',
@@ -126,10 +175,7 @@ Page({
           actionText: '去关联',
           url: '/packageTeacher/link-teacher/link-teacher',
         },
-        menuItems: [
-          { icon: '服', title: '认证咨询', subtitle: '了解教师档案关联与认证要求', url: '' },
-          { icon: '设', title: '个人设置', subtitle: '更新头像、手机号或喜乐名', url: '/packageTeacher/settings/settings' },
-        ],
+        menuItems: UNLINKED_MENU_ITEMS,
       });
     }
   },
@@ -138,11 +184,17 @@ Page({
     const url = e.currentTarget.dataset.url;
     const action = e.currentTarget.dataset.action;
     if (this.data.isGuest) {
-      if (action === 'login' && url) {
+      // 个人设置 and 咨询服务 are open to guests; everything else just shows a
+      // hint instead of opening a page that would bounce them.
+      if (url && GUEST_OPEN_URLS.indexOf(url) !== -1) {
         wx.navigateTo({ url });
         return;
       }
-      wx.showToast({ title: '登录后可查看教师服务', icon: 'none' });
+      if (GUEST_OPEN_ACTIONS.indexOf(action) !== -1) {
+        this.handleAction(action);
+        return;
+      }
+      wx.showToast({ title: '仅对教师开放', icon: 'none' });
       return;
     }
     if (action === 'submit-review' && !this.data.canSubmitReview) {
@@ -152,15 +204,22 @@ Page({
       wx.showToast({ title, icon: 'none' });
       return;
     }
-    if (action === 'consultation') {
-      wx.showToast({ title: '师资管理小助手信息即将开放', icon: 'none' });
-      return;
-    }
+    if (this.handleAction(action)) return;
     if (!url) {
       wx.showToast({ title: '该功能即将开放', icon: 'none' });
       return;
     }
     wx.navigateTo({ url });
+  },
+
+  // Actions that are not plain navigations. Returns true when the action was
+  // handled so the caller stops before falling through to navigation.
+  handleAction(action) {
+    if (action === 'consultation') {
+      wx.showToast({ title: '师资管理小助手信息即将开放', icon: 'none' });
+      return true;
+    }
+    return false;
   },
 
   onChooseAvatar(e) {

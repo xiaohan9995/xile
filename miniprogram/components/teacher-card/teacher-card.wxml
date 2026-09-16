@@ -20,8 +20,8 @@
         <text class="teacher-card__badge-text">{{teacher.tier}} {{teacher.tierName}}</text>
       </view>
     </view>
+    <text class="teacher-card__real-name" wx:if="{{realName}}">{{realName}}</text>
     <view class="teacher-card__meta-row">
-      <text class="teacher-card__cert-no">{{teacher.teacherNo || '—'}}</text>
       <text class="teacher-card__location">{{location || '—'}}</text>
     </view>
   </view>

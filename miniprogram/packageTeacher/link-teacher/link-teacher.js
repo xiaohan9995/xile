@@ -16,6 +16,13 @@ Page({
     this.setData({ statusBarHeight: app.globalData.statusBarHeight || 20 });
   },
 
+  onShow() {
+    // Guard re-entry so a guest cannot keep the identity-linking form on screen.
+    if (!auth.isLoggedIn()) {
+      auth.requireLogin('/packageTeacher/link-teacher/link-teacher');
+    }
+  },
+
   onIdNumberInput(e) {
     this.setData({ idNumber: (e.detail.value || '').toUpperCase().replace(/\s/g, '') });
   },

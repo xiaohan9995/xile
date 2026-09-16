@@ -30,6 +30,7 @@
         <view class="lead-info">
           <text class="lead-label">主理教师</text>
           <text class="lead-name">{{studio.ownerTeacherName}}</text>
+          <text class="lead-real-name" wx:if="{{ownerTeacherRealName}}">{{ownerTeacherRealName}}</text>
         </view>
       </view>
 

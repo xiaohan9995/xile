@@ -213,6 +213,22 @@ const requireAuth = (pagePath) => {
   return true;
 };
 
+// Guests may browse first-level pages (for example the profile shell) but must
+// not enter any second-level page. Intercept the tap, tell them why, and offer
+// a shortcut to login — never render the target page's content.
+const promptLoginForGuest = (pagePath) => {
+  wx.showModal({
+    title: '需要登录',
+    content: '该功能仅对已登录用户开放，登录后即可查看完整内容。',
+    confirmText: '去登录',
+    cancelText: '暂不',
+    success: (result) => {
+      if (!result.confirm) return;
+      wx.navigateTo({ url: loginUrl(pagePath || '/packageTeacher/profile/profile') });
+    },
+  });
+};
+
 const logout = () => {
   wx.removeStorageSync(TOKEN_KEY);
   wx.removeStorageSync(TEACHER_ID_KEY);
@@ -253,5 +269,6 @@ module.exports = {
   loginUrl,
   requireLogin,
   requireAuth,
+  promptLoginForGuest,
   logout,
 };

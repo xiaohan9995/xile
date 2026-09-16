@@ -37,7 +37,7 @@
                 <div v-else class="teacher-avatar-fallback">{{ (teacher.name || '教').slice(0, 1) }}</div>
                 <div>
                   <strong>{{ teacher.name }}</strong>
-                  <span>{{ teacher.phone }}</span>
+                  <span>{{ teacher.xileName || '—' }}</span>
                 </div>
               </div>
             </td>
@@ -174,6 +174,10 @@
             管委会备注
             <input v-model="editDraft.committeeRemark" placeholder="仅管委会可见" />
           </label>
+          <label class="field-full">
+            个人简介
+            <textarea v-model="editDraft.teachingSummary" maxlength="100" placeholder="100 字以内" class="field-textarea"></textarea>
+          </label>
           <label>
             教师头像
             <input type="file" accept="image/jpeg,image/png,image/webp" @change="uploadTeacherAsset($event, 'teacher-avatar', 'avatarUrl')" />
@@ -265,6 +269,7 @@ const editDraft = reactive({
   city: '',
   district: '',
   committeeRemark: '',
+  teachingSummary: '',
   avatarUrl: '',
   certificateUrl: '',
   residencesText: '',
@@ -334,6 +339,7 @@ function openEdit(teacher) {
   editDraft.city = teacher.city || ''
   editDraft.district = teacher.district || ''
   editDraft.committeeRemark = teacher.committeeRemark || ''
+  editDraft.teachingSummary = teacher.teachingSummary || ''
   editDraft.avatarUrl = teacher.avatarUrl || ''
   editDraft.certificateUrl = teacher.certificateUrl || ''
   editDraft.residencesText = Array.isArray(teacher.residences) ? teacher.residences.join(', ') : ''
@@ -368,6 +374,7 @@ async function handleUpdate() {
     city: editDraft.city,
     district: editDraft.district,
     committeeRemark: editDraft.committeeRemark,
+    teachingSummary: editDraft.teachingSummary,
     avatarUrl: editDraft.avatarUrl,
     certificateUrl: editDraft.certificateUrl,
     residences: editDraft.residencesText.split(/[,，]/).map((item) => item.trim()).filter(Boolean),

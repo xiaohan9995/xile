@@ -23,6 +23,13 @@ Page({
     this.loadPreparation();
   },
 
+  onShow() {
+    // Guard re-entry so a guest cannot keep the annual-review form on screen.
+    if (!auth.isLoggedIn() || !auth.isTeacher()) {
+      auth.requireAuth('/packageTeacher/review-apply/review-apply');
+    }
+  },
+
   async loadPreparation() {
     try {
       const [certification, records, services] = await Promise.all([

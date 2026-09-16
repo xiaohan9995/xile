@@ -22,6 +22,12 @@
   box-shadow: var(--shadow-elevated);
 }
 
+/* Guests see the same card layout, but the avatar is not editable and the
+   identity is not resolved yet — keep it visually quieter. */
+.identity-card--guest {
+  background: linear-gradient(135deg, #4a5f52 0%, #6d8273 100%);
+}
+
 .identity-card__top {
   display: flex;
   align-items: center;
@@ -226,6 +232,12 @@
 .menu-title { color: var(--color-text); font-size: 28rpx; font-weight: 700; }
 .menu-subtitle { margin-top: 4rpx; color: var(--color-muted); font-size: 22rpx; line-height: 1.45; }
 .menu-arrow { margin-left: 16rpx; color: var(--color-muted); font-size: 38rpx; font-weight: 300; line-height: 1; }
+.menu-lock { flex-shrink: 0; margin-left: 16rpx; padding: 4rpx 12rpx; border-radius: var(--radius-sm); background: var(--color-primary-light); color: var(--color-primary-dark); font-size: 20rpx; font-weight: 700; }
+
+/* The 讲师服务 list is identical for guests and teachers; only the reachable
+   entries differ. Dim the locked rows so the single open entry stands out. */
+.menu-item--locked .menu-icon { background: rgba(66, 109, 88, 0.1); color: var(--color-muted); }
+.menu-item--locked .menu-title { color: var(--color-muted); }
 
 @media (prefers-color-scheme: dark) {
   .profile-page { background: #172019; }
@@ -235,6 +247,7 @@
   .identity-name, .primary-status-card__title, .section-heading__title, .menu-title { color: #f1f5f1; }
   .identity-role { color: #b9d2c0; }
   .identity-bio, .primary-status-card__detail, .section-heading__note, .menu-subtitle, .menu-arrow { color: #b9c5bb; }
+  .menu-lock { background: rgba(185, 210, 192, 0.16); color: #b9d2c0; }
   .primary-status-card, .menu-list { background: #202b22; border-color: #405445; }
   .primary-status-card--account { background: linear-gradient(125deg, #294d38 0%, #3b684c 100%); border-color: transparent; }
 }

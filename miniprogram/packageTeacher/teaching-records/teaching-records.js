@@ -11,7 +11,14 @@ Page({
     if (!auth.requireAuth('/packageTeacher/teaching-records/teaching-records')) return;
     this.setData({ statusBarHeight: app.globalData.statusBarHeight }); this.loadRecords();
   },
-  onShow() { if (auth.isLoggedIn()) this.loadRecords(); },
+  onShow() {
+    // Guard re-entry so a guest cannot keep teacher records on screen.
+    if (!auth.isLoggedIn() || !auth.isTeacher()) {
+      auth.requireAuth('/packageTeacher/teaching-records/teaching-records');
+      return;
+    }
+    this.loadRecords();
+  },
   async loadRecords() {
     this.setData({ loading: true });
     try { const suffix = this.data.month ? `?month=${this.data.month}` : ''; const data = await request({ url: `/api/mp/teaching-records${suffix}` }); this.setData({ records: data.items || [] }); }

@@ -30,6 +30,7 @@ export function mapAdminTeacher(teacher) {
     district: teacher.district,
     status: teacher.status,
     committeeRemark: teacher.committeeRemark,
+    teachingSummary: teacher.teachingSummary || '',
   }
 }
 

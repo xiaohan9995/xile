@@ -40,6 +40,7 @@ def teacher_list():
             **({
                 "idNumber": t.teacher_no,
                 "phone": t.detail.phone if t.detail else None,
+                "teachingSummary": t.detail.teaching_summary if t.detail else None,
                 "committeeRemark": t.detail.committee_remark if t.detail else None,
             } if can_view_identity else {}),
         }
@@ -134,7 +135,7 @@ def update_teacher(teacher_id):
     if "certificateUrl" in payload:
         teacher.certificate_url = storage_reference((payload["certificateUrl"] or "").strip())
 
-    if "committeeRemark" in payload or "phone" in payload or "specialties" in payload:
+    if "committeeRemark" in payload or "phone" in payload or "specialties" in payload or "teachingSummary" in payload:
         if not teacher.detail:
             detail = TeacherDetail(teacher_id=teacher.id)
             db.session.add(detail)
@@ -145,6 +146,8 @@ def update_teacher(teacher_id):
             teacher.detail.phone = str(payload["phone"] or "").strip() or None
         if "specialties" in payload:
             teacher.detail.specialties = str(payload["specialties"] or "").strip() or None
+        if "teachingSummary" in payload:
+            teacher.detail.teaching_summary = str(payload["teachingSummary"] or "").strip() or None
 
     db.session.commit()
     db.session.add(AuditLog(admin_id=current_admin_id() or 1, action="update_teacher", target_type="teacher", target_id=teacher.id))

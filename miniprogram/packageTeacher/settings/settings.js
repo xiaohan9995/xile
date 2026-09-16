@@ -21,6 +21,7 @@ Page({
   data: {
     statusBarHeight: 20,
     themeColor: '#426d58',
+    isGuest: false,
     isTeacher: false,
     nickname: '',
     avatarUrl: '',
@@ -37,12 +38,31 @@ Page({
   },
 
   onLoad(options) {
-    if (!auth.requireLogin('/packageTeacher/settings/settings')) return;
     this.setData({
       statusBarHeight: app.globalData.statusBarHeight,
       forcePasswordChange: options.forcePasswordChange === '1',
     });
+    this.refresh();
+  },
+
+  onShow() {
+    // 个人设置 is the one second-level page a guest may open, so it renders a
+    // login prompt instead of redirecting. Re-check on show so logging in from
+    // here immediately swaps in the real account controls.
+    this.refresh();
+  },
+
+  refresh() {
+    if (!auth.isLoggedIn()) {
+      this.setData({ isGuest: true, isTeacher: false });
+      return;
+    }
+    this.setData({ isGuest: false });
     this.loadUserInfo();
+  },
+
+  goLogin() {
+    wx.navigateTo({ url: auth.loginUrl('/packageTeacher/settings/settings') });
   },
 
   async loadUserInfo() {

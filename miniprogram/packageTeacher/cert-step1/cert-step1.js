@@ -26,6 +26,13 @@ Page({
     this.setData({ statusBarHeight: app.globalData.statusBarHeight });
   },
 
+  onShow() {
+    // Guard re-entry so a guest cannot keep the certification form on screen.
+    if (!auth.isLoggedIn() || !auth.isTeacher()) {
+      auth.requireAuth('/packageTeacher/cert-step1/cert-step1');
+    }
+  },
+
   onFieldInput(e) {
     const field = e.currentTarget.dataset.field;
     this.setData({

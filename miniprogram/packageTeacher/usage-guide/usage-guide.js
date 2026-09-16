@@ -15,6 +15,12 @@ Page({
     if (!auth.requireAuth('/packageTeacher/usage-guide/usage-guide')) return;
     this.setData({ statusBarHeight: app.globalData.statusBarHeight });
   },
+  onShow() {
+    // Guard re-entry so a guest cannot keep the guide on screen.
+    if (!auth.isLoggedIn() || !auth.isTeacher()) {
+      auth.requireAuth('/packageTeacher/usage-guide/usage-guide');
+    }
+  },
   goBack() { wx.navigateBack(); },
   goReview() { wx.navigateTo({ url: '/packageTeacher/review-records/review-records' }); },
 });
