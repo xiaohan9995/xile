@@ -99,10 +99,5 @@
         disabled="{{changingPassword}}"
       >更新密码</button>
     </view>
-
-    <view wx:if="{{!isGuest && !mustChangePassword}}" class="logout-area">
-      <button class="logout-button" bindtap="onLogout">退出登录</button>
-      <text class="logout-note">仅退出当前设备，不会删除个人资料</text>
-    </view>
   </view>
 </view>

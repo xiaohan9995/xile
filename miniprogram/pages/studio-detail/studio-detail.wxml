@@ -70,9 +70,23 @@
       </view>
     </view>
 
-    <!-- CTA -->
-    <view class="cta-section">
-      <button class="btn-primary" bindtap="contactStudio">联系工作室</button>
+    <!-- 咨询服务：与「我的认证」页保持一致，客服会话必须由
+         open-type="contact" 的独立 button 承载，无法动态绑定。 -->
+    <view class="menu-list">
+      <button
+        class="menu-item"
+        open-type="contact"
+        session-from="studio-detail"
+      >
+        <view class="menu-item-left">
+          <text class="menu-icon">询</text>
+          <view class="menu-text">
+            <text class="menu-title">咨询服务</text>
+            <text class="menu-subtitle">与师资管理小助手在线沟通</text>
+          </view>
+        </view>
+        <text class="menu-arrow">›</text>
+      </button>
     </view>
   </view>
 

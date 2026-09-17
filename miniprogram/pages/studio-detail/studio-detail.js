@@ -52,15 +52,6 @@ Page({
     wx.navigateBack();
   },
 
-  contactStudio() {
-    const studio = this.data.studio;
-    if (studio && studio.phone) {
-      wx.makePhoneCall({ phoneNumber: studio.phone });
-    } else {
-      wx.showToast({ title: '请通过微信联系工作室', icon: 'none' });
-    }
-  },
-
   openMap() {
     const studio = this.data.studio;
     const latitude = Number(studio && studio.latitude);

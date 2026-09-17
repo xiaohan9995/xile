@@ -17,15 +17,15 @@ const displayAvatarUrl = (url) => {
 };
 
 // The 讲师服务 list is identical for guests and logged-in teachers so the
-// 我的认证 page looks the same in both states. Only 个人设置 is reachable for a
-// guest — every other entry is a second-level page and gets intercepted.
+// 我的认证 page looks the same in both states. Only 关联教师身份 is reachable
+// for a guest — every other entry is a second-level page and gets intercepted.
+// 咨询服务 is rendered separately in the wxml as an open-type="contact" button.
 const teacherMenuItems = (teacherId) => [
   { icon: '我', title: '我的信息', subtitle: '查看对外公开显示的师资页面', url: `/pages/teacher-detail/teacher-detail?id=${teacherId || ''}` },
   { icon: '教', title: '教学记录', subtitle: '请定期提交你的教学传播活动记录', url: '/packageTeacher/teaching-records/teaching-records' },
   { icon: '服', title: '服务记录', subtitle: '请定期提交你的服务推广活动记录', url: '/packageTeacher/service-records/service-records' },
   { icon: '年', title: '年审信息', subtitle: '查看年审进度及提交申请', url: '/packageTeacher/review-records/review-records' },
   { icon: '设', title: '个人设置', subtitle: '更新头像、密码及对外显示信息', url: '/packageTeacher/settings/settings' },
-  { icon: '询', title: '咨询服务', subtitle: '查询师资管理小助手信息', url: '', action: 'consultation' },
 ];
 
 // 关联教师身份 stays open to guests; it is the only second-level entry a
@@ -35,25 +35,12 @@ const GUEST_OPEN_URLS = [
   '/packageTeacher/link-teacher/link-teacher',
 ];
 
-// 咨询服务 has no url (it is handled by the consultation action) but is safe
-// for guests, so it must not be marked locked.
-const GUEST_OPEN_ACTIONS = ['consultation'];
-
-const GUEST_PRIMARY_ACTION = {
-  eyebrow: '认证状态',
-  title: '电子认证证书',
-  detail: '登录后可查看证书详情',
-  actionText: '查看证书',
-  url: '/packageTeacher/cert-view/cert-view',
-};
-
 // Guests render the exact same 讲师服务 entries as a logged-in teacher. The
 // list comes from one source so nothing leaks, and each entry is intercepted
 // in onMenuTap before navigation.
 const GUEST_MENU_ITEMS = teacherMenuItems(null).map((item) => ({
   ...item,
-  locked: GUEST_OPEN_URLS.indexOf(item.url) === -1
-    && GUEST_OPEN_ACTIONS.indexOf(item.action) === -1,
+  locked: GUEST_OPEN_URLS.indexOf(item.url) === -1,
 }));
 
 // A logged-in user who has not linked a teacher record yet (the certification
@@ -66,6 +53,7 @@ Page({
     statusBarHeight: 20,
     isTeacher: false,
     isGuest: false,
+    isLoggedIn: false,
     teacher: {
       name: '',
       xileName: '',
@@ -107,6 +95,7 @@ Page({
       this.setData({
         isTeacher: false,
         isGuest: true,
+        isLoggedIn: false,
         teacher: {
           name: '',
           xileName: '',
@@ -117,12 +106,12 @@ Page({
           validUntil: '--',
           daysLeft: 0,
         },
-        primaryAction: GUEST_PRIMARY_ACTION,
+        primaryAction: {},
         menuItems: GUEST_MENU_ITEMS,
       });
       return;
     }
-    this.setData({ isGuest: false });
+    this.setData({ isGuest: false, isLoggedIn: true });
     this.loadProfile();
   },
 
@@ -151,13 +140,7 @@ Page({
           validUntil: t.validUntil || '--',
           daysLeft: t.daysLeft || 0,
         },
-        primaryAction: {
-          eyebrow: '认证状态',
-          title: '电子认证证书',
-          detail: `有效至 ${t.validUntil || '--'}`,
-          actionText: '查看证书',
-          url: '/packageTeacher/cert-view/cert-view',
-        },
+        primaryAction: {},
         menuItems: teacherMenuItems(t.id),
       });
     } catch (err) {
@@ -183,14 +166,10 @@ Page({
     const url = e.currentTarget.dataset.url;
     const action = e.currentTarget.dataset.action;
     if (this.data.isGuest) {
-      // 个人设置 and 咨询服务 are open to guests; everything else just shows a
-      // hint instead of opening a page that would bounce them.
+      // 关联教师身份 is open to guests; everything else just shows a hint
+      // instead of opening a page that would bounce them.
       if (url && GUEST_OPEN_URLS.indexOf(url) !== -1) {
         wx.navigateTo({ url });
-        return;
-      }
-      if (GUEST_OPEN_ACTIONS.indexOf(action) !== -1) {
-        this.handleAction(action);
         return;
       }
       wx.showToast({ title: '仅对教师开放', icon: 'none' });
@@ -203,22 +182,11 @@ Page({
       wx.showToast({ title, icon: 'none' });
       return;
     }
-    if (this.handleAction(action)) return;
     if (!url) {
       wx.showToast({ title: '该功能即将开放', icon: 'none' });
       return;
     }
     wx.navigateTo({ url });
-  },
-
-  // Actions that are not plain navigations. Returns true when the action was
-  // handled so the caller stops before falling through to navigation.
-  handleAction(action) {
-    if (action === 'consultation') {
-      wx.showToast({ title: '师资管理小助手信息即将开放', icon: 'none' });
-      return true;
-    }
-    return false;
   },
 
   onChooseAvatar(e) {
@@ -263,6 +231,21 @@ Page({
       .finally(() => {
         this.setData({ avatarUploading: false });
       });
+  },
+
+  onLogout() {
+    wx.showModal({
+      title: '退出登录',
+      content: '退出后需要重新使用微信登录，个人资料和认证记录不会被删除。',
+      confirmText: '退出',
+      confirmColor: '#2f5140',
+      cancelText: '取消',
+      success: (result) => {
+        if (!result.confirm) return;
+        auth.logout();
+        wx.reLaunch({ url: '/pages/index/index' });
+      },
+    });
   },
 
   goBack() {

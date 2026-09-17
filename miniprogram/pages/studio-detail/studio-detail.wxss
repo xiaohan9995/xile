@@ -171,9 +171,89 @@
   color: var(--color-text);
 }
 
-/* CTA */
-.cta-section {
-  padding: 36rpx 28rpx 0;
+/* 咨询服务（与「我的认证」页的菜单行保持一致） */
+.menu-list {
+  margin: 16rpx 28rpx 0;
+  overflow: hidden;
+  border: 1rpx solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-card);
+  box-shadow: var(--shadow-card);
+}
+
+.menu-item {
+  width: 100%;
+  min-width: 100%;
+  max-width: none;
+  min-height: 112rpx;
+  margin: 0;
+  padding: 20rpx 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  box-sizing: border-box;
+  border-bottom: 1rpx solid var(--color-line);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.menu-item:last-child {
+  border-bottom: none;
+}
+
+.menu-item:active {
+  transform: scale(0.98);
+  opacity: 0.84;
+}
+
+.menu-item-left {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+}
+
+.menu-icon {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-base);
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  font-size: 24rpx;
+  font-weight: 800;
+}
+
+.menu-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  margin-left: 18rpx;
+}
+
+.menu-title {
+  color: var(--color-text);
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.menu-subtitle {
+  margin-top: 4rpx;
+  color: var(--color-muted);
+  font-size: 22rpx;
+  line-height: 1.45;
+}
+
+.menu-arrow {
+  margin-left: 16rpx;
+  color: var(--color-muted);
+  font-size: 38rpx;
+  font-weight: 300;
+  line-height: 1;
 }
 
 /* Loading & Error */

@@ -36,6 +36,7 @@
     </view>
 
     <button
+      wx:if="{{primaryAction.title}}"
       class="primary-status-card primary-status-card--account"
       bindtap="onMenuTap"
       data-url="{{primaryAction.url}}"
@@ -76,6 +77,29 @@
         <text class="menu-lock" wx:if="{{item.locked}}">仅教师</text>
         <text class="menu-arrow" wx:else>›</text>
       </button>
+
+      <!-- 咨询服务 is a native customer-service session, so it must be a
+           standalone button with open-type="contact" (open-type cannot be
+           bound dynamically inside the wx:for above). -->
+      <button
+        class="menu-item"
+        open-type="contact"
+        session-from="profile"
+      >
+        <view class="menu-item-left">
+          <text class="menu-icon">询</text>
+          <view class="menu-text">
+            <text class="menu-title">咨询服务</text>
+            <text class="menu-subtitle">与师资管理小助手在线沟通</text>
+          </view>
+        </view>
+        <text class="menu-arrow">›</text>
+      </button>
+    </view>
+
+    <view wx:if="{{isLoggedIn}}" class="logout-area">
+      <button class="logout-button" bindtap="onLogout">退出登录</button>
+      <text class="logout-note">仅退出当前设备，不会删除个人资料</text>
     </view>
   </view>
   <tab-bar active="my" />

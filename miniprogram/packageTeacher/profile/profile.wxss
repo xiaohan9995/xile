@@ -190,15 +190,14 @@
 
 .section-heading {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24rpx;
+  flex-direction: column;
+  align-items: flex-start;
   margin-top: 38rpx;
   padding: 0 4rpx 14rpx;
 }
 
 .section-heading__title { color: var(--color-text); font-size: 30rpx; font-weight: 800; }
-.section-heading__note { color: var(--color-muted); font-size: 21rpx; text-align: right; }
+.section-heading__note { margin-top: 6rpx; color: var(--color-muted); font-size: 21rpx; text-align: left; }
 
 .menu-list {
   margin-top: 18rpx;
@@ -239,6 +238,41 @@
 .menu-item--locked .menu-icon { background: rgba(66, 109, 88, 0.1); color: var(--color-muted); }
 .menu-item--locked .menu-title { color: var(--color-muted); }
 
+.logout-area {
+  margin-top: 48rpx;
+  padding-top: 32rpx;
+  border-top: 1rpx solid var(--color-line);
+  text-align: center;
+}
+
+.logout-button {
+  width: 100%;
+  min-width: 100%;
+  max-width: none;
+  height: 96rpx;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1rpx solid rgba(66, 109, 88, 0.28);
+  border-radius: var(--radius-base);
+  background: rgba(66, 109, 88, 0.06);
+  color: var(--color-primary-dark);
+  font-size: 30rpx;
+  font-weight: 500;
+  line-height: 1;
+  text-align: center;
+}
+
+.logout-button:active { opacity: 0.82; }
+
+.logout-note {
+  display: block;
+  margin-top: 16rpx;
+  color: var(--color-muted);
+  font-size: 20rpx;
+}
+
 @media (prefers-color-scheme: dark) {
   .profile-page { background: #172019; }
   .profile-body { background: #172019; }
@@ -250,4 +284,7 @@
   .menu-lock { background: rgba(185, 210, 192, 0.16); color: #b9d2c0; }
   .primary-status-card, .menu-list { background: #202b22; border-color: #405445; }
   .primary-status-card--account { background: linear-gradient(125deg, #294d38 0%, #3b684c 100%); border-color: transparent; }
+  .logout-area { border-color: #405445; }
+  .logout-note { color: #b9c5bb; }
+  .logout-button { border-color: rgba(119, 154, 132, 0.34); background: rgba(66, 109, 88, 0.14); color: #b9d2c0; }
 }

@@ -225,43 +225,6 @@
   opacity: 0.82;
 }
 
-.logout-button:active {
-  opacity: 0.82;
-}
-
-.logout-area {
-  margin-top: 48rpx;
-  padding-top: 32rpx;
-  border-top: 1rpx solid var(--color-line);
-  text-align: center;
-}
-
-.logout-button {
-  width: 100%;
-  min-width: 100%;
-  max-width: none;
-  height: 96rpx;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1rpx solid rgba(200, 75, 69, 0.28);
-  border-radius: var(--radius-base);
-  background: rgba(200, 75, 69, 0.06);
-  color: #c84b45;
-  font-size: 30rpx;
-  font-weight: 500;
-  line-height: 1;
-  text-align: center;
-}
-
-.logout-note {
-  display: block;
-  margin-top: 16rpx;
-  color: var(--color-muted);
-  font-size: 20rpx;
-}
-
 @media (prefers-color-scheme: dark) {
   .settings-page { background: #172019; }
   .settings-intro__title,
@@ -270,7 +233,6 @@
   .guest-note__title { color: #f1f5f1; }
   .settings-intro__description,
   .section-heading__note,
-  .logout-note,
   .guest-note__detail { color: #b9c5bb; }
   .settings-group { border-color: #405445; background: #202b22; }
   .avatar-row__title { color: #f1f5f1; }
@@ -279,6 +241,4 @@
   .field-divider { background: #405445; }
   .settings-input { border-color: #405445; background: #18231b; color: #f1f5f1; }
   .settings-group .btn-secondary { border-color: #476653; background: #294133; color: #d8eadc; }
-  .logout-area { border-color: #405445; }
-  .logout-button { border-color: rgba(222, 105, 99, 0.34); background: rgba(200, 75, 69, 0.1); color: #ee8c87; }
 }

@@ -195,21 +195,6 @@ Page({
     }
   },
 
-  onLogout() {
-    wx.showModal({
-      title: '退出登录',
-      content: '退出后需要重新使用微信登录，个人资料和认证记录不会被删除。',
-      confirmText: '退出',
-      confirmColor: '#c84b45',
-      cancelText: '取消',
-      success: (result) => {
-        if (!result.confirm) return;
-        auth.logout();
-        wx.reLaunch({ url: '/pages/index/index' });
-      },
-    });
-  },
-
   goBack() {
     if (getCurrentPages().length > 1) {
       wx.navigateBack();

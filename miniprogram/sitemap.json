@@ -10,7 +10,6 @@
     { "action": "allow", "page": "packageTeacher/link-teacher/link-teacher" },
     { "action": "allow", "page": "packageTeacher/profile/profile" },
     { "action": "allow", "page": "packageTeacher/cert-step1/cert-step1" },
-    { "action": "allow", "page": "packageTeacher/cert-view/cert-view" },
     { "action": "allow", "page": "packageTeacher/review-apply/review-apply" },
     { "action": "allow", "page": "packageTeacher/review-records/review-records" },
     { "action": "allow", "page": "packageTeacher/teaching-records/teaching-records" },
