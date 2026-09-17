@@ -28,11 +28,10 @@ const teacherMenuItems = (teacherId) => [
   { icon: '询', title: '咨询服务', subtitle: '查询师资管理小助手信息', url: '', action: 'consultation' },
 ];
 
-// 个人设置 and 关联教师身份 stay open to guests; they are the only second-level
-// entries a guest may enter, so they keep their normal arrow instead of the
-// lock hint.
+// 关联教师身份 stays open to guests; it is the only second-level entry a
+// guest may enter, so it keeps its normal arrow instead of the lock hint.
+// (个人设置 is intentionally NOT open to guests — only teachers may enter it.)
 const GUEST_OPEN_URLS = [
-  '/packageTeacher/settings/settings',
   '/packageTeacher/link-teacher/link-teacher',
 ];
 
@@ -59,7 +58,7 @@ const GUEST_MENU_ITEMS = teacherMenuItems(null).map((item) => ({
 
 // A logged-in user who has not linked a teacher record yet (the certification
 // endpoint answers 403 "not a teacher") sees the same full list as a teacher.
-// Only 个人设置 is reachable, so the entries are marked locked the same way.
+// Only 关联教师身份 is reachable, so the entries are marked locked the same way.
 const UNLINKED_MENU_ITEMS = GUEST_MENU_ITEMS;
 
 Page({

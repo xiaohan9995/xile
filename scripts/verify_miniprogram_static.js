@@ -111,7 +111,7 @@ const requiredPageText = {
   ],
   'pages/studios/studios': [
     '瑜伽工作室',
-    '找一处安静练习的空间',
+    '眼对眼 心对心 呼吸对呼吸',
     '未找到匹配的工作室',
   ],
   'pages/studio-detail/studio-detail': [
