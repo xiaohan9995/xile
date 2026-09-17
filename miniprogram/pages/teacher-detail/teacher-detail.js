@@ -17,6 +17,7 @@ Page({
     residencesText: '',
     loading: false,
     error: '',
+    bioExpanded: false,
   },
 
   onLoad(options) {
@@ -49,6 +50,10 @@ Page({
 
   goBack() {
     wx.navigateBack();
+  },
+
+  toggleBio() {
+    this.setData({ bioExpanded: !this.data.bioExpanded });
   },
 
   previewCertificate() {

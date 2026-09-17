@@ -147,7 +147,10 @@ def update_teacher(teacher_id):
         if "specialties" in payload:
             teacher.detail.specialties = str(payload["specialties"] or "").strip() or None
         if "teachingSummary" in payload:
-            teacher.detail.teaching_summary = str(payload["teachingSummary"] or "").strip() or None
+            teaching_summary = str(payload["teachingSummary"] or "").strip() or None
+            if teaching_summary and len(teaching_summary) > 100:
+                return {"error": "个人简介最多 100 字"}, 400
+            teacher.detail.teaching_summary = teaching_summary
 
     db.session.commit()
     db.session.add(AuditLog(admin_id=current_admin_id() or 1, action="update_teacher", target_type="teacher", target_id=teacher.id))

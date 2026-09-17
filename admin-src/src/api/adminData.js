@@ -44,13 +44,16 @@ export function mapAdminStudio(studio) {
     address: studio.address,
     contact: studio.contactText || '',
     intro: studio.intro || '',
+    courseIntro: studio.courseIntro || '',
     openingHours: studio.openingHours || '',
+    images: Array.isArray(studio.images) ? studio.images : [],
     image: studio.coverUrl || DEFAULT_STUDIO,
     coverUrl: studio.coverUrl || '',
+    ownerTeachers: Array.isArray(studio.ownerTeachers) ? studio.ownerTeachers : [],
+    ownerTeacherName: studio.ownerTeacherName,
     latitude: studio.latitude ?? null,
     longitude: studio.longitude ?? null,
     status: studio.status,
-    ownerTeacherName: studio.ownerTeacherName,
   }
 }
 

@@ -80,13 +80,19 @@
           </label>
           <label>
             标签
-            <input v-model="createDraft.tags" placeholder="多个标签用逗号分隔" />
+            <input v-model="createDraft.tags" placeholder="多个标签用逗号分隔，每个最多6字，最多8个" />
           </label>
           <label>
-            营业时间
-            <input v-model="createDraft.openingHours" placeholder="如 9:00-21:00" />
+            课程介绍
+            <textarea v-model="createDraft.courseIntro" placeholder="介绍工作室开设的课程（最多500字）"></textarea>
           </label>
         </div>
+        <label>
+          主理教师
+          <select v-model="createDraft.ownerTeacherIds" multiple size="4">
+            <option v-for="t in teacherOptions" :key="t.id" :value="t.id">{{ t.name }}（{{ t.xileName || '无喜乐名' }}）</option>
+          </select>
+        </label>
         <label>
           地址
           <input v-model="createDraft.address" readonly placeholder="请通过地图选点" />
@@ -97,9 +103,14 @@
           <input v-model="createDraft.intro" placeholder="请输入工作室简介" />
         </label>
         <label>
-          工作室封面
-          <input type="file" accept="image/jpeg,image/png,image/webp" @change="uploadStudioAsset($event, createDraft)" />
-          <img v-if="createDraft.coverUrl" class="asset-preview" :src="createDraft.coverUrl" alt="工作室封面预览" />
+          工作室图片（最多 9 张，第一张为封面）
+          <input type="file" accept="image/jpeg,image/png,image/webp" multiple @change="uploadStudioAssets($event, createDraft)" />
+          <div v-if="createDraft.images.length" class="asset-preview-list">
+            <div v-for="(img, idx) in createDraft.images" :key="idx" class="asset-preview-item">
+              <img class="asset-preview" :src="img" alt="工作室图片预览" />
+              <button type="button" class="asset-preview-remove" @click="removeImage(createDraft, idx)">×</button>
+            </div>
+          </div>
         </label>
         <div class="modal-actions">
           <button type="button" class="sync-btn" @click="showCreate = false">取消</button>
@@ -134,13 +145,19 @@
           </label>
           <label>
             标签
-            <input v-model="editDraft.tags" placeholder="多个标签用逗号分隔" />
+            <input v-model="editDraft.tags" placeholder="多个标签用逗号分隔，每个最多6字，最多8个" />
           </label>
           <label>
-            营业时间
-            <input v-model="editDraft.openingHours" placeholder="如 9:00-21:00" />
+            课程介绍
+            <textarea v-model="editDraft.courseIntro" placeholder="介绍工作室开设的课程（最多500字）"></textarea>
           </label>
         </div>
+        <label>
+          主理教师
+          <select v-model="editDraft.ownerTeacherIds" multiple size="4">
+            <option v-for="t in teacherOptions" :key="t.id" :value="t.id">{{ t.name }}（{{ t.xileName || '无喜乐名' }}）</option>
+          </select>
+        </label>
         <label>
           地址
           <input v-model="editDraft.address" readonly placeholder="请通过地图选点" />
@@ -151,9 +168,14 @@
           <input v-model="editDraft.intro" placeholder="工作室简介" />
         </label>
         <label>
-          工作室封面
-          <input type="file" accept="image/jpeg,image/png,image/webp" @change="uploadStudioAsset($event, editDraft)" />
-          <img v-if="editDraft.coverUrl" class="asset-preview" :src="editDraft.coverUrl" alt="工作室封面预览" />
+          工作室图片（最多 9 张，第一张为封面）
+          <input type="file" accept="image/jpeg,image/png,image/webp" multiple @change="uploadStudioAssets($event, editDraft)" />
+          <div v-if="editDraft.images.length" class="asset-preview-list">
+            <div v-for="(img, idx) in editDraft.images" :key="idx" class="asset-preview-item">
+              <img class="asset-preview" :src="img" alt="工作室图片预览" />
+              <button type="button" class="asset-preview-remove" @click="removeImage(editDraft, idx)">×</button>
+            </div>
+          </div>
         </label>
         <div class="modal-actions">
           <button type="button" class="sync-btn" @click="showEdit = false">取消</button>
@@ -197,7 +219,7 @@
 <script setup>
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import ImagePreview from '../components/ImagePreview.vue'
-import { fetchAdminStudios, fetchMapConfig, searchMapPlaces, reverseGeocodeMapLocation, createStudio, updateStudio, deleteStudio, uploadAdminAsset } from '../api/adminData'
+import { fetchAdminStudios, fetchAdminTeachers, fetchMapConfig, searchMapPlaces, reverseGeocodeMapLocation, createStudio, updateStudio, deleteStudio, uploadAdminAsset } from '../api/adminData'
 import { useToast } from '../composables/useToast'
 import Pagination from '../components/Pagination.vue'
 
@@ -206,6 +228,7 @@ const filters = ref({ name: '', city: '', address: '', tags: '' })
 const showCreate = ref(false)
 const showEdit = ref(false)
 const studios = ref([])
+const teacherOptions = ref([])
 const currentPage = ref(1)
 const pageSize = 15
 const mapKey = ref(import.meta.env.VITE_TENCENT_MAP_KEY || '')
@@ -366,7 +389,9 @@ const createDraft = reactive({
   tags: '',
   address: '',
   intro: '',
-  openingHours: '',
+  courseIntro: '',
+  images: [],
+  ownerTeacherIds: [],
   coverUrl: '',
   latitude: '',
   longitude: '',
@@ -381,11 +406,25 @@ const editDraft = reactive({
   tags: '',
   address: '',
   intro: '',
-  openingHours: '',
+  courseIntro: '',
+  images: [],
+  ownerTeacherIds: [],
   coverUrl: '',
   latitude: '',
   longitude: '',
 })
+
+const MAX_TAGS = 8
+const MAX_TAG_LENGTH = 6
+const MAX_IMAGES = 9
+const MAX_COURSE_INTRO_LENGTH = 500
+
+function validateTags(tagsText) {
+  const tags = String(tagsText || '').split(',').map((t) => t.trim()).filter(Boolean)
+  if (tags.length > MAX_TAGS) return `标签最多 ${MAX_TAGS} 个`
+  if (tags.some((t) => t.length > MAX_TAG_LENGTH)) return `每个标签最多 ${MAX_TAG_LENGTH} 个字`
+  return ''
+}
 
 async function loadStudios() {
   try {
@@ -395,8 +434,17 @@ async function loadStudios() {
   }
 }
 
+async function loadTeachers() {
+  try {
+    teacherOptions.value = await fetchAdminTeachers()
+  } catch (e) {
+    console.warn('获取教师列表失败', e)
+  }
+}
+
 onMounted(() => {
   loadStudios()
+  loadTeachers()
   loadMapKey()
 })
 
@@ -439,7 +487,9 @@ function openCreate() {
   createDraft.tags = ''
   createDraft.address = ''
   createDraft.intro = ''
-  createDraft.openingHours = ''
+  createDraft.courseIntro = ''
+  createDraft.images = []
+  createDraft.ownerTeacherIds = []
   createDraft.coverUrl = ''
   createDraft.latitude = ''
   createDraft.longitude = ''
@@ -455,7 +505,9 @@ function openEdit(studio) {
   editDraft.tags = Array.isArray(studio.tags) ? studio.tags.join(', ') : (studio.tags || '')
   editDraft.address = studio.address || ''
   editDraft.intro = studio.intro || ''
-  editDraft.openingHours = studio.openingHours || ''
+  editDraft.courseIntro = studio.courseIntro || ''
+  editDraft.images = Array.isArray(studio.images) ? studio.images.slice() : []
+  editDraft.ownerTeacherIds = Array.isArray(studio.ownerTeachers) ? studio.ownerTeachers.map((t) => t.id) : []
   editDraft.coverUrl = studio.coverUrl || ''
   editDraft.latitude = studio.latitude ?? ''
   editDraft.longitude = studio.longitude ?? ''
@@ -467,6 +519,15 @@ async function handleCreate() {
     toast('请先通过地图选点填写工作室地址', 'error')
     return
   }
+  const tagsError = validateTags(createDraft.tags)
+  if (tagsError) {
+    toast(tagsError, 'error')
+    return
+  }
+  if (createDraft.courseIntro.length > MAX_COURSE_INTRO_LENGTH) {
+    toast(`课程介绍最多 ${MAX_COURSE_INTRO_LENGTH} 字`, 'error')
+    return
+  }
   await createStudio({
     name: createDraft.name,
     city: createDraft.city,
@@ -475,8 +536,10 @@ async function handleCreate() {
     tags: createDraft.tags,
     address: createDraft.address,
     intro: createDraft.intro,
-    openingHours: createDraft.openingHours,
-    coverUrl: createDraft.coverUrl,
+    courseIntro: createDraft.courseIntro,
+    images: createDraft.images,
+    ownerTeacherIds: createDraft.ownerTeacherIds,
+    coverUrl: createDraft.images[0] || '',
     latitude: createDraft.latitude === '' ? null : Number(createDraft.latitude),
     longitude: createDraft.longitude === '' ? null : Number(createDraft.longitude),
   })
@@ -490,6 +553,15 @@ async function handleUpdate() {
     toast('请先通过地图选点填写工作室地址', 'error')
     return
   }
+  const tagsError = validateTags(editDraft.tags)
+  if (tagsError) {
+    toast(tagsError, 'error')
+    return
+  }
+  if (editDraft.courseIntro.length > MAX_COURSE_INTRO_LENGTH) {
+    toast(`课程介绍最多 ${MAX_COURSE_INTRO_LENGTH} 字`, 'error')
+    return
+  }
   await updateStudio(editDraft.id, {
     name: editDraft.name,
     city: editDraft.city,
@@ -498,8 +570,10 @@ async function handleUpdate() {
     tags: editDraft.tags,
     address: editDraft.address,
     intro: editDraft.intro,
-    openingHours: editDraft.openingHours,
-    coverUrl: editDraft.coverUrl,
+    courseIntro: editDraft.courseIntro,
+    images: editDraft.images,
+    ownerTeacherIds: editDraft.ownerTeacherIds,
+    coverUrl: editDraft.images[0] || '',
     latitude: editDraft.latitude === '' ? null : Number(editDraft.latitude),
     longitude: editDraft.longitude === '' ? null : Number(editDraft.longitude),
   })
@@ -515,19 +589,34 @@ async function handleDelete(studio) {
   await loadStudios()
 }
 
-async function uploadStudioAsset(event, draft) {
-  const file = event.target.files && event.target.files[0]
-  if (!file) return
+async function uploadStudioAssets(event, draft) {
+  const files = Array.from(event.target.files || [])
+  if (!files.length) return
+  const remaining = MAX_IMAGES - draft.images.length
+  if (remaining <= 0) {
+    toast(`图片最多 ${MAX_IMAGES} 张`, 'error')
+    event.target.value = ''
+    return
+  }
+  const toUpload = files.slice(0, remaining)
   try {
-    const result = await uploadAdminAsset(file, 'studio-cover')
-    draft.coverUrl = result.url
-    toast('封面已上传到对象存储')
+    for (const file of toUpload) {
+      const result = await uploadAdminAsset(file, 'studio-cover')
+      draft.images.push(result.url)
+    }
+    draft.coverUrl = draft.images[0] || ''
+    toast('图片已上传到对象存储')
   } catch (e) {
     const message = e?.response?.data?.error || e?.message || '图片上传失败，请检查对象存储配置'
     toast(message === 'image too large, max 8MB' ? '图片大小不能超过 8MB' : message, 'error')
   } finally {
     event.target.value = ''
   }
+}
+
+function removeImage(draft, index) {
+  draft.images.splice(index, 1)
+  draft.coverUrl = draft.images[0] || ''
 }
 </script>
 
@@ -540,5 +629,52 @@ async function uploadStudioAsset(event, draft) {
   border: 1px solid #e3e9e3;
   border-radius: 8px;
   object-fit: cover;
+}
+
+.asset-preview-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.asset-preview-item {
+  position: relative;
+}
+
+.asset-preview-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  line-height: 18px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.admin-modal textarea {
+  width: 100%;
+  min-height: 64px;
+  padding: 8px 10px;
+  border: 1px solid #d7ddd7;
+  border-radius: 8px;
+  font-size: 14px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.admin-modal select[multiple] {
+  width: 100%;
+  min-height: 88px;
+  padding: 6px;
+  border: 1px solid #d7ddd7;
+  border-radius: 8px;
+  font-size: 14px;
 }
 </style>

@@ -144,6 +144,21 @@
   white-space: pre-wrap;
 }
 
+.bio-text--clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.bio-toggle {
+  display: inline-block;
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
 /* ===== Certificate card ===== */
 .cert-card {
   margin-top: 24rpx;

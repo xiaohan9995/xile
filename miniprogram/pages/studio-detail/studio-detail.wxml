@@ -7,9 +7,14 @@
   </view>
 
   <view wx:if="{{studio}}" class="detail-content animate-fade-in">
-    <!-- Cover Image -->
+    <!-- Image Carousel -->
     <view class="cover-section">
-      <image class="cover-image" src="{{studio.coverImage}}" mode="aspectFill" />
+      <swiper wx:if="{{studio.images.length > 1}}" class="cover-swiper" indicator-dots indicator-active-color="#ffffff" circular autoplay interval="4000">
+        <swiper-item wx:for="{{studio.images}}" wx:key="*this">
+          <image class="cover-image" src="{{item}}" mode="aspectFill" />
+        </swiper-item>
+      </swiper>
+      <image wx:else class="cover-image" src="{{studio.images[0] || studio.coverImage}}" mode="aspectFill" />
       <view class="cover-gradient">
         <view class="cover-badge-row">
           <text class="cover-status badge-green">{{studio.status || '开放中'}}</text>
@@ -22,15 +27,15 @@
       <text class="info-name serif">{{studio.name}}</text>
       <text class="info-location">{{studio.city}} · {{studio.district}}</text>
 
-      <!-- Lead Teacher -->
-      <view class="lead-teacher" wx:if="{{studio.ownerTeacherName}}">
+      <!-- Lead Teachers -->
+      <view class="lead-teacher" wx:for="{{studio.ownerTeachers}}" wx:key="id">
         <view class="lead-avatar-wrap">
           <text class="lead-icon">👤</text>
         </view>
         <view class="lead-info">
-          <text class="lead-label">主理教师</text>
-          <text class="lead-name">{{studio.ownerTeacherName}}</text>
-          <text class="lead-real-name" wx:if="{{ownerTeacherRealName}}">{{ownerTeacherRealName}}</text>
+          <text class="lead-label" wx:if="{{index === 0}}">主理教师</text>
+          <text class="lead-name">{{item.name || item.xileName}}</text>
+          <text class="lead-real-name" wx:if="{{item.realName && item.realName !== item.name}}">{{item.realName}}</text>
         </view>
       </view>
 
@@ -50,10 +55,10 @@
         </view>
       </view>
       <view class="grid-item soft-card">
-        <text class="grid-icon">🕐</text>
+        <text class="grid-icon">📚</text>
         <view class="grid-text">
-          <text class="grid-label">开放时间</text>
-          <text class="grid-value">{{studio.openingHours || '10:00 - 21:00'}}</text>
+          <text class="grid-label">课程介绍</text>
+          <text class="grid-value">{{studio.courseIntro || '暂无课程介绍'}}</text>
         </view>
       </view>
       <view class="grid-item soft-card">

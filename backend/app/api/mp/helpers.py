@@ -132,6 +132,15 @@ def _public_real_name(teacher):
 
 def _studio_summary(studio):
     tags = [t.strip() for t in (studio.tags or "").split(",") if t.strip()]
+    images = [u.strip() for u in (studio.images or "").split(",") if u.strip()]
+    # The many-to-many `teachers` list is authoritative, but records seeded
+    # before the migration (or via the legacy owner field) may only have the
+    # single `owner` relationship populated — fall back to it so the lead
+    # teacher never renders empty.
+    owner_teachers = [t for t in studio.teachers if t.status != "hidden"]
+    if not owner_teachers and studio.owner and studio.owner.status != "hidden":
+        owner_teachers = [studio.owner]
+    lead = owner_teachers[0] if owner_teachers else None
     return {
         "id": studio.id,
         "name": studio.name,
@@ -140,13 +149,19 @@ def _studio_summary(studio):
         "address": studio.address,
         "latitude": studio.latitude,
         "longitude": studio.longitude,
-        "coverUrl": studio.cover_url,
+        "coverUrl": images[0] if images else studio.cover_url,
+        "images": images,
+        "courseIntro": studio.course_intro,
         "tags": tags,
         "intro": studio.intro,
         "openingHours": studio.opening_hours,
         "contactText": studio.contact_text,
-        "ownerTeacherName": _display_name(studio.owner) if studio.owner and studio.owner.status != "hidden" else None,
-        "ownerTeacherRealName": _public_real_name(studio.owner) if studio.owner and studio.owner.status != "hidden" else None,
+        "ownerTeachers": [
+            {"id": t.id, "name": _display_name(t), "xileName": _public_xile_name(t), "realName": _public_real_name(t)}
+            for t in owner_teachers
+        ],
+        "ownerTeacherName": _display_name(lead) if lead else None,
+        "ownerTeacherRealName": _public_real_name(lead) if lead else None,
     }
 
 

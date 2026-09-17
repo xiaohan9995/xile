@@ -1,7 +1,7 @@
 <view class="studio-card" bindtap="onTap">
   <image
     class="studio-card__cover"
-    src="{{studio.coverUrl || studio.coverImage || '/assets/default-studio.png'}}"
+    src="{{(studio.images && studio.images[0]) || studio.coverUrl || studio.coverImage || '/assets/default-studio.png'}}"
     mode="aspectFill"
   />
 

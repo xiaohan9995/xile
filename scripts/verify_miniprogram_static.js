@@ -117,7 +117,7 @@ const requiredPageText = {
   'pages/studio-detail/studio-detail': [
     '工作室详情',
     '主理教师',
-    '开放时间',
+    '课程介绍',
   ],
   'packageTeacher/home/home': [
     '我的认证',

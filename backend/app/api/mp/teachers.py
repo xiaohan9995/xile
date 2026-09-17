@@ -258,7 +258,10 @@ def update_my_public_profile():
         if not teacher.detail:
             from ...models import TeacherDetail
             teacher.detail = TeacherDetail(teacher_id=teacher.id)
-        teacher.detail.teaching_summary = str(payload["teachingSummary"] or "").strip() or None
+        teaching_summary = str(payload["teachingSummary"] or "").strip() or None
+        if teaching_summary and len(teaching_summary) > 100:
+            return {"error": "个人简介最多 100 字"}, 400
+        teacher.detail.teaching_summary = teaching_summary
     if "currentTierCertifiedOn" in payload:
         value = str(payload["currentTierCertifiedOn"] or "").strip()
         try:

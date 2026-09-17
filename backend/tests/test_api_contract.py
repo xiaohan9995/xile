@@ -328,7 +328,10 @@ def test_studio_detail_returns_public_profile(client):
     assert response.status_code == 200
     payload = response.get_json()
     assert payload["name"] == "静心瑜伽空间"
-    assert payload["ownerTeacherName"] == "张三"
+    # ownerTeacherName exposes the public identity (喜乐名); the legal name is
+    # surfaced separately via ownerTeacherRealName.
+    assert payload["ownerTeacherName"] == "善悦"
+    assert payload["ownerTeacherRealName"] == "张三"
     assert isinstance(payload["tags"], list)
 
 

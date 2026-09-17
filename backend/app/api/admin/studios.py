@@ -1,9 +1,86 @@
 from flask import request
 
 from ...extensions import db
-from ...models import AuditLog, Studio
+from ...models import AuditLog, Studio, Teacher
 from .helpers import current_admin_id, require_admin_roles, require_admin_token
 from . import admin_bp
+
+
+MAX_TAGS = 8
+MAX_TAG_LENGTH = 6
+MAX_IMAGES = 9
+MAX_COURSE_INTRO_LENGTH = 500
+
+
+def _validate_tags(value):
+    """Validate a comma-separated tag string against the studio rules.
+
+    Each tag may be at most MAX_TAG_LENGTH characters and there may be at most
+    MAX_TAGS tags. Returns ``None`` on success or an error message string.
+    """
+    tags = [t.strip() for t in (value or "").split(",") if t.strip()]
+    if len(tags) > MAX_TAGS:
+        return f"标签最多 {MAX_TAGS} 个"
+    if any(len(t) > MAX_TAG_LENGTH for t in tags):
+        return f"每个标签最多 {MAX_TAG_LENGTH} 个字"
+    return None
+
+
+def _validate_images(value):
+    """Validate an image URL list (or comma-separated string)."""
+    if isinstance(value, str):
+        images = [u.strip() for u in value.split(",") if u.strip()]
+    elif isinstance(value, list):
+        images = [str(u).strip() for u in value if str(u).strip()]
+    else:
+        images = []
+    if len(images) > MAX_IMAGES:
+        return None, f"图片最多 {MAX_IMAGES} 张"
+    return images, None
+
+
+def _resolve_teacher_ids(value):
+    """Normalize owner teacher ids to a list of existing teacher ids."""
+    if not isinstance(value, list):
+        return None, "主理教师格式无效"
+    ids = []
+    for item in value:
+        try:
+            ids.append(int(item))
+        except (TypeError, ValueError):
+            return None, "主理教师格式无效"
+    if not ids:
+        return [], None
+    existing = {t.id for t in Teacher.query.filter(Teacher.id.in_(ids)).all()}
+    return [i for i in ids if i in existing], None
+
+
+def _studio_payload(s):
+    images = [u.strip() for u in (s.images or "").split(",") if u.strip()]
+    return {
+        "id": s.id,
+        "name": s.name,
+        "city": s.city,
+        "district": s.district,
+        "address": s.address,
+        "latitude": s.latitude,
+        "longitude": s.longitude,
+        "ownerTeacherName": s.owner.real_name if s.owner else None,
+        "coverUrl": images[0] if images else s.cover_url,
+        "images": images,
+        "courseIntro": s.course_intro,
+        "ownerTeachers": [
+            {"id": t.id, "name": t.real_name, "xileName": t.xile_name}
+            for t in s.teachers
+            if t.status != "hidden"
+        ],
+        "tags": [t.strip() for t in (s.tags or "").split(",") if t.strip()],
+        "intro": s.intro,
+        "openingHours": s.opening_hours,
+        "contactText": s.contact_text,
+        "status": s.status,
+        "displayOrder": s.display_order,
+    }
 
 
 @admin_bp.get("/studios")
@@ -11,26 +88,7 @@ from . import admin_bp
 @require_admin_roles("admin", "super_admin")
 def studio_list():
     studios = Studio.query.order_by(Studio.display_order.desc(), Studio.id.asc()).all()
-    items = [
-        {
-            "id": s.id,
-            "name": s.name,
-            "city": s.city,
-            "district": s.district,
-            "address": s.address,
-            "latitude": s.latitude,
-            "longitude": s.longitude,
-            "ownerTeacherName": s.owner.real_name if s.owner else None,
-            "coverUrl": s.cover_url,
-            "tags": [t.strip() for t in (s.tags or "").split(",") if t.strip()],
-            "intro": s.intro,
-            "openingHours": s.opening_hours,
-            "contactText": s.contact_text,
-            "status": s.status,
-            "displayOrder": s.display_order,
-        }
-        for s in studios
-    ]
+    items = [_studio_payload(s) for s in studios]
     return {"items": items, "total": len(items)}
 
 
@@ -43,6 +101,22 @@ def create_studio():
     if not name:
         return {"error": "name required"}, 400
 
+    tags_error = _validate_tags(payload.get("tags"))
+    if tags_error:
+        return {"error": tags_error}, 400
+
+    images, images_error = _validate_images(payload.get("images"))
+    if images_error:
+        return {"error": images_error}, 400
+
+    teacher_ids, teachers_error = _resolve_teacher_ids(payload.get("ownerTeacherIds", []))
+    if teachers_error:
+        return {"error": teachers_error}, 400
+
+    course_intro = str(payload.get("courseIntro") or "").strip() or None
+    if course_intro and len(course_intro) > MAX_COURSE_INTRO_LENGTH:
+        return {"error": f"课程介绍最多 {MAX_COURSE_INTRO_LENGTH} 字"}, 400
+
     studio = Studio(
         name=name,
         city=payload.get("city", "").strip() or None,
@@ -53,9 +127,13 @@ def create_studio():
         contact_text=payload.get("contact", "").strip() or None,
         tags=payload.get("tags", "").strip() or None,
         intro=payload.get("intro", "").strip() or None,
-        cover_url=payload.get("coverUrl", "").strip() or None,
+        images=",".join(images) or None,
+        cover_url=images[0] if images else (payload.get("coverUrl", "").strip() or None),
+        course_intro=course_intro,
         status="open",
     )
+    if teacher_ids:
+        studio.teachers = Teacher.query.filter(Teacher.id.in_(teacher_ids)).all()
     db.session.add(studio)
     db.session.commit()
 
@@ -100,13 +178,29 @@ def update_studio(studio_id):
     if "contact" in payload:
         studio.contact_text = str(payload["contact"] or "").strip() or None
     if "tags" in payload:
+        tags_error = _validate_tags(payload.get("tags"))
+        if tags_error:
+            return {"error": tags_error}, 400
         studio.tags = str(payload["tags"] or "").strip() or None
     if "intro" in payload:
         studio.intro = str(payload["intro"] or "").strip() or None
-    if "openingHours" in payload:
-        studio.opening_hours = str(payload["openingHours"] or "").strip() or None
-    if "coverUrl" in payload:
-        studio.cover_url = (payload["coverUrl"] or "").strip() or None
+    if "images" in payload:
+        images, images_error = _validate_images(payload.get("images"))
+        if images_error:
+            return {"error": images_error}, 400
+        studio.images = ",".join(images) or None
+        if images:
+            studio.cover_url = images[0]
+    if "courseIntro" in payload:
+        course_intro = str(payload.get("courseIntro") or "").strip() or None
+        if course_intro and len(course_intro) > MAX_COURSE_INTRO_LENGTH:
+            return {"error": f"课程介绍最多 {MAX_COURSE_INTRO_LENGTH} 字"}, 400
+        studio.course_intro = course_intro
+    if "ownerTeacherIds" in payload:
+        teacher_ids, teachers_error = _resolve_teacher_ids(payload.get("ownerTeacherIds"))
+        if teachers_error:
+            return {"error": teachers_error}, 400
+        studio.teachers = Teacher.query.filter(Teacher.id.in_(teacher_ids)).all()
 
     db.session.add(AuditLog(admin_id=current_admin_id() or 1, action="update_studio", target_type="studio", target_id=studio.id))
     db.session.commit()

@@ -58,7 +58,8 @@
     <!-- Bio -->
     <view class="bio-card">
       <text class="bio-title">个人简介</text>
-      <text class="bio-text">{{teacher.teachingSummary || '—'}}</text>
+      <text class="bio-text {{bioExpanded ? '' : 'bio-text--clamp'}}">{{teacher.teachingSummary || '—'}}</text>
+      <text wx:if="{{teacher.teachingSummary && teacher.teachingSummary.length > 40}}" class="bio-toggle" bindtap="toggleBio">{{bioExpanded ? '收起' : '展开'}}</text>
     </view>
 
     <!-- Certificate card -->
