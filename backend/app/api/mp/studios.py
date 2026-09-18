@@ -19,7 +19,7 @@ MAX_CONTACT_LENGTH = 64
 # order, city/district/coordinates/intro stay admin-owned. The editable set is:
 # 轮播图片 (images)、标签 (tags)、地址 (address)、课程介绍 (courseIntro)、联系方式 (contact).
 _EDITABLE_DRAFT_KEYS = {
-    "address", "contact", "tags", "courseIntro", "images", "latitude", "longitude",
+    "address", "city", "district", "contact", "tags", "courseIntro", "images", "latitude", "longitude",
 }
 
 
@@ -49,11 +49,14 @@ def _draft_to_fields(draft):
 
     When a pending draft exists the teacher is editing the not-yet-approved
     content, so return it. Otherwise fall back to the published fields. Only
-    the editable fields (address/contact/tags/courseIntro/images) are exposed.
+    the editable fields (address/city/district/contact/tags/courseIntro/images)
+    are exposed.
     """
     images = [u.strip() for u in (draft.get("images") or "").split(",") if u.strip()] if isinstance(draft.get("images"), str) else (draft.get("images") or [])
     return {
         "address": draft.get("address") or "",
+        "city": draft.get("city") or "",
+        "district": draft.get("district") or "",
         "contact": draft.get("contact") or "",
         "tags": [t.strip() for t in (draft.get("tags") or "").split(",") if t.strip()],
         "courseIntro": draft.get("courseIntro") or "",
@@ -74,6 +77,8 @@ def _my_studio_payload(studio):
     else:
         editable = _draft_to_fields({
             "address": studio.address,
+            "city": studio.city,
+            "district": studio.district,
             "contact": studio.contact_text,
             "tags": studio.tags,
             "courseIntro": studio.course_intro,
@@ -127,8 +132,8 @@ def submit_studio(studio_id):
 
     payload = request.get_json(silent=True) or {}
 
-    # Only the editable keys are accepted: 地址/联系方式/标签/课程介绍/图片.
-    # name/ownerTeacherIds/城市/地区/坐标/简介 are ignored (admin-owned).
+    # Only the editable keys are accepted: 地址/城市/地区/联系方式/标签/课程介绍/图片/坐标.
+    # name/ownerTeacherIds/简介 are ignored (admin-owned).
     draft = {}
     if "tags" in payload:
         tags_error = _validate_tags(payload.get("tags"))
@@ -142,6 +147,11 @@ def submit_studio(studio_id):
         draft["images"] = images
     if "address" in payload:
         draft["address"] = str(payload.get("address") or "").strip() or None
+    # 城市/地区随地图选点结果一起提交，与地址保持同一份数据来源。
+    if "city" in payload:
+        draft["city"] = str(payload.get("city") or "").strip() or None
+    if "district" in payload:
+        draft["district"] = str(payload.get("district") or "").strip() or None
     if "contact" in payload:
         contact = str(payload.get("contact") or "").strip() or None
         if contact and len(contact) > MAX_CONTACT_LENGTH:

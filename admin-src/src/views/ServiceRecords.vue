@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="page-head"><div><h1>服务记录</h1><p>查看、修改或删除教师提交的服务与推广活动；记录可作为年审佐证材料。</p></div></div>
+    <div class="page-head"><div><h1>服务记录</h1><p>查看、修改或删除教师提交的服务与推广活动；记录可作为年审佐证材料。</p></div><div class="page-head-actions"><button class="refresh-btn" :class="{ 'is-spinning': refreshing }" :disabled="refreshing" @click="refresh"><span class="refresh-icon">↻</span>{{ refreshing ? '刷新中…' : '刷新' }}</button></div></div>
     <div class="toolbar">
       <input v-model="filters.teacherName" placeholder="教师姓名或喜乐名" />
       <input v-model="filters.serviceType" placeholder="服务类型" />
@@ -57,6 +57,12 @@ async function loadRecords() {
   try { records.value = await fetchAdminServiceRecords() } catch (_) { toast('服务记录加载失败', 'error') }
 }
 onMounted(loadRecords)
+
+const refreshing = ref(false)
+async function refresh() {
+  refreshing.value = true
+  try { await loadRecords() } finally { refreshing.value = false }
+}
 
 const filteredRecords = computed(() => { const match = (v, q) => !q || String(v || '').toLowerCase().includes(q); const teacher = filters.value.teacherName.trim().toLowerCase(); const type = filters.value.serviceType.trim().toLowerCase(); return records.value.filter((i) => match(`${i.teacherName || ''}${i.xileName || ''}`, teacher) && match(i.serviceType, type) && (!filters.value.status || i.status === filters.value.status)) })
 const totalPages = computed(() => Math.ceil(filteredRecords.value.length / pageSize))

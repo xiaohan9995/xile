@@ -2,6 +2,11 @@
   <div>
     <div class="page-head">
       <div><h1>教学记录</h1><p>查看、修改或删除教师提交的教学活动；记录可作为年审佐证材料。</p></div>
+      <div class="page-head-actions">
+        <button class="refresh-btn" :class="{ 'is-spinning': refreshing }" :disabled="refreshing" @click="refresh">
+          <span class="refresh-icon">↻</span>{{ refreshing ? '刷新中…' : '刷新' }}
+        </button>
+      </div>
     </div>
     <div class="toolbar">
       <input v-model="filters.teacherName" placeholder="教师姓名或喜乐名" />
@@ -87,6 +92,12 @@ async function loadRecords() {
   try { records.value = await fetchAdminTeachingRecords() } catch (_) { toast('教学记录加载失败', 'error') }
 }
 onMounted(loadRecords)
+
+const refreshing = ref(false)
+async function refresh() {
+  refreshing.value = true
+  try { await loadRecords() } finally { refreshing.value = false }
+}
 
 const filteredRecords = computed(() => {
   const match = (value, query) => !query || String(value || '').toLowerCase().includes(query)

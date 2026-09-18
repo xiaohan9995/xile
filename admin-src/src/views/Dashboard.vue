@@ -5,6 +5,11 @@
         <h1>数据看板</h1>
         <p>教师认证、年审及工作室最新变动总览</p>
       </div>
+      <div class="page-head-actions">
+        <button class="refresh-btn" :class="{ 'is-spinning': refreshing }" :disabled="refreshing" @click="refresh">
+          <span class="refresh-icon">↻</span>{{ refreshing ? '刷新中…' : '刷新' }}
+        </button>
+      </div>
     </div>
 
     <div class="kpi-grid">
@@ -132,7 +137,9 @@ const areaPoints = computed(() => {
   return `${first.x},${bottom} ${line} ${last.x},${bottom}`
 })
 
-onMounted(async () => {
+onMounted(load)
+
+async function load() {
   try {
     const cardsData = await fetchDashboardCards()
     cards.value = cardsData
@@ -151,7 +158,13 @@ onMounted(async () => {
   } catch (err) {
     console.warn('Analytics fetch failed', err)
   }
-})
+}
+
+const refreshing = ref(false)
+async function refresh() {
+  refreshing.value = true
+  try { await load() } finally { refreshing.value = false }
+}
 </script>
 
 <style scoped>

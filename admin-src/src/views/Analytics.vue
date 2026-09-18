@@ -5,6 +5,11 @@
         <h1>数据分析</h1>
         <p>教师认证数据统计与分析</p>
       </div>
+      <div class="page-head-actions">
+        <button class="refresh-btn" :class="{ 'is-spinning': refreshing }" :disabled="refreshing" @click="refresh">
+          <span class="refresh-icon">↻</span>{{ refreshing ? '刷新中…' : '刷新' }}
+        </button>
+      </div>
     </div>
 
     <div class="kpi-grid" style="margin-bottom: 24px">
@@ -81,11 +86,19 @@ import { fetchAnalytics } from '../api/adminData'
 
 const analytics = ref({})
 
-onMounted(async () => {
+onMounted(load)
+
+async function load() {
   try {
     analytics.value = await fetchAnalytics()
   } catch (e) { /* fallback to empty */ }
-})
+}
+
+const refreshing = ref(false)
+async function refresh() {
+  refreshing.value = true
+  try { await load() } finally { refreshing.value = false }
+}
 
 const pointCoords = computed(() => {
   const trend = analytics.value.monthlyTrend || []

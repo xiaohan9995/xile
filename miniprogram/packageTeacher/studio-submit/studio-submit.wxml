@@ -17,20 +17,31 @@
 
     <view wx:if="{{editing}}" class="form-card">
       <view class="form-card__head"><text class="form-card__title">{{editing.name}}</text><view wx:if="{{!directEdit}}" class="form-card__close" bindtap="closeEditor">×</view></view>
-      <text class="form-card__hint">名称、城市、主理教师由管理员设定，此处不可修改</text>
+      <text class="form-card__hint">名称、主理教师由管理员设定，此处不可修改</text>
 
       <view class="form-field">
         <text class="form-field__label">详细地址</text>
-        <input class="field" placeholder="请输入工作室详细地址" value="{{form.address}}" bindinput="input" data-field="address" />
-      </view>
-      <view class="form-field">
-        <text class="form-field__label">地图位置</text>
-        <view class="location-row">
-          <view class="location-row__text">{{form.address || '尚未设置地图位置'}}</view>
-          <button class="btn-secondary location-row__btn" bindtap="chooseLocation">重新选点</button>
+        <view class="field field--picker" bindtap="chooseLocation">
+          <text class="field__value {{form.address ? '' : 'field__value--placeholder'}}">{{form.address || '点击选择地图位置'}}</text>
+          <text class="field__arrow">›</text>
         </view>
-        <text class="field-hint">选点后地图标记与地址保持一致，提交审批通过后生效</text>
+        <text class="field-hint">点击地址栏调出地图选点，选点后自动同步城市与地区，提交审批通过后生效</text>
       </view>
+
+      <!-- 城市 / 地区：由地图选点结果自动填充，只读展示，避免与地址不一致 -->
+      <view class="form-field">
+        <text class="form-field__label">城市 / 地区</text>
+        <view class="region-row">
+          <view class="field field--readonly">
+            <text class="field__value {{form.city ? '' : 'field__value--placeholder'}}">{{form.city || '选点后自动填充'}}</text>
+          </view>
+          <view class="field field--readonly">
+            <text class="field__value {{form.district ? '' : 'field__value--placeholder'}}">{{form.district || '选点后自动填充'}}</text>
+          </view>
+        </view>
+        <text class="field-hint">城市与地区随地图选点自动更新，无需手动填写</text>
+      </view>
+
       <view class="form-field">
         <text class="form-field__label">联系方式（可选）</text>
         <input class="field" placeholder="请输入联系方式" value="{{form.contact}}" bindinput="input" data-field="contact" />

@@ -8,6 +8,48 @@ const STATUS_LABEL = {
   incomplete: '未提交',
 };
 
+// wx.chooseLocation 只返回 POI 名称与完整地址，城市/地区需要从地址文本里解析。
+// 关键点：微信返回的完整地址是「连写」的，形如
+//   「广东省深圳市南山区科技园南路1号」/「北京市朝阳区建国路87号」
+// 省/市/区之间没有分隔符，因此不能按空格切分（旧实现按空格切分后整串只落进
+// 一段，导致 city/district 永远解析为空）。这里改用「按行政区划后缀切段」。
+const MUNICIPALITIES = ['北京', '上海', '天津', '重庆'];
+// 省级：省 / 自治区 / 特别行政区（如 广东省、内蒙古自治区、香港特别行政区）
+const PROVINCE_PATTERN = /^(.+?(?:省|自治区|特别行政区))/;
+// 市级：市 / 自治州 / 地区 / 盟（如 深圳市、湘西土家族苗族自治州、阿里地区）
+const CITY_PATTERN = /^(.+?(?:市|自治州|地区|盟))/;
+// 区县级：区 / 县 / 市 / 旗（如 南山区、桐庐县、义乌市、阿荣旗）
+const DISTRICT_PATTERN = /^(.+?(?:区|县|市|旗))/;
+
+const parseRegion = (res) => {
+  const source = String((res && (res.address || res.name)) || '').trim();
+  if (!source) return { city: '', district: '' };
+
+  // 去掉省/市之间的空白与逗号，让「广东省 深圳市」与「广东省深圳市」等价。
+  let rest = source.replace(/[\s,，]+/g, '');
+
+  // 直辖市（北京市朝阳区…）：第一段本身就是城市，且没有省级前缀。
+  const municipality = MUNICIPALITIES.find((name) => rest.indexOf(name) === 0);
+  if (municipality) {
+    const matched = rest.match(CITY_PATTERN);
+    const city = matched ? matched[1] : municipality;
+    rest = rest.slice(city.length);
+    const districtMatched = rest.match(DISTRICT_PATTERN);
+    return { city, district: districtMatched ? districtMatched[1] : '' };
+  }
+
+  // 先剥掉省级前缀，再依次取市、区县；缺失的层级留空，由调用方保留原值。
+  const provinceMatched = rest.match(PROVINCE_PATTERN);
+  if (provinceMatched) rest = rest.slice(provinceMatched[1].length);
+
+  const cityMatched = rest.match(CITY_PATTERN);
+  const city = cityMatched ? cityMatched[1] : '';
+  if (cityMatched) rest = rest.slice(city.length);
+
+  const districtMatched = rest.match(DISTRICT_PATTERN);
+  return { city, district: districtMatched ? districtMatched[1] : '' };
+};
+
 Page({
   data: {
     statusBarHeight: 20,
@@ -18,7 +60,7 @@ Page({
     editingId: '',
     // form holds the editable display fields (mirrors backend `fields`)
     form: {
-      address: '', contact: '', tags: [], courseIntro: '', images: [], latitude: null, longitude: null,
+      city: '', district: '', address: '', contact: '', tags: [], courseIntro: '', images: [], latitude: null, longitude: null,
     },
     tagInput: '',
     maxTags: 8,
@@ -84,6 +126,8 @@ Page({
       editing: studio,
       editingId: String(studio.id),
       form: {
+        city: f.city || '',
+        district: f.district || '',
         address: f.address || '',
         contact: f.contact || '',
         tags: f.tags || [],
@@ -167,7 +211,7 @@ Page({
   },
 
   closeEditor() {
-    this.setData({ editing: null, editingId: '', form: { address: '', contact: '', tags: [], courseIntro: '', images: [], latitude: null, longitude: null } });
+    this.setData({ editing: null, editingId: '', form: { city: '', district: '', address: '', contact: '', tags: [], courseIntro: '', images: [], latitude: null, longitude: null } });
   },
 
   // 用微信内置地图选点，让地图标记与详细地址保持一致。
@@ -176,15 +220,18 @@ Page({
       latitude: this.data.form.latitude || undefined,
       longitude: this.data.form.longitude || undefined,
       success: (res) => {
-        const patch = {
+        // 选点后同步经纬度与地址：优先用 POI 名称（更贴合展示习惯），
+        // 名称缺失时退回完整地址，两者都为空才保留原值。
+        const picked = (res.name || '').trim() || (res.address || '').trim();
+        // 城市/地区由选点结果自动填充，与地址保持同一份数据来源。
+        const region = parseRegion(res);
+        this.setData({
           'form.latitude': res.latitude,
           'form.longitude': res.longitude,
-        };
-        // 选点名称优先回填地址，若用户已手填详细地址则保留手填值。
-        if (!this.data.form.address && res.name) {
-          patch['form.address'] = res.name;
-        }
-        this.setData(patch);
+          'form.address': picked || this.data.form.address,
+          'form.city': region.city || this.data.form.city,
+          'form.district': region.district || this.data.form.district,
+        });
         wx.showToast({ title: '已更新地图位置', icon: 'none' });
       },
       fail: () => {
@@ -206,6 +253,9 @@ Page({
       courseIntro: form.courseIntro,
       images: form.images,
     };
+    // 城市/地区随地址一起提交，与地图选点结果保持一致。
+    if (form.city) data.city = form.city;
+    if (form.district) data.district = form.district;
     if (form.latitude != null && form.longitude != null) {
       data.latitude = form.latitude;
       data.longitude = form.longitude;

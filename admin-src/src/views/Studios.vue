@@ -4,7 +4,12 @@
       <div>
         <h1>工作室管理</h1>
       </div>
-      <button class="primary-btn" @click="openCreate">新增工作室</button>
+      <div class="page-head-actions">
+        <button class="refresh-btn" :class="{ 'is-spinning': refreshing }" :disabled="refreshing" @click="refresh">
+          <span class="refresh-icon">↻</span>{{ refreshing ? '刷新中…' : '刷新' }}
+        </button>
+        <button class="primary-btn" @click="openCreate">新增工作室</button>
+      </div>
     </div>
 
     <div class="toolbar">
@@ -299,6 +304,16 @@
             <div class="approval-diff__cell" :class="{ 'is-changed': pendingChanged('address', 'address') }">{{ approvalPending && approvalPending.address || '—' }}</div>
           </div>
           <div class="approval-diff__row">
+            <span class="approval-diff__field-col">城市</span>
+            <div class="approval-diff__cell">{{ approvalStudio && approvalStudio.city || '—' }}</div>
+            <div class="approval-diff__cell" :class="{ 'is-changed': pendingChanged('city', 'city') }">{{ approvalPending && approvalPending.city || '—' }}</div>
+          </div>
+          <div class="approval-diff__row">
+            <span class="approval-diff__field-col">地区</span>
+            <div class="approval-diff__cell">{{ approvalStudio && approvalStudio.district || '—' }}</div>
+            <div class="approval-diff__cell" :class="{ 'is-changed': pendingChanged('district', 'district') }">{{ approvalPending && approvalPending.district || '—' }}</div>
+          </div>
+          <div class="approval-diff__row">
             <span class="approval-diff__field-col">地图位置</span>
             <div class="approval-diff__cell">{{ coordText(approvalStudio) }}</div>
             <div class="approval-diff__cell" :class="{ 'is-changed': pendingChanged('coordinates', 'coordinates') }">{{ pendingCoordText(approvalPending) }}</div>
@@ -330,7 +345,7 @@
         </label>
         <div class="modal-actions">
           <button type="button" class="sync-btn" @click="closeApproval">取消</button>
-          <button type="button" class="danger-action" :disabled="approving" @click="handleReject">驳回</button>
+          <button type="button" class="danger-btn" :disabled="approving" @click="handleReject">驳回</button>
           <button type="button" class="primary-btn" :disabled="approving" @click="handleApprove">{{ approving ? '处理中…' : '通过' }}</button>
         </div>
       </div>
@@ -677,6 +692,17 @@ async function loadTeachers() {
     teacherOptions.value = await fetchAdminTeachers()
   } catch (e) {
     console.warn('获取教师列表失败', e)
+  }
+}
+
+const refreshing = ref(false)
+
+async function refresh() {
+  refreshing.value = true
+  try {
+    await Promise.all([loadStudios(), loadTeachers()])
+  } finally {
+    refreshing.value = false
   }
 }
 

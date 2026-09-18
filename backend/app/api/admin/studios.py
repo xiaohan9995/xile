@@ -69,6 +69,8 @@ def _pending_draft_payload(s):
         images = [u.strip() for u in images.split(",") if u.strip()]
     return {
         "address": draft.get("address"),
+        "city": draft.get("city"),
+        "district": draft.get("district"),
         "contact": draft.get("contact"),
         "tags": [t.strip() for t in (draft.get("tags") or "").split(",") if t.strip()],
         "courseIntro": draft.get("courseIntro"),
@@ -240,11 +242,16 @@ def update_studio(studio_id):
 def _apply_pending_draft(studio, draft):
     """Copy the approved draft fields onto the published studio fields.
 
-    Only the editable fields (地址/联系方式/标签/课程介绍/图片) are applied;
-    city/district/coordinates/intro stay admin-owned and never change here.
+    Only the editable fields (地址/城市/地区/联系方式/标签/课程介绍/图片/坐标)
+    are applied; intro stays admin-owned and never changes here.
     """
     if "address" in draft:
         studio.address = draft.get("address")
+    # 城市/地区随地址一起审批生效，保证与地图选点结果一致。
+    if "city" in draft:
+        studio.city = draft.get("city")
+    if "district" in draft:
+        studio.district = draft.get("district")
     # 经纬度随地址一同审批生效，保证地图位置与地址一致。
     if "latitude" in draft and "longitude" in draft:
         lat = draft.get("latitude")

@@ -6,6 +6,18 @@ const app = getApp();
 // Dates arrive as "YYYY.MM.DD"; only the year is shown for certification years.
 const yearOf = (value) => (value ? String(value).slice(0, 4) : '');
 
+// 后端下发的头像/证书可能是 API 相对路径（"/uploads/..."），<image> 无法解析，
+// 需要补上 API 域名；微信头像（qlogo.cn）走后端代理，避免小程序域名白名单问题。
+const displayFileUrl = (url) => {
+  if (!url) return '';
+  const baseUrl = (app && app.globalData && app.globalData.apiBaseUrl) || '';
+  if (/^https:\/\/(?:thirdwx|wx)\.qlogo\.cn\//i.test(url)) {
+    return baseUrl ? `${baseUrl}/api/mp/auth/avatar-proxy?url=${encodeURIComponent(url)}` : url;
+  }
+  if (/^https?:\/\//i.test(url)) return url;
+  return baseUrl ? `${baseUrl}${url}` : url;
+};
+
 Page({
   data: {
     statusBarHeight: 20,
@@ -32,6 +44,8 @@ Page({
     this.setData({ loading: true, error: '' });
     try {
       const teacher = await request({ url: `/api/mp/teachers/${id}/summary` });
+      teacher.avatarUrl = displayFileUrl(teacher.avatarUrl);
+      teacher.certificateUrl = displayFileUrl(teacher.certificateUrl);
       const displayName = teacher.xileName || teacher.realName || teacher.name || '';
       this.setData({
         teacher,

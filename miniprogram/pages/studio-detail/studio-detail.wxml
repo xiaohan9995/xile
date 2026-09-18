@@ -27,6 +27,11 @@
       <text class="info-name serif">{{studio.name}}</text>
       <text class="info-location">{{studio.city}} · {{studio.district}}</text>
 
+      <!-- Tags -->
+      <view class="info-tags" wx:if="{{studio.tags.length}}">
+        <text wx:for="{{studio.tags}}" wx:key="*this" class="info-tag">{{item}}</text>
+      </view>
+
       <!-- Lead Teachers -->
       <view class="lead-teachers">
         <text class="lead-label">主理教师</text>
@@ -40,11 +45,6 @@
           </view>
         </view>
       </view>
-
-      <!-- Tags -->
-      <view class="info-tags" wx:if="{{studio.tags.length}}">
-        <text wx:for="{{studio.tags}}" wx:key="*this" class="info-tag">{{item}}</text>
-      </view>
     </view>
 
     <!-- Info Grid -->
@@ -55,7 +55,7 @@
           <text class="grid-label">课程介绍</text>
           <text class="grid-value grid-value--clamp">{{studio.courseIntro || '暂无课程介绍'}}</text>
         </view>
-        <text class="grid-arrow" wx:if="{{studio.courseIntro}}">›</text>
+        <text class="grid-arrow">›</text>
       </view>
       <view class="grid-item soft-card" bindtap="openMap">
         <text class="grid-icon">📍</text>
@@ -116,57 +116,178 @@
 
   <!-- Course intro drawer -->
   <view wx:if="{{courseDrawerVisible}}" class="drawer-mask" bindtap="closeCourseDrawer">
-    <view class="drawer" catchtap="noop">
-      <view class="drawer__handle"></view>
+    <view class="drawer drawer--course" catchtap="noop">
+      <view class="drawer__grip">
+        <view class="drawer__handle"></view>
+      </view>
       <view class="drawer__head">
         <text class="drawer__title">课程介绍</text>
-        <text class="drawer__close" bindtap="closeCourseDrawer">✕</text>
+        <view class="drawer__close" bindtap="closeCourseDrawer">✕</view>
       </view>
-      <scroll-view scroll-y class="drawer__body">
-        <text class="drawer__text">{{studio.courseIntro || '暂无课程介绍'}}</text>
+      <scroll-view scroll-y class="drawer__body" enhanced show-scrollbar="{{false}}">
+        <!-- 课程总览：与教师详情页 profile-head 同构，先给整体印象 -->
+        <view class="course-drawer__hero">
+          <view class="course-drawer__hero-mark">
+            <text>课</text>
+          </view>
+          <view class="course-drawer__hero-info">
+            <text class="course-drawer__hero-title">{{studio.name}}</text>
+          </view>
+        </view>
+
+        <!-- 课程列表：每门课程一张卡片，字段与教师详情页 info-row 一致 -->
+        <view wx:for="{{courses}}" wx:key="key" class="course-drawer__section">
+          <view class="course-drawer__section-title">
+            <text class="course-drawer__section-bar"></text>
+            <text>{{item.name}}</text>
+          </view>
+          <view class="course-drawer__card">
+            <view wx:if="{{item.intro}}" class="course-drawer__row course-drawer__row--block">
+              <text class="course-drawer__dt">课程简介</text>
+              <text class="course-drawer__dd">{{item.intro}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 空态：未配置课程时给出明确指引 -->
+        <view wx:if="{{!courses.length}}" class="course-drawer__empty">
+          <text class="course-drawer__empty-text">该工作室暂未发布课程</text>
+          <text class="course-drawer__empty-hint">课程信息由主理教师维护，可稍后再来查看</text>
+        </view>
+
+        <!-- 认证背书：与教师详情页 verify-note 一致 -->
+        <view class="course-drawer__verify">
+          <text class="course-drawer__verify-icon">🛡</text>
+          <text class="course-drawer__verify-text">课程信息由该工作室主理教师维护并经喜乐瑜伽教师管理委员会审核</text>
+        </view>
       </scroll-view>
     </view>
   </view>
 
   <!-- Teacher detail drawer -->
   <view wx:if="{{teacherDrawerVisible}}" class="drawer-mask" bindtap="closeTeacherDrawer">
-    <view class="drawer" catchtap="noop">
-      <view class="drawer__handle"></view>
+    <view class="drawer drawer--teacher" catchtap="noop">
+      <view class="drawer__grip">
+        <view class="drawer__handle"></view>
+      </view>
+
       <view class="drawer__head">
         <text class="drawer__title">教师详情</text>
-        <text class="drawer__close" bindtap="closeTeacherDrawer">✕</text>
+        <view class="drawer__close" bindtap="closeTeacherDrawer">✕</view>
       </view>
-      <scroll-view scroll-y class="drawer__body">
-        <view wx:if="{{selectedTeacher}}" class="teacher-drawer">
-          <view class="teacher-drawer__head">
+
+      <scroll-view scroll-y class="drawer__body" enhanced show-scrollbar="{{false}}">
+        <view wx:if="{{teacherLoading}}" class="teacher-drawer__loading">
+          <view class="teacher-drawer__skeleton teacher-drawer__skeleton--avatar"></view>
+          <view class="teacher-drawer__skeleton-lines">
+            <view class="teacher-drawer__skeleton teacher-drawer__skeleton--long"></view>
+            <view class="teacher-drawer__skeleton teacher-drawer__skeleton--medium"></view>
+          </view>
+        </view>
+
+        <view wx:elif="{{selectedTeacher}}" class="teacher-drawer">
+          <!-- 1. 身份区：头像 + 名称 + 等级 + 认证状态 -->
+          <view class="teacher-drawer__hero">
             <image wx:if="{{selectedTeacher.avatarUrl}}" class="teacher-drawer__avatar" src="{{selectedTeacher.avatarUrl}}" mode="aspectFill" />
             <view wx:else class="teacher-drawer__avatar teacher-drawer__avatar--placeholder">
-              <text>{{selectedTeacher.name ? selectedTeacher.name.slice(0, 1) : '教'}}</text>
+              <text>{{selectedTeacher.teacherInitial}}</text>
             </view>
+
             <view class="teacher-drawer__head-info">
-              <text class="teacher-drawer__name">{{selectedTeacher.name || selectedTeacher.xileName}}</text>
-              <text class="teacher-drawer__sub">{{selectedTeacher.tierName || '—'}}</text>
+              <text class="teacher-drawer__name">{{selectedTeacher.xileName || selectedTeacher.realName || selectedTeacher.name || '—'}}</text>
+              <text class="teacher-drawer__alias" wx:if="{{selectedTeacher.commonName}}">{{selectedTeacher.commonName}}</text>
+              <view class="teacher-drawer__meta">
+                <view class="teacher-drawer__level-badge">{{selectedTeacher.tier || 'L'}}</view>
+                <text class="teacher-drawer__sub">{{selectedTeacher.tierName || '—'}}</text>
+                <text class="teacher-drawer__status {{selectedTeacher.certificationStatus === '已过期' ? 'teacher-drawer__status--expired' : selectedTeacher.certificationStatus === '即将到期' ? 'teacher-drawer__status--expiring' : ''}}">{{selectedTeacher.certificationStatus || '未知'}}</text>
+              </view>
             </view>
           </view>
-          <view class="teacher-drawer__row" wx:if="{{selectedTeacher.xileName}}">
-            <text class="teacher-drawer__dt">喜乐名</text>
-            <text class="teacher-drawer__dd">{{selectedTeacher.xileName}}</text>
+
+          <!-- 2. 认证信息：与教师详情页 info-card 一致，键值行呈现 -->
+          <view class="teacher-drawer__section">
+            <view class="teacher-drawer__section-title">
+              <text class="teacher-drawer__section-bar"></text>
+              <text>认证信息</text>
+            </view>
+            <view class="teacher-drawer__card">
+              <view class="teacher-drawer__row">
+                <text class="teacher-drawer__dt">首次教师认证年份</text>
+                <text class="teacher-drawer__dd">{{selectedTeacher.firstCertifiedYear || '—'}}</text>
+              </view>
+              <view class="teacher-drawer__row">
+                <text class="teacher-drawer__dt">当前等级认证年份</text>
+                <text class="teacher-drawer__dd">{{selectedTeacher.currentTierCertifiedYear || '—'}}</text>
+              </view>
+              <view class="teacher-drawer__row">
+                <text class="teacher-drawer__dt">等级认证有效期至</text>
+                <text class="teacher-drawer__dd">{{selectedTeacher.validUntil || '—'}}</text>
+              </view>
+            </view>
           </view>
-          <view class="teacher-drawer__row" wx:if="{{selectedTeacher.realName && selectedTeacher.realName !== selectedTeacher.name}}">
-            <text class="teacher-drawer__dt">姓名</text>
-            <text class="teacher-drawer__dd">{{selectedTeacher.realName}}</text>
+
+          <!-- 3. 擅长领域：标签化，便于快速扫读 -->
+          <view class="teacher-drawer__section" wx:if="{{selectedTeacher.specialtiesText}}">
+            <view class="teacher-drawer__section-title">
+              <text class="teacher-drawer__section-bar"></text>
+              <text>擅长领域</text>
+            </view>
+            <view class="teacher-drawer__chips">
+              <text wx:for="{{selectedTeacher.specialties}}" wx:key="*this" class="teacher-drawer__chip">{{item}}</text>
+            </view>
           </view>
-          <view class="teacher-drawer__row" wx:if="{{selectedTeacher.tierName}}">
-            <text class="teacher-drawer__dt">认证等级</text>
-            <text class="teacher-drawer__dd">{{selectedTeacher.tierName}}</text>
+
+          <!-- 4. 基本信息：次要字段，弱化呈现 -->
+          <view class="teacher-drawer__section">
+            <view class="teacher-drawer__section-title">
+              <text class="teacher-drawer__section-bar"></text>
+              <text>基本信息</text>
+            </view>
+            <view class="teacher-drawer__card">
+              <view class="teacher-drawer__row">
+                <text class="teacher-drawer__dt">喜乐名</text>
+                <text class="teacher-drawer__dd">{{selectedTeacher.xileName || '—'}}</text>
+              </view>
+              <view class="teacher-drawer__row">
+                <text class="teacher-drawer__dt">姓名/常用名</text>
+                <text class="teacher-drawer__dd">{{selectedTeacher.commonName || '—'}}</text>
+              </view>
+              <view class="teacher-drawer__row">
+                <text class="teacher-drawer__dt">经常居住地</text>
+                <text class="teacher-drawer__dd">{{selectedTeacher.residencesText || '—'}}</text>
+              </view>
+            </view>
           </view>
-          <view class="teacher-drawer__row" wx:if="{{selectedTeacher.validUntil}}">
-            <text class="teacher-drawer__dt">有效期至</text>
-            <text class="teacher-drawer__dd">{{selectedTeacher.validUntil}}</text>
+
+          <!-- 5. 个人简介 -->
+          <view class="teacher-drawer__section" wx:if="{{selectedTeacher.teachingSummary}}">
+            <view class="teacher-drawer__section-title">
+              <text class="teacher-drawer__section-bar"></text>
+              <text>个人简介</text>
+            </view>
+            <view class="teacher-drawer__card">
+              <text class="teacher-drawer__bio-text {{teacherBioExpanded ? '' : 'teacher-drawer__bio-text--clamp'}}">{{selectedTeacher.teachingSummary}}</text>
+              <text class="teacher-drawer__bio-toggle" bindtap="toggleTeacherBio">{{teacherBioExpanded ? '收起' : '查看全部'}}</text>
+            </view>
           </view>
-          <view class="teacher-drawer__row" wx:if="{{selectedTeacher.city}}">
-            <text class="teacher-drawer__dt">所在城市</text>
-            <text class="teacher-drawer__dd">{{selectedTeacher.city}}</text>
+
+          <!-- 6. 证书展示 -->
+          <view class="teacher-drawer__section">
+            <view class="teacher-drawer__section-title">
+              <text class="teacher-drawer__section-bar"></text>
+              <text>证书展示</text>
+              <text class="teacher-drawer__section-action" wx:if="{{selectedTeacher.certificateUrl}}" bindtap="previewTeacherCertificate">查看大图</text>
+            </view>
+            <view class="teacher-drawer__cert-preview" bindtap="previewTeacherCertificate">
+              <image wx:if="{{selectedTeacher.certificateUrl}}" class="teacher-drawer__cert-image" src="{{selectedTeacher.certificateUrl}}" mode="aspectFit" />
+              <text wx:else class="teacher-drawer__cert-text">喜乐瑜伽教师认证证书</text>
+            </view>
+          </view>
+
+          <!-- 7. 认证背书 -->
+          <view class="teacher-drawer__verify">
+            <text class="teacher-drawer__verify-icon">🛡</text>
+            <text class="teacher-drawer__verify-text">该教师资质由喜乐瑜伽教师管理委员会认证维护</text>
           </view>
         </view>
       </scroll-view>

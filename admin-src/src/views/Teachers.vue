@@ -4,7 +4,12 @@
       <div>
         <h1>教师管理</h1>
       </div>
-      <button class="primary-btn" @click="openCreate">＋ 新增教师</button>
+      <div class="page-head-actions">
+        <button class="refresh-btn" :class="{ 'is-spinning': refreshing }" :disabled="refreshing" @click="refresh">
+          <span class="refresh-icon">↻</span>{{ refreshing ? '刷新中…' : '刷新' }}
+        </button>
+        <button class="primary-btn" @click="openCreate">＋ 新增教师</button>
+      </div>
     </div>
 
     <div class="toolbar">
@@ -264,6 +269,17 @@ async function loadTeachers() {
     teachers.value = await fetchAdminTeachers()
   } catch (e) {
     console.warn('获取教师列表失败', e)
+  }
+}
+
+const refreshing = ref(false)
+
+async function refresh() {
+  refreshing.value = true
+  try {
+    await loadTeachers()
+  } finally {
+    refreshing.value = false
   }
 }
 

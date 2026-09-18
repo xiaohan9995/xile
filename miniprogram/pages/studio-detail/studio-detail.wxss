@@ -302,6 +302,7 @@
   align-items: flex-end;
 }
 
+/* 抽屉本体：与教师详情页保持同一套抽屉骨架（把手 + 标题 + 正文滚动） */
 .drawer {
   width: 100%;
   max-height: 72vh;
@@ -314,9 +315,22 @@
   animation: drawer-up 0.24s ease;
 }
 
+.drawer--teacher {
+  max-height: 78vh;
+}
+
+/* 课程抽屉内容比教师抽屉更长，给到与教师抽屉一致的高度上限 */
+.drawer--course {
+  max-height: 78vh;
+}
+
 @keyframes drawer-up {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
+}
+
+.drawer__grip {
+  flex-shrink: 0;
 }
 
 .drawer__handle {
@@ -332,6 +346,7 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 20rpx;
+  flex-shrink: 0;
 }
 
 .drawer__title {
@@ -347,31 +362,48 @@
   line-height: 1;
 }
 
+.drawer__close:active {
+  opacity: 0.6;
+}
+
 .drawer__body {
+  flex: 1;
+  min-height: 0;
   max-height: 56vh;
 }
 
 .drawer__text {
+  display: block;
   font-size: 26rpx;
   line-height: 1.8;
   color: var(--color-text);
   white-space: pre-wrap;
 }
 
-/* Teacher detail drawer */
-.teacher-drawer__head {
-  display: flex;
+/* ===== Teacher detail drawer ===== */
+
+.teacher-drawer__loading {
+  padding: 60rpx 0;
+  text-align: center;
+  color: var(--color-muted);
+  font-size: 26rpx;
+}
+
+/* 1. 身份区：与教师详情页 profile-head 同构 */
+.teacher-drawer__hero {
+  display: grid;
+  grid-template-columns: 128rpx 1fr;
+  gap: 28rpx;
   align-items: center;
-  gap: 20rpx;
-  padding-bottom: 24rpx;
-  margin-bottom: 12rpx;
-  border-bottom: 1rpx solid var(--color-line);
+  padding: 8rpx 0 4rpx;
 }
 
 .teacher-drawer__avatar {
-  width: 96rpx;
-  height: 96rpx;
+  width: 128rpx;
+  height: 128rpx;
   border-radius: 50%;
+  border: 2rpx solid var(--color-surface);
+  box-sizing: border-box;
   flex-shrink: 0;
 }
 
@@ -379,44 +411,473 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-primary);
-  color: #fff;
-  font-size: 40rpx;
+  background: var(--color-primary-light);
+}
+
+.teacher-drawer__avatar--placeholder text {
+  font-size: 52rpx;
   font-weight: 700;
+  color: var(--color-primary);
 }
 
 .teacher-drawer__head-info {
   display: flex;
   flex-direction: column;
-  gap: 6rpx;
+  min-width: 0;
 }
 
 .teacher-drawer__name {
-  font-size: 32rpx;
+  font-size: 40rpx;
   font-weight: 800;
   color: var(--color-text);
+  line-height: 1.2;
 }
 
-.teacher-drawer__sub {
+.teacher-drawer__alias {
+  margin-top: 6rpx;
   font-size: 24rpx;
   color: var(--color-muted);
 }
 
-.teacher-drawer__row {
+.teacher-drawer__meta {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 18rpx 0;
-  border-bottom: 1rpx solid var(--color-line);
+  gap: 12rpx;
+  flex-wrap: wrap;
+  margin-top: 12rpx;
+}
+
+.teacher-drawer__level-badge {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  background: var(--color-gold);
+  color: #fff;
+  font-size: 22rpx;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.teacher-drawer__sub {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: var(--color-gold);
+}
+
+.teacher-drawer__status {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.teacher-drawer__status--expiring {
+  color: #c28a1a;
+}
+
+.teacher-drawer__status--expired {
+  color: var(--color-danger);
+}
+
+/* 通用区块标题：与教师详情页卡片标题同字号字重 */
+.teacher-drawer__section {
+  margin-top: 28rpx;
+}
+
+.teacher-drawer__section-title {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+  font-size: 28rpx;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.teacher-drawer__section-bar {
+  width: 6rpx;
+  height: 26rpx;
+  border-radius: 4rpx;
+  background: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.teacher-drawer__section-action {
+  margin-left: auto;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.teacher-drawer__section-action:active {
+  opacity: 0.6;
+}
+
+/* 卡片容器：与教师详情页 info-card / bio-card 一致 */
+.teacher-drawer__card {
+  padding: 28rpx;
+  background: var(--color-card);
+  border-radius: var(--radius-md);
+  border: 1rpx solid var(--color-line);
+}
+
+/* 键值行：与教师详情页 info-row 一致的 grid 布局 */
+.teacher-drawer__row {
+  display: grid;
+  grid-template-columns: 220rpx 1fr;
+  gap: 20rpx;
+  padding: 12rpx 0;
 }
 
 .teacher-drawer__dt {
   font-size: 24rpx;
   color: var(--color-muted);
+  line-height: 1.55;
 }
 
 .teacher-drawer__dd {
+  font-size: 24rpx;
+  color: var(--color-text);
+  line-height: 1.55;
+  word-break: break-word;
+  min-width: 0;
+}
+
+/* 3. 擅长领域：标签流式排列 */
+.teacher-drawer__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14rpx;
+}
+
+.teacher-drawer__chip {
+  padding: 8rpx 22rpx;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+/* 5. 个人简介：默认仅显示 2 行，超出隐藏，点击「查看全部」展开 */
+.teacher-drawer__bio-text {
+  display: block;
+  font-size: 24rpx;
+  line-height: 1.7;
+  color: var(--color-muted);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.teacher-drawer__bio-text--clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+/* 展开/收起按钮：与教师详情页 bio-toggle 完全一致 */
+.teacher-drawer__bio-toggle {
+  display: inline-block;
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+/* 6. 证书展示：与教师详情页 cert-preview 一致 */
+.teacher-drawer__cert-preview {
+  height: 520rpx;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #f7efe2, #fff);
+  border: 1rpx solid rgba(184, 154, 99, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.teacher-drawer__cert-preview:active {
+  opacity: 0.85;
+}
+
+.teacher-drawer__cert-image {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-base);
+}
+
+.teacher-drawer__cert-text {
+  font-size: 26rpx;
+  color: var(--color-gold);
+  font-weight: 600;
+}
+
+/* 7. 认证背书：与教师详情页 verify-note 一致 */
+.teacher-drawer__verify {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-top: 28rpx;
+  padding: 0 8rpx;
+}
+
+.teacher-drawer__verify-icon {
+  font-size: 28rpx;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.teacher-drawer__verify-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 24rpx;
+  color: var(--color-muted);
+  line-height: 1.5;
+}
+
+/* ===== Course drawer ===== */
+
+/* 课程总览：与教师详情页 profile-head 同构（左侧标识 + 右侧信息） */
+.course-drawer__hero {
+  display: grid;
+  grid-template-columns: 128rpx 1fr;
+  gap: 28rpx;
+  align-items: center;
+  padding: 8rpx 0 4rpx;
+}
+
+.course-drawer__hero-mark {
+  width: 128rpx;
+  height: 128rpx;
+  border-radius: 50%;
+  background: var(--color-primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.course-drawer__hero-mark text {
+  font-size: 52rpx;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.course-drawer__hero-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.course-drawer__hero-title {
+  font-size: 40rpx;
+  font-weight: 800;
+  color: var(--color-text);
+  line-height: 1.2;
+}
+
+.course-drawer__hero-sub {
+  margin-top: 12rpx;
+  font-size: 26rpx;
+  font-weight: 700;
+  color: var(--color-gold);
+}
+
+/* 每门课程一个区块：标题与教师详情页卡片标题同字号字重 */
+.course-drawer__section {
+  margin-top: 28rpx;
+}
+
+.course-drawer__section-title {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+  font-size: 28rpx;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.course-drawer__section-bar {
+  width: 6rpx;
+  height: 26rpx;
+  border-radius: 4rpx;
+  background: var(--color-primary);
+  flex-shrink: 0;
+}
+
+/* 卡片容器：与教师详情页 info-card / bio-card 一致 */
+.course-drawer__card {
+  padding: 28rpx;
+  background: var(--color-card);
+  border-radius: var(--radius-md);
+  border: 1rpx solid var(--color-line);
+}
+
+/* 键值行：与教师详情页 info-row 一致的 grid 布局；值较长时改为上下堆叠 */
+.course-drawer__row {
+  display: grid;
+  grid-template-columns: 160rpx 1fr;
+  gap: 20rpx;
+  padding: 12rpx 0;
+}
+
+.course-drawer__row--block {
+  grid-template-columns: 1fr;
+  gap: 10rpx;
+}
+
+.course-drawer__row--last {
+  padding-bottom: 0;
+}
+
+.course-drawer__dt {
+  font-size: 24rpx;
+  color: var(--color-muted);
+  line-height: 1.55;
+}
+
+.course-drawer__dd {
+  font-size: 24rpx;
+  color: var(--color-text);
+  line-height: 1.7;
+  word-break: break-word;
+  min-width: 0;
+  white-space: pre-wrap;
+}
+
+/* 授课教师：可点击的头像 + 姓名，点击复用教师详情抽屉 */
+.course-drawer__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14rpx;
+  align-items: center;
+}
+
+.course-drawer__teacher {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 8rpx 20rpx 8rpx 8rpx;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-light);
+  transition: opacity 0.2s ease;
+}
+
+.course-drawer__teacher:active {
+  opacity: 0.6;
+}
+
+.course-drawer__teacher-avatar {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.course-drawer__teacher-avatar--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary);
+}
+
+.course-drawer__teacher-avatar--placeholder text {
+  font-size: 22rpx;
+  font-weight: 700;
+  color: #fff;
+}
+
+.course-drawer__teacher-name {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+/* 适合人群：标签流式排列 */
+.course-drawer__chip {
+  padding: 8rpx 22rpx;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+/* 学习目标：逐条列出，圆点引导 */
+.course-drawer__goals {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.course-drawer__goal {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+}
+
+.course-drawer__goal-dot {
+  width: 10rpx;
+  height: 10rpx;
+  margin-top: 14rpx;
+  border-radius: 50%;
+  background: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.course-drawer__goal-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 24rpx;
+  color: var(--color-text);
+  line-height: 1.7;
+  word-break: break-word;
+}
+
+/* 空态：与教师详情页 loading-state 同一语气 */
+.course-drawer__empty {
+  margin-top: 28rpx;
+  padding: 60rpx 0;
+  text-align: center;
+}
+
+.course-drawer__empty-text {
+  display: block;
   font-size: 26rpx;
   font-weight: 600;
   color: var(--color-text);
+}
+
+.course-drawer__empty-hint {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  color: var(--color-muted);
+}
+
+/* 认证背书：与教师详情页 verify-note 一致 */
+.course-drawer__verify {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-top: 28rpx;
+  padding: 0 8rpx;
+}
+
+.course-drawer__verify-icon {
+  font-size: 28rpx;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.course-drawer__verify-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 24rpx;
+  color: var(--color-muted);
+  line-height: 1.5;
 }

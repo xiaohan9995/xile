@@ -246,21 +246,101 @@ button {
   font-size: 13px;
 }
 
+.page-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.refresh-btn {
+  height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 13px;
+  background: #fff;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease, color .18s ease;
+}
+
+.refresh-btn:hover {
+  color: var(--brand-green);
+  border-color: var(--brand-green);
+  transform: translateY(-1px);
+  box-shadow: 0 7px 16px rgba(32,57,42,.12);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.refresh-btn .refresh-icon {
+  display: inline-block;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.refresh-btn.is-spinning .refresh-icon {
+  animation: refresh-spin .8s linear infinite;
+}
+
+@keyframes refresh-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ── Unified buttons ───────────────────────────────────────────────
+   Two tiers share the same design language:
+   · Modal/decision actions (40px): .primary-btn / .sync-btn / .danger-btn / .warn-btn
+   · Table row actions (30px):     .table-action / .danger-action
+   Keep semantic colors consistent: green = confirm, neutral = cancel,
+   red = danger/reject, amber = warn/return. */
+
 .sync-btn,
-.primary-btn {
+.primary-btn,
+.danger-btn,
+.warn-btn {
   height: 40px;
   padding: 0 18px;
   border: 0;
   border-radius: 13px;
-  background: var(--brand-green-light);
-  color: var(--brand-green);
   font-size: 13px;
   font-weight: 800;
+}
+
+.sync-btn {
+  background: var(--brand-green-light);
+  color: var(--brand-green);
 }
 
 .primary-btn {
   background: var(--brand-green);
   color: #fff;
+}
+
+.danger-btn {
+  background: var(--danger);
+  color: #fff;
+}
+
+.danger-btn:hover {
+  background: #e03e3e;
+}
+
+.warn-btn {
+  background: var(--brand-gold);
+  color: #fff;
+}
+
+.warn-btn:hover {
+  background: #6e5220;
 }
 
 .kpi-grid {
@@ -686,10 +766,10 @@ button {
   min-width: 52px;
   margin-left: 8px;
   padding: 0 12px;
-  border: 1px solid #f0d4d1;
+  border: 0;
   border-radius: 10px;
-  background: #fffafa;
-  color: var(--danger);
+  background: var(--danger);
+  color: #fff;
   font-size: 12px;
   font-weight: 800;
   line-height: 28px;
@@ -697,9 +777,8 @@ button {
 }
 
 .danger-action:hover {
-  border-color: var(--danger);
-  background: var(--danger-light);
-  box-shadow: 0 5px 12px rgba(181, 76, 76, 0.12);
+  background: #e03e3e;
+  box-shadow: 0 5px 12px rgba(181, 76, 76, 0.18);
 }
 
 .table-action {
@@ -1354,8 +1433,8 @@ textarea:focus {
 .panel { padding:24px; }
 .data-table th { background:#f5f7f4; }
 .data-table tbody tr:hover td, .roster-table tbody tr:hover td { background:#f2f6f1; }
-.primary-btn, .sync-btn, .table-action, .danger-action, .approve, .reject { transition:transform .18s ease, box-shadow .18s ease, background .18s ease; }
-.primary-btn:hover, .sync-btn:hover, .table-action:hover, .danger-action:hover, .approve:hover, .reject:hover { transform:translateY(-1px); box-shadow:0 7px 16px rgba(32,57,42,.12); }
+.primary-btn, .sync-btn, .danger-btn, .warn-btn, .table-action, .danger-action { transition:transform .18s ease, box-shadow .18s ease, background .18s ease; }
+.primary-btn:hover, .sync-btn:hover, .danger-btn:hover, .warn-btn:hover, .table-action:hover, .danger-action:hover { transform:translateY(-1px); box-shadow:0 7px 16px rgba(32,57,42,.12); }
 .workflow-stepper { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin:0 0 22px; }
 .workflow-step { min-height:72px; padding:12px 14px; border:1px solid var(--line-strong); border-radius:14px; background:var(--surface-soft); }
 .workflow-step b, .workflow-step span { display:block; }

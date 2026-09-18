@@ -5,7 +5,12 @@
         <h1>年审管理</h1>
         <p>查看教师本期提交的材料，并在详情中一键完成通过、驳回或退回补充。</p>
       </div>
-      <button v-if="selected" class="sync-btn" @click="clearSelection">返回队列</button>
+      <div class="page-head-actions">
+        <button v-if="selected" class="sync-btn" @click="clearSelection">返回队列</button>
+        <button class="refresh-btn" :class="{ 'is-spinning': refreshing }" :disabled="refreshing" @click="refresh">
+          <span class="refresh-icon">↻</span>{{ refreshing ? '刷新中…' : '刷新' }}
+        </button>
+      </div>
     </div>
 
     <section v-if="!selected && pendingCount === 0 && activeTab === 'pending'" class="empty-review-card">
@@ -138,9 +143,9 @@
           <p class="form-hint">处理后将同步更新教师端结果；通过会为教师续期，驳回/退回补充需填写原因以便教师补充材料重新提交。</p>
           <textarea v-model="decisionComment" placeholder="审核意见或驳回 / 退回补充的原因（驳回与退回补充时必填）"></textarea>
           <div class="decision-actions">
-            <button class="approve-btn" :disabled="deciding" @click="applyDecision('approved')">通过</button>
-            <button class="reject-btn" :disabled="deciding" @click="applyDecision('rejected', true)">驳回</button>
-            <button class="return-btn" :disabled="deciding" @click="applyDecision('rejected', true, true)">退回补充</button>
+            <button class="primary-btn" :disabled="deciding" @click="applyDecision('approved')">通过</button>
+            <button class="danger-btn" :disabled="deciding" @click="applyDecision('rejected', true)">驳回</button>
+            <button class="warn-btn" :disabled="deciding" @click="applyDecision('rejected', true, true)">退回补充</button>
           </div>
         </div>
         <div v-else class="reviewer-comment">
@@ -193,6 +198,12 @@ async function loadReviews() {
   } catch (error) {
     toast('年审队列加载失败', 'error')
   }
+}
+
+const refreshing = ref(false)
+async function refresh() {
+  refreshing.value = true
+  try { await loadReviews() } finally { refreshing.value = false }
 }
 
 const pendingCount = computed(() => reviews.value.filter((r) => tabOf(r.status) === 'pending').length)
@@ -308,23 +319,10 @@ async function applyDecision(status, requireComment = false, isReturn = false) {
   gap: 10px;
   flex-wrap: wrap;
 }
-.decision-actions button {
-  min-height: 38px;
-  padding: 0 20px;
-  border: 0;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  color: #fff;
-}
 .decision-actions button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
-.approve-btn { background: var(--brand-green, #4a7c59); }
-.reject-btn { background: #b3543f; }
-.return-btn { background: #9c7a1a; }
 .teaching-records { margin-top: 18px; border-top: 1px solid #eee; padding-top: 14px; }
 .teaching-records h3 { margin: 0 0 10px; font-size: 15px; }
 .record-row { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }

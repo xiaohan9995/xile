@@ -5,7 +5,12 @@
         <h1>权限管理</h1>
         <p>管理系统管理员账号与小程序用户角色</p>
       </div>
-      <button class="primary-btn" @click="showInvite = true">＋ 邀请管理员</button>
+      <div class="page-head-actions">
+        <button class="refresh-btn" :class="{ 'is-spinning': refreshing }" :disabled="refreshing" @click="refresh">
+          <span class="refresh-icon">↻</span>{{ refreshing ? '刷新中…' : '刷新' }}
+        </button>
+        <button class="primary-btn" @click="showInvite = true">＋ 邀请管理员</button>
+      </div>
     </div>
 
     <!-- Admin accounts -->
@@ -250,6 +255,12 @@ async function loadTeachers() {
     const teachers = await fetchAdminTeachers()
     teacherOptions.value = teachers.map(t => ({ id: t.id, name: t.name, teacherNo: t.certNo }))
   } catch (e) { /* fallback */ }
+}
+
+const refreshing = ref(false)
+async function refresh() {
+  refreshing.value = true
+  try { await Promise.all([loadMembers(), loadUsers(), loadTeachers()]) } finally { refreshing.value = false }
 }
 
 function openRoleModal(user) {
