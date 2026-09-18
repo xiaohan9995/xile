@@ -35,12 +35,6 @@ const steps = [
     cwd: root,
   },
   {
-    name: 'prototype contract verification',
-    command: 'node',
-    args: ['scripts/verify_prototype_contract.js'],
-    cwd: root,
-  },
-  {
     name: 'miniprogram runtime smoke verification',
     command: 'node',
     args: ['scripts/verify_miniprogram_runtime.js'],

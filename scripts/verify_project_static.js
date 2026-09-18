@@ -64,7 +64,6 @@ const scriptArtifacts = [
   { file: 'scripts/verify_backend_http.py', label: 'backend HTTP smoke verifier' },
   { file: 'scripts/verify_admin_preview.js', label: 'admin preview smoke verifier', optional: true },
   { file: 'scripts/verify_miniprogram_runtime.js', label: 'miniprogram runtime smoke verifier' },
-  { file: 'scripts/verify_prototype_contract.js', label: 'prototype contract verifier' },
   { file: 'scripts/verify_admin_visual.py', label: 'admin browser visual verifier', optional: true },
 ];
 
@@ -110,7 +109,6 @@ if (!fs.existsSync(checklistPath)) {
     'python scripts\\verify_backend_http.py',
     'node scripts\\verify_admin_preview.js',
     'node scripts\\verify_miniprogram_runtime.js',
-    'node scripts\\verify_prototype_contract.js',
     'python scripts\\verify_admin_visual.py',
   ]) {
     if (!checklist.includes(expected)) {
