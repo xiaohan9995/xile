@@ -937,7 +937,7 @@ button {
 }
 
 .admin-modal.wide {
-  width: 620px;
+  width: min(760px, calc(100vw - 32px));
 }
 
 .modal-head {

@@ -47,7 +47,6 @@
             <td>{{ teacher.expiryDate }}</td>
             <td class="table-actions">
               <button class="table-action" @click="openEdit(teacher)">编辑</button>
-              <button class="table-action table-action--primary" @click="generateLinkCode(teacher)">生成关联码</button>
               <button class="table-action" @click="openAccount(teacher)">设置密码</button>
               <button class="danger-action" @click="handleDelete(teacher)">删除</button>
             </td>
@@ -212,29 +211,13 @@
         </div>
       </form>
     </div>
-    <!-- Link Code Modal -->
-    <div v-if="showLinkCode" class="modal-backdrop" @click.self="showLinkCode = false">
-      <div class="admin-modal link-code-modal">
-        <div class="modal-head">
-          <h2>关联教师身份 — {{ linkCodeDraft.name }}</h2>
-          <button type="button" @click="showLinkCode = false">×</button>
-        </div>
-        <p class="account-hint">请让教师先在小程序使用微信登录，再在「我的 → 关联教师身份」中输入此码。生成新码会使旧码失效。</p>
-        <div class="link-code-value">{{ linkCodeDraft.code }}</div>
-        <p class="link-code-expiry">有效期至：{{ linkCodeDraft.expiresAt }}</p>
-        <div class="modal-actions">
-          <button type="button" class="sync-btn" @click="copyLinkCode">复制关联码</button>
-          <button type="button" class="primary-btn" @click="showLinkCode = false">完成</button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import ImagePreview from '../components/ImagePreview.vue'
-import { fetchAdminTeachers, createTeacher, updateTeacher, deleteTeacher, createTeacherAccount, createTeacherLinkCode, uploadAdminAsset } from '../api/adminData'
+import { fetchAdminTeachers, createTeacher, updateTeacher, deleteTeacher, createTeacherAccount, uploadAdminAsset } from '../api/adminData'
 import { useToast } from '../composables/useToast'
 
 const { show: toast } = useToast()
@@ -393,23 +376,7 @@ async function handleDelete(teacher) {
 }
 
 const showAccount = ref(false)
-const showLinkCode = ref(false)
 const accountDraft = reactive({ teacherId: null, name: '' })
-const linkCodeDraft = reactive({ name: '', code: '', expiresAt: '' })
-
-function formatLinkCodeExpiry(value) {
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return ''
-  return new Intl.DateTimeFormat('zh-CN', {
-    timeZone: 'Asia/Shanghai',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  }).format(date).replace(/\//g, '-')
-}
 
 function openAccount(teacher) {
   accountDraft.teacherId = teacher.id
@@ -425,27 +392,6 @@ async function handleAssignAccount() {
   } catch (e) {
     const message = e?.response?.data?.error || e?.message || '分配失败，请重试'
     toast(message, 'info')
-  }
-}
-
-async function generateLinkCode(teacher) {
-  try {
-    const result = await createTeacherLinkCode(teacher.id)
-    linkCodeDraft.name = teacher.name
-    linkCodeDraft.code = result.code
-    linkCodeDraft.expiresAt = formatLinkCodeExpiry(result.expiresAt)
-    showLinkCode.value = true
-  } catch (e) {
-    toast(e?.response?.data?.error || e?.message || '关联码生成失败，请重试', 'info')
-  }
-}
-
-async function copyLinkCode() {
-  try {
-    await navigator.clipboard.writeText(linkCodeDraft.code)
-    toast('关联码已复制')
-  } catch (e) {
-    toast(`请手动复制：${linkCodeDraft.code}`, 'info')
   }
 }
 
@@ -489,30 +435,6 @@ async function uploadTeacherAsset(event, assetType, targetField) {
   font-size: 12px;
   line-height: 1.6;
   color: #8a9386;
-}
-
-.table-action--primary {
-  color: #356c4e;
-  font-weight: 600;
-}
-
-.link-code-value {
-  margin: 22px 0 8px;
-  padding: 18px;
-  border-radius: 10px;
-  background: #f2f7f2;
-  color: #284b36;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 30px;
-  font-weight: 700;
-  letter-spacing: 4px;
-  text-align: center;
-}
-
-.link-code-expiry {
-  color: #8a9386;
-  font-size: 12px;
-  text-align: center;
 }
 
 .asset-preview {

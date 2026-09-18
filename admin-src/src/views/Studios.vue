@@ -26,6 +26,7 @@
         <thead>
           <tr>
             <th>工作室</th>
+            <th>主理教师</th>
             <th>城市</th>
             <th>地址</th>
             <th>联系方式</th>
@@ -35,7 +36,7 @@
         </thead>
         <tbody>
           <tr v-if="filteredList.length === 0">
-            <td colspan="6" class="empty-row">{{ hasFilters ? '无匹配结果，请调整筛选条件' : '暂无工作室数据' }}</td>
+            <td colspan="7" class="empty-row">{{ hasFilters ? '无匹配结果，请调整筛选条件' : '暂无工作室数据' }}</td>
           </tr>
           <tr v-for="studio in pagedList" :key="studio.id">
             <td>
@@ -43,10 +44,11 @@
                 <ImagePreview :src="studio.image" :alt="studio.name" image-class="studio-cover" />
                 <div>
                   <strong>{{ studio.name }}</strong>
-                  <span>{{ Array.isArray(studio.tags) ? studio.tags.join(', ') : studio.tags }}</span>
+                  <span class="studio-cell__tags">{{ Array.isArray(studio.tags) ? studio.tags.join('、') : studio.tags }}</span>
                 </div>
               </div>
             </td>
+            <td>{{ ownerTeachersText(studio) }}</td>
             <td>{{ studio.city }}</td>
             <td>{{ studio.address }}</td>
             <td>{{ studio.contact }}</td>
@@ -107,7 +109,7 @@
           </label>
           <label>
             地址
-            <input v-model="createDraft.address" readonly placeholder="请通过地图选点" />
+            <input v-model="createDraft.address" placeholder="可手动输入，或通过地图选点自动填写" />
           </label>
           <button type="button" class="sync-btn map-pick-btn" @click="requestMapPicker(createDraft)">地图选点并自动填写地址</button>
         </div>
@@ -137,10 +139,6 @@
         <label>
           课程介绍
           <textarea v-model="createDraft.courseIntro" placeholder="介绍工作室开设的课程（最多500字）"></textarea>
-        </label>
-        <label>
-          简介
-          <input v-model="createDraft.intro" placeholder="请输入工作室简介" />
         </label>
         <label>
           工作室图片（最多 9 张，第一张为封面）
@@ -204,7 +202,7 @@
           </label>
           <label>
             地址
-            <input v-model="editDraft.address" readonly placeholder="请通过地图选点" />
+            <input v-model="editDraft.address" placeholder="可手动输入，或通过地图选点自动填写" />
           </label>
           <button type="button" class="sync-btn map-pick-btn" @click="requestMapPicker(editDraft)">重新地图选点</button>
         </div>
@@ -234,10 +232,6 @@
         <label>
           课程介绍
           <textarea v-model="editDraft.courseIntro" placeholder="介绍工作室开设的课程（最多500字）"></textarea>
-        </label>
-        <label>
-          简介
-          <input v-model="editDraft.intro" placeholder="工作室简介" />
         </label>
         <label>
           工作室图片（最多 9 张，第一张为封面）
@@ -288,27 +282,46 @@
 
     <!-- Approval Modal -->
     <div v-if="showApproval" class="modal-backdrop" @click.self="closeApproval">
-      <div class="admin-modal wide">
+      <div class="admin-modal approval-modal">
         <div class="modal-head">
           <h2>审批工作室提交 — {{ approvalStudio && approvalStudio.name }}</h2>
           <button type="button" @click="closeApproval">×</button>
         </div>
         <div class="approval-diff">
-          <div class="approval-col">
-            <h3>当前已公开</h3>
-            <DiffField label="地址" :value="approvalStudio && approvalStudio.address" />
-            <DiffField label="联系方式" :value="approvalStudio && approvalStudio.contact" />
-            <DiffField label="标签" :value="approvalStudio && approvalStudio.tags && approvalStudio.tags.join('、')" />
-            <DiffField label="课程介绍" :value="approvalStudio && approvalStudio.courseIntro" />
-            <DiffField label="图片" :count="approvalStudio && approvalStudio.images ? approvalStudio.images.length : 0" />
+          <div class="approval-diff__head">
+            <span class="approval-diff__field-col">字段</span>
+            <span class="approval-diff__cell-head">当前已公开</span>
+            <span class="approval-diff__cell-head">待审批草稿</span>
           </div>
-          <div class="approval-col">
-            <h3>待审批草稿</h3>
-            <DiffField label="地址" :value="approvalPending && approvalPending.address" :changed="pendingChanged('address', 'address')" />
-            <DiffField label="联系方式" :value="approvalPending && approvalPending.contact" :changed="pendingChanged('contact', 'contact')" />
-            <DiffField label="标签" :value="approvalPending && approvalPending.tags && approvalPending.tags.join('、')" :changed="pendingChanged('tags', 'tagsText')" />
-            <DiffField label="课程介绍" :value="approvalPending && approvalPending.courseIntro" :changed="pendingChanged('courseIntro', 'courseIntro')" />
-            <DiffField label="图片" :count="approvalPending && approvalPending.images ? approvalPending.images.length : 0" :changed="pendingChanged('images', 'imagesCount')" />
+          <div class="approval-diff__row">
+            <span class="approval-diff__field-col">地址</span>
+            <div class="approval-diff__cell">{{ approvalStudio && approvalStudio.address || '—' }}</div>
+            <div class="approval-diff__cell" :class="{ 'is-changed': pendingChanged('address', 'address') }">{{ approvalPending && approvalPending.address || '—' }}</div>
+          </div>
+          <div class="approval-diff__row">
+            <span class="approval-diff__field-col">地图位置</span>
+            <div class="approval-diff__cell">{{ coordText(approvalStudio) }}</div>
+            <div class="approval-diff__cell" :class="{ 'is-changed': pendingChanged('coordinates', 'coordinates') }">{{ pendingCoordText(approvalPending) }}</div>
+          </div>
+          <div class="approval-diff__row">
+            <span class="approval-diff__field-col">联系方式</span>
+            <div class="approval-diff__cell">{{ approvalStudio && approvalStudio.contact || '—' }}</div>
+            <div class="approval-diff__cell" :class="{ 'is-changed': pendingChanged('contact', 'contact') }">{{ approvalPending && approvalPending.contact || '—' }}</div>
+          </div>
+          <div class="approval-diff__row">
+            <span class="approval-diff__field-col">标签</span>
+            <div class="approval-diff__cell">{{ approvalStudio && approvalStudio.tags && approvalStudio.tags.join('、') || '—' }}</div>
+            <div class="approval-diff__cell" :class="{ 'is-changed': pendingChanged('tags', 'tagsText') }">{{ approvalPending && approvalPending.tags && approvalPending.tags.join('、') || '—' }}</div>
+          </div>
+          <div class="approval-diff__row">
+            <span class="approval-diff__field-col">课程介绍</span>
+            <div class="approval-diff__cell">{{ approvalStudio && approvalStudio.courseIntro || '—' }}</div>
+            <div class="approval-diff__cell" :class="{ 'is-changed': pendingChanged('courseIntro', 'courseIntro') }">{{ approvalPending && approvalPending.courseIntro || '—' }}</div>
+          </div>
+          <div class="approval-diff__row">
+            <span class="approval-diff__field-col">图片</span>
+            <div class="approval-diff__cell">{{ approvalStudio && approvalStudio.images ? approvalStudio.images.length + ' 张' : '—' }}</div>
+            <div class="approval-diff__cell" :class="{ 'is-changed': pendingChanged('images', 'imagesCount') }">{{ approvalPending && approvalPending.images ? approvalPending.images.length + ' 张' : '—' }}</div>
           </div>
         </div>
         <label class="reject-reason">
@@ -328,7 +341,6 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import ImagePreview from '../components/ImagePreview.vue'
-import DiffField from './StudioDiffField.vue'
 import { fetchAdminStudios, fetchAdminTeachers, fetchMapConfig, searchMapPlaces, reverseGeocodeMapLocation, createStudio, updateStudio, deleteStudio, approveStudio, rejectStudio, uploadAdminAsset } from '../api/adminData'
 import { useToast } from '../composables/useToast'
 import Pagination from '../components/Pagination.vue'
@@ -502,7 +514,6 @@ const createDraft = reactive({
   contact: '',
   tags: [],
   address: '',
-  intro: '',
   courseIntro: '',
   images: [],
   ownerTeacherIds: [],
@@ -519,7 +530,6 @@ const editDraft = reactive({
   contact: '',
   tags: [],
   address: '',
-  intro: '',
   courseIntro: '',
   images: [],
   ownerTeacherIds: [],
@@ -709,6 +719,12 @@ const filteredList = computed(() => {
 
 const hasFilters = computed(() => Object.values(filters.value).some((value) => value && value.trim()))
 
+function ownerTeachersText(studio) {
+  const teachers = Array.isArray(studio.ownerTeachers) ? studio.ownerTeachers : []
+  if (teachers.length) return teachers.map((t) => t.name).join('、')
+  return studio.ownerTeacherName || '—'
+}
+
 function statusLabel(studio) {
   if (studio.status === 'hidden') return '已隐藏'
   if (studio.status === 'pending') return '待审批'
@@ -737,7 +753,6 @@ function openCreate() {
   createDraft.contact = ''
   createDraft.tags = []
   createDraft.address = ''
-  createDraft.intro = ''
   createDraft.courseIntro = ''
   createDraft.images = []
   createDraft.ownerTeacherIds = []
@@ -757,7 +772,6 @@ function openEdit(studio) {
   editDraft.contact = studio.contact || ''
   editDraft.tags = Array.isArray(studio.tags) ? studio.tags.slice() : String(studio.tags || '').split(',').map((t) => t.trim()).filter(Boolean)
   editDraft.address = studio.address || ''
-  editDraft.intro = studio.intro || ''
   editDraft.courseIntro = studio.courseIntro || ''
   editDraft.images = Array.isArray(studio.images) ? studio.images.slice() : []
   editDraft.ownerTeacherIds = Array.isArray(studio.ownerTeachers) ? studio.ownerTeachers.map((t) => t.id) : []
@@ -770,8 +784,8 @@ function openEdit(studio) {
 }
 
 async function handleCreate() {
-  if (!createDraft.latitude || !createDraft.longitude || !createDraft.address) {
-    toast('请先通过地图选点填写工作室地址', 'error')
+  if (!createDraft.address.trim()) {
+    toast('请填写工作室地址', 'error')
     return
   }
   const tagsError = validateTags(createDraft.tags)
@@ -790,7 +804,6 @@ async function handleCreate() {
     contact: createDraft.contact,
     tags: createDraft.tags.join(','),
     address: createDraft.address,
-    intro: createDraft.intro,
     courseIntro: createDraft.courseIntro,
     images: createDraft.images,
     ownerTeacherIds: createDraft.ownerTeacherIds,
@@ -804,8 +817,8 @@ async function handleCreate() {
 }
 
 async function handleUpdate() {
-  if (!editDraft.latitude || !editDraft.longitude || !editDraft.address) {
-    toast('请先通过地图选点填写工作室地址', 'error')
+  if (!editDraft.address.trim()) {
+    toast('请填写工作室地址', 'error')
     return
   }
   const tagsError = validateTags(editDraft.tags)
@@ -824,7 +837,6 @@ async function handleUpdate() {
     contact: editDraft.contact,
     tags: editDraft.tags.join(','),
     address: editDraft.address,
-    intro: editDraft.intro,
     courseIntro: editDraft.courseIntro,
     images: editDraft.images,
     ownerTeacherIds: editDraft.ownerTeacherIds,
@@ -846,11 +858,27 @@ async function handleDelete(studio) {
 
 const approvalPending = computed(() => (approvalStudio.value && approvalStudio.value.pending) || null)
 
+function coordText(item) {
+  if (!item) return '—'
+  const lat = Number(item.latitude)
+  const lng = Number(item.longitude)
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return '未设置'
+  return `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+}
+
+function pendingCoordText(pending) {
+  if (!pending) return '—'
+  return coordText({ latitude: pending.latitude, longitude: pending.longitude })
+}
+
 function pendingChanged(draftKey, currentKey) {
   const studio = approvalStudio.value
   const pending = approvalPending.value
   if (!studio || !pending) return false
   if (draftKey === 'images') return pending.images.length !== (studio.images ? studio.images.length : 0)
+  if (draftKey === 'coordinates') {
+    return Number(pending.latitude || 0) !== Number(studio.latitude || 0) || Number(pending.longitude || 0) !== Number(studio.longitude || 0)
+  }
   if (currentKey === 'tagsText') return (pending.tags || []).join('、') !== (studio.tags || []).join('、')
   return (pending[draftKey] || '') !== (studio[currentKey] || '')
 }
@@ -1191,24 +1219,87 @@ function removeImage(draft, index) {
   color: #8a948d;
 }
 
-.approval-diff {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 16px;
+.studio-cell__tags {
+  display: block;
+  color: #8a948d;
+  font-size: 12px;
+  margin-top: 2px;
 }
 
-.approval-col {
-  padding: 12px;
+.approval-diff {
+  margin-bottom: 16px;
   border: 1px solid #e3e9e3;
   border-radius: 8px;
-  background: #fafcfa;
+  overflow: hidden;
 }
 
-.approval-col h3 {
-  margin: 0 0 8px;
-  font-size: 14px;
+.approval-modal {
+  width: min(960px, calc(100vw - 32px));
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+}
+
+.approval-diff__head,
+.approval-diff__row {
+  display: grid;
+  grid-template-columns: 96px 1fr 1fr;
+  align-items: stretch;
+}
+
+.approval-diff__head {
+  background: #f0f5f1;
+  border-bottom: 1px solid #e3e9e3;
+}
+
+.approval-diff__field-col,
+.approval-diff__cell-head,
+.approval-diff__cell {
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.approval-diff__field-col {
+  color: #8a948d;
+  font-weight: 600;
+  border-right: 1px solid #e3e9e3;
+  background: #fafcfa;
+  display: flex;
+  align-items: center;
+}
+
+.approval-diff__cell-head {
   color: #2f5140;
+  font-weight: 600;
+  text-align: left;
+}
+
+.approval-diff__cell-head + .approval-diff__cell-head {
+  border-left: 1px solid #e3e9e3;
+}
+
+.approval-diff__row {
+  border-bottom: 1px solid #eef2ee;
+}
+
+.approval-diff__row:last-child {
+  border-bottom: none;
+}
+
+.approval-diff__cell {
+  color: #1f2521;
+  word-break: break-all;
+  background: #fff;
+}
+
+.approval-diff__cell + .approval-diff__cell {
+  border-left: 1px solid #eef2ee;
+}
+
+.approval-diff__cell.is-changed {
+  color: #9c7a1a;
+  font-weight: 600;
+  background: #fdf8e8;
 }
 
 .reject-reason {

@@ -3,6 +3,18 @@ const auth = require('../../utils/auth');
 
 const app = getApp();
 
+// 后端下发的头像可能是 API 相对路径（"/uploads/avatars/..."），<image> 无法解析，
+// 需要补上 API 域名；微信头像（qlogo.cn）走后端代理，避免小程序域名白名单问题。
+const displayAvatarUrl = (url) => {
+  if (!url) return '';
+  const baseUrl = (app && app.globalData && app.globalData.apiBaseUrl) || '';
+  if (/^https:\/\/(?:thirdwx|wx)\.qlogo\.cn\//i.test(url)) {
+    return baseUrl ? `${baseUrl}/api/mp/auth/avatar-proxy?url=${encodeURIComponent(url)}` : url;
+  }
+  if (/^https?:\/\//i.test(url)) return url;
+  return baseUrl ? `${baseUrl}${url}` : url;
+};
+
 Page({
   data: {
     statusBarHeight: 20,
@@ -11,6 +23,8 @@ Page({
     error: '',
     mine: null, // { status, rejectReason } when the viewer is a lead teacher
     courseDrawerVisible: false,
+    teacherDrawerVisible: false,
+    selectedTeacher: null,
   },
 
   onLoad(options) {
@@ -38,6 +52,9 @@ Page({
       const ownerTeachers = (Array.isArray(studio.ownerTeachers) && studio.ownerTeachers.length)
         ? studio.ownerTeachers
         : (studio.ownerTeacherName ? [{ name: studio.ownerTeacherName, realName: studio.ownerTeacherRealName || '' }] : []);
+      ownerTeachers.forEach((teacher) => {
+        teacher.avatarUrl = displayAvatarUrl(teacher.avatarUrl);
+      });
       this.setData({
         studio: {
           ...studio,
@@ -98,6 +115,17 @@ Page({
 
   closeCourseDrawer() {
     this.setData({ courseDrawerVisible: false });
+  },
+
+  openTeacherDrawer(e) {
+    const id = e.currentTarget.dataset.id;
+    const teacher = (this.data.studio.ownerTeachers || []).find((t) => String(t.id) === String(id));
+    if (!teacher) return;
+    this.setData({ selectedTeacher: teacher, teacherDrawerVisible: true });
+  },
+
+  closeTeacherDrawer() {
+    this.setData({ teacherDrawerVisible: false });
   },
 
   noop() {},

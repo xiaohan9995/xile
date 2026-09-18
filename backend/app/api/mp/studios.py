@@ -19,7 +19,7 @@ MAX_CONTACT_LENGTH = 64
 # order, city/district/coordinates/intro stay admin-owned. The editable set is:
 # 轮播图片 (images)、标签 (tags)、地址 (address)、课程介绍 (courseIntro)、联系方式 (contact).
 _EDITABLE_DRAFT_KEYS = {
-    "address", "contact", "tags", "courseIntro", "images",
+    "address", "contact", "tags", "courseIntro", "images", "latitude", "longitude",
 }
 
 
@@ -58,6 +58,8 @@ def _draft_to_fields(draft):
         "tags": [t.strip() for t in (draft.get("tags") or "").split(",") if t.strip()],
         "courseIntro": draft.get("courseIntro") or "",
         "images": images,
+        "latitude": draft.get("latitude"),
+        "longitude": draft.get("longitude"),
     }
 
 
@@ -76,6 +78,8 @@ def _my_studio_payload(studio):
             "tags": studio.tags,
             "courseIntro": studio.course_intro,
             "images": studio.images,
+            "latitude": studio.latitude,
+            "longitude": studio.longitude,
         })
     owner_teachers = [t for t in studio.teachers if t.status != "hidden"]
     return {
@@ -148,6 +152,19 @@ def submit_studio(studio_id):
         if course_intro and len(course_intro) > MAX_COURSE_INTRO_LENGTH:
             return {"error": f"课程介绍最多 {MAX_COURSE_INTRO_LENGTH} 字"}, 400
         draft["courseIntro"] = course_intro
+    # 经纬度随地址一起提交：教师用地图选点后，坐标与地址保持一致。仅接受
+    # 成对且有效的数字，单独提供其中一个时忽略。
+    if "latitude" in payload and "longitude" in payload:
+        lat = payload.get("latitude")
+        lng = payload.get("longitude")
+        try:
+            lat_val = float(lat) if lat not in (None, "") else None
+            lng_val = float(lng) if lng not in (None, "") else None
+        except (TypeError, ValueError):
+            lat_val = lng_val = None
+        if lat_val is not None and lng_val is not None:
+            draft["latitude"] = lat_val
+            draft["longitude"] = lng_val
 
     # Merge with the existing draft so omitted keys keep their prior draft value.
     existing = {}

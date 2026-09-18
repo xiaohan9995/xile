@@ -19,10 +19,25 @@
       <view class="form-card__head"><text class="form-card__title">{{editing.name}}</text><view wx:if="{{!directEdit}}" class="form-card__close" bindtap="closeEditor">×</view></view>
       <text class="form-card__hint">名称、城市、主理教师由管理员设定，此处不可修改</text>
 
-      <input class="field" placeholder="详细地址" value="{{form.address}}" bindinput="input" data-field="address" />
-      <input class="field" placeholder="联系方式（可选）" value="{{form.contact}}" bindinput="input" data-field="contact" />
+      <view class="form-field">
+        <text class="form-field__label">详细地址</text>
+        <input class="field" placeholder="请输入工作室详细地址" value="{{form.address}}" bindinput="input" data-field="address" />
+      </view>
+      <view class="form-field">
+        <text class="form-field__label">地图位置</text>
+        <view class="location-row">
+          <view class="location-row__text">{{form.address || '尚未设置地图位置'}}</view>
+          <button class="btn-secondary location-row__btn" bindtap="chooseLocation">重新选点</button>
+        </view>
+        <text class="field-hint">选点后地图标记与地址保持一致，提交审批通过后生效</text>
+      </view>
+      <view class="form-field">
+        <text class="form-field__label">联系方式（可选）</text>
+        <input class="field" placeholder="请输入联系方式" value="{{form.contact}}" bindinput="input" data-field="contact" />
+      </view>
 
-      <view class="tag-section">
+      <view class="form-field">
+        <text class="form-field__label">标签</text>
         <view class="tag-list">
           <view wx:for="{{form.tags}}" wx:key="*this" class="tag-chip"><text>{{item}}</text><text class="tag-chip__remove" bindtap="removeTag" data-index="{{index}}">×</text></view>
         </view>
@@ -33,9 +48,13 @@
         <text class="field-hint">标签最多 {{maxTags}} 个，当前 {{form.tags.length}} 个</text>
       </view>
 
-      <textarea class="field field--area" placeholder="课程介绍（≤500字）" value="{{form.courseIntro}}" bindinput="input" data-field="courseIntro" maxlength="500" />
+      <view class="form-field">
+        <text class="form-field__label">课程介绍</text>
+        <textarea class="field field--area" placeholder="介绍工作室开设的课程（≤500字）" value="{{form.courseIntro}}" bindinput="input" data-field="courseIntro" maxlength="500" />
+      </view>
 
-      <view class="image-section">
+      <view class="form-field">
+        <text class="form-field__label">工作室图片</text>
         <view class="image-grid">
           <view wx:for="{{form.images}}" wx:key="*this" class="image-item"><image src="{{item}}" mode="aspectFill" /><view class="image-item__remove" bindtap="removeImage" data-index="{{index}}">×</view><text wx:if="{{index === 0}}" class="image-item__cover">封面</text></view>
           <view wx:if="{{form.images.length < maxImages}}" class="image-add" bindtap="chooseImages"><text class="image-add__plus">＋</text><text class="image-add__label">添加图片</text></view>

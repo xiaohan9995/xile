@@ -266,10 +266,6 @@ export async function createTeacherAccount(data) {
   return api.post('/teacher-accounts', data)
 }
 
-export async function createTeacherLinkCode(teacherId) {
-  return api.post(`/teachers/${teacherId}/link-code`)
-}
-
 export async function uploadAdminAsset(file, assetType) {
   const formData = new FormData()
   formData.append('file', file)

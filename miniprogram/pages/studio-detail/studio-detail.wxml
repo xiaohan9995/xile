@@ -28,14 +28,16 @@
       <text class="info-location">{{studio.city}} · {{studio.district}}</text>
 
       <!-- Lead Teachers -->
-      <view class="lead-teacher" wx:for="{{studio.ownerTeachers}}" wx:key="id">
-        <view class="lead-avatar-wrap">
-          <text class="lead-icon">👤</text>
-        </view>
-        <view class="lead-info">
-          <text class="lead-label" wx:if="{{index === 0}}">主理教师</text>
-          <text class="lead-name">{{item.name || item.xileName}}</text>
-          <text class="lead-real-name" wx:if="{{item.realName && item.realName !== item.name}}">{{item.realName}}</text>
+      <view class="lead-teachers">
+        <text class="lead-label">主理教师</text>
+        <view class="lead-teacher-row">
+          <view class="lead-teacher" wx:for="{{studio.ownerTeachers}}" wx:key="id" bindtap="openTeacherDrawer" data-id="{{item.id}}">
+            <image wx:if="{{item.avatarUrl}}" class="lead-avatar" src="{{item.avatarUrl}}" mode="aspectFill" />
+            <view wx:else class="lead-avatar lead-avatar--placeholder">
+              <text class="lead-avatar-initial">{{item.name ? item.name.slice(0, 1) : '教'}}</text>
+            </view>
+            <text class="lead-name">{{item.name || item.xileName}}</text>
+          </view>
         </view>
       </view>
 
@@ -122,6 +124,51 @@
       </view>
       <scroll-view scroll-y class="drawer__body">
         <text class="drawer__text">{{studio.courseIntro || '暂无课程介绍'}}</text>
+      </scroll-view>
+    </view>
+  </view>
+
+  <!-- Teacher detail drawer -->
+  <view wx:if="{{teacherDrawerVisible}}" class="drawer-mask" bindtap="closeTeacherDrawer">
+    <view class="drawer" catchtap="noop">
+      <view class="drawer__handle"></view>
+      <view class="drawer__head">
+        <text class="drawer__title">教师详情</text>
+        <text class="drawer__close" bindtap="closeTeacherDrawer">✕</text>
+      </view>
+      <scroll-view scroll-y class="drawer__body">
+        <view wx:if="{{selectedTeacher}}" class="teacher-drawer">
+          <view class="teacher-drawer__head">
+            <image wx:if="{{selectedTeacher.avatarUrl}}" class="teacher-drawer__avatar" src="{{selectedTeacher.avatarUrl}}" mode="aspectFill" />
+            <view wx:else class="teacher-drawer__avatar teacher-drawer__avatar--placeholder">
+              <text>{{selectedTeacher.name ? selectedTeacher.name.slice(0, 1) : '教'}}</text>
+            </view>
+            <view class="teacher-drawer__head-info">
+              <text class="teacher-drawer__name">{{selectedTeacher.name || selectedTeacher.xileName}}</text>
+              <text class="teacher-drawer__sub">{{selectedTeacher.tierName || '—'}}</text>
+            </view>
+          </view>
+          <view class="teacher-drawer__row" wx:if="{{selectedTeacher.xileName}}">
+            <text class="teacher-drawer__dt">喜乐名</text>
+            <text class="teacher-drawer__dd">{{selectedTeacher.xileName}}</text>
+          </view>
+          <view class="teacher-drawer__row" wx:if="{{selectedTeacher.realName && selectedTeacher.realName !== selectedTeacher.name}}">
+            <text class="teacher-drawer__dt">姓名</text>
+            <text class="teacher-drawer__dd">{{selectedTeacher.realName}}</text>
+          </view>
+          <view class="teacher-drawer__row" wx:if="{{selectedTeacher.tierName}}">
+            <text class="teacher-drawer__dt">认证等级</text>
+            <text class="teacher-drawer__dd">{{selectedTeacher.tierName}}</text>
+          </view>
+          <view class="teacher-drawer__row" wx:if="{{selectedTeacher.validUntil}}">
+            <text class="teacher-drawer__dt">有效期至</text>
+            <text class="teacher-drawer__dd">{{selectedTeacher.validUntil}}</text>
+          </view>
+          <view class="teacher-drawer__row" wx:if="{{selectedTeacher.city}}">
+            <text class="teacher-drawer__dt">所在城市</text>
+            <text class="teacher-drawer__dd">{{selectedTeacher.city}}</text>
+          </view>
+        </view>
       </scroll-view>
     </view>
   </view>

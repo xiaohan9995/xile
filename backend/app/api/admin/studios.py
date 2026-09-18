@@ -73,6 +73,8 @@ def _pending_draft_payload(s):
         "tags": [t.strip() for t in (draft.get("tags") or "").split(",") if t.strip()],
         "courseIntro": draft.get("courseIntro"),
         "images": images,
+        "latitude": draft.get("latitude"),
+        "longitude": draft.get("longitude"),
     }
 
 
@@ -243,6 +245,13 @@ def _apply_pending_draft(studio, draft):
     """
     if "address" in draft:
         studio.address = draft.get("address")
+    # 经纬度随地址一同审批生效，保证地图位置与地址一致。
+    if "latitude" in draft and "longitude" in draft:
+        lat = draft.get("latitude")
+        lng = draft.get("longitude")
+        if lat is not None and lng is not None:
+            studio.latitude = lat
+            studio.longitude = lng
     if "contact" in draft:
         studio.contact_text = draft.get("contact")
     if "tags" in draft:

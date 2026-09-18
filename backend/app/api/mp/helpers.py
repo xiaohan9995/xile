@@ -157,7 +157,17 @@ def _studio_summary(studio):
         "openingHours": studio.opening_hours,
         "contactText": studio.contact_text,
         "ownerTeachers": [
-            {"id": t.id, "name": _display_name(t), "xileName": _public_xile_name(t), "realName": _public_real_name(t)}
+            {
+                "id": t.id,
+                "name": _display_name(t),
+                "xileName": _public_xile_name(t),
+                "realName": _public_real_name(t),
+                "avatarUrl": _file_url(t.avatar_url),
+                "tier": t.tier.code if t.tier else None,
+                "tierName": t.tier.name if t.tier else None,
+                "validUntil": _date_text(t.valid_until),
+                "city": t.city,
+            }
             for t in owner_teachers
         ],
         "ownerTeacherName": _display_name(lead) if lead else None,

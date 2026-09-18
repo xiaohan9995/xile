@@ -18,7 +18,7 @@ Page({
     editingId: '',
     // form holds the editable display fields (mirrors backend `fields`)
     form: {
-      address: '', contact: '', tags: [], courseIntro: '', images: [],
+      address: '', contact: '', tags: [], courseIntro: '', images: [], latitude: null, longitude: null,
     },
     tagInput: '',
     maxTags: 8,
@@ -89,6 +89,8 @@ Page({
         tags: f.tags || [],
         courseIntro: f.courseIntro || '',
         images: f.images || [],
+        latitude: f.latitude != null ? f.latitude : null,
+        longitude: f.longitude != null ? f.longitude : null,
       },
     });
   },
@@ -165,7 +167,30 @@ Page({
   },
 
   closeEditor() {
-    this.setData({ editing: null, editingId: '', form: { address: '', contact: '', tags: [], courseIntro: '', images: [] } });
+    this.setData({ editing: null, editingId: '', form: { address: '', contact: '', tags: [], courseIntro: '', images: [], latitude: null, longitude: null } });
+  },
+
+  // 用微信内置地图选点，让地图标记与详细地址保持一致。
+  chooseLocation() {
+    wx.chooseLocation({
+      latitude: this.data.form.latitude || undefined,
+      longitude: this.data.form.longitude || undefined,
+      success: (res) => {
+        const patch = {
+          'form.latitude': res.latitude,
+          'form.longitude': res.longitude,
+        };
+        // 选点名称优先回填地址，若用户已手填详细地址则保留手填值。
+        if (!this.data.form.address && res.name) {
+          patch['form.address'] = res.name;
+        }
+        this.setData(patch);
+        wx.showToast({ title: '已更新地图位置', icon: 'none' });
+      },
+      fail: () => {
+        // 用户主动取消无需提示。
+      },
+    });
   },
 
   async submit() {
@@ -181,6 +206,10 @@ Page({
       courseIntro: form.courseIntro,
       images: form.images,
     };
+    if (form.latitude != null && form.longitude != null) {
+      data.latitude = form.latitude;
+      data.longitude = form.longitude;
+    }
     this.setData({ saving: true });
     try {
       await request({ url: `/api/mp/teachers/me/studios/${editingId}`, method: 'PUT', data });
