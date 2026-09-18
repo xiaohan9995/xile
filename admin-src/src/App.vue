@@ -4,7 +4,7 @@
     <div class="admin-frame">
       <header class="admin-topbar">
         <span class="version-pill">XILE YOGA · 管理工作台</span>
-        <span class="topbar-context">教师认证 / 年审协作</span>
+        <span class="topbar-context">教师认证 / 年审管理</span>
         <div class="topbar-actions">
           <RouterLink to="/guide" class="topbar-help" aria-label="打开系统操作指引" title="操作指引">?</RouterLink>
           <div class="admin-user">
@@ -28,14 +28,14 @@
             <nav class="side-menu">
               <span class="menu-label">工作台</span>
               <RouterLink v-if="canManage" to="/dashboard"><i>01</i>本期总览</RouterLink>
-              <RouterLink to="/review-workflow"><i>{{ canManage ? '02' : '01' }}</i>{{ role === 'group_leader' ? '审核小组' : role === 'reviewer' ? '我的审核' : '年审工作台' }}</RouterLink>
-              <RouterLink v-if="canManage" to="/reviews"><i>03</i>年审资料库</RouterLink>
+              <RouterLink v-if="canManage" to="/reviews"><i>02</i>年审管理</RouterLink>
+              <RouterLink v-if="!canManage" to="/guide"><i>01</i>操作指引</RouterLink>
               <template v-if="canManage">
                 <span class="menu-label">认证管理</span>
-                <RouterLink to="/teachers"><i>04</i>教师档案</RouterLink>
-                <RouterLink to="/teaching-records"><i>05</i>教学记录</RouterLink>
-                <RouterLink to="/service-records"><i>06</i>服务记录</RouterLink>
-                <RouterLink to="/studios"><i>07</i>认证场馆</RouterLink>
+                <RouterLink to="/teachers"><i>03</i>教师档案</RouterLink>
+                <RouterLink to="/teaching-records"><i>04</i>教学记录</RouterLink>
+                <RouterLink to="/service-records"><i>05</i>服务记录</RouterLink>
+                <RouterLink to="/studios"><i>06</i>认证场馆</RouterLink>
               </template>
               <template v-if="isSuperAdmin">
                 <span class="menu-label">系统</span>
@@ -48,7 +48,7 @@
           </div>
           <div class="sidebar-note">
             <strong>本期工作提示</strong>
-            小程序提交的材料会进入审核队列；完成发布后，教师端将同步展示结果。
+            小程序提交的材料会进入年审队列；处理通过后，教师端将同步展示结果并完成续期。
           </div>
         </aside>
 

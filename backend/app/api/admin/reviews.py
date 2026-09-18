@@ -90,4 +90,11 @@ def review_queue():
 @require_admin_token
 @require_admin_roles("admin", "super_admin")
 def review_decision(review_id):
-    return {"error": "direct decisions are retired; use the collaborative review workflow"}, 410
+    payload = request.get_json(silent=True) or {}
+    status = payload.get("status")
+    comment = (payload.get("comment") or "").strip()
+    try:
+        review = decide_review(review_id, status, comment)
+    except ReviewError as e:
+        return {"error": e.message}, e.status_code
+    return {"id": review.id, "status": review.status, "reviewedAt": _datetime_text(review.reviewed_at)}

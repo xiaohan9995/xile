@@ -47,13 +47,6 @@
 
     <!-- Info Grid -->
     <view class="info-grid">
-      <view class="grid-item soft-card" bindtap="openMap">
-        <text class="grid-icon">📍</text>
-        <view class="grid-text">
-          <text class="grid-label">地址</text>
-          <text class="grid-value">{{studio.address || '暂无地址信息'}}</text>
-        </view>
-      </view>
       <view class="grid-item soft-card" bindtap="openCourseDrawer">
         <text class="grid-icon">📚</text>
         <view class="grid-text">
@@ -61,6 +54,13 @@
           <text class="grid-value grid-value--clamp">{{studio.courseIntro || '暂无课程介绍'}}</text>
         </view>
         <text class="grid-arrow" wx:if="{{studio.courseIntro}}">›</text>
+      </view>
+      <view class="grid-item soft-card" bindtap="openMap">
+        <text class="grid-icon">📍</text>
+        <view class="grid-text">
+          <text class="grid-label">地址</text>
+          <text class="grid-value">{{studio.address || '暂无地址信息'}}</text>
+        </view>
       </view>
       <view class="grid-item soft-card" bindtap="callStudio">
         <text class="grid-icon">📞</text>

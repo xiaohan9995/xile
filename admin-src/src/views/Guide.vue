@@ -5,10 +5,10 @@
     </div>
 
     <section class="guide-hero panel">
-      <span>当前身份 · {{ roleLabel }}</span>
+      <span>操作指引 · 年审管理</span>
       <h2>{{ headline }}</h2>
       <p>{{ intro }}</p>
-      <RouterLink class="guide-hero__action" to="/review-workflow"><span>进入{{ workspaceLabel }}</span><b aria-hidden="true">→</b></RouterLink>
+      <RouterLink v-if="canManage" class="guide-hero__action" to="/reviews"><span>进入年审管理</span><b aria-hidden="true">→</b></RouterLink>
     </section>
 
     <section class="guide-grid" aria-label="操作步骤">
@@ -23,9 +23,9 @@
     <section class="guide-notes panel">
       <h2>请牢记</h2>
       <ul>
-        <li>未正式发布的审核意见仅供获授权人员处理，不能对教师承诺结果。</li>
-        <li>需要修订时使用“退回审核组”，不要通过新建重复记录解决。</li>
-        <li>正式发布后，教师端会同步展示结论、等级与新的有效期。</li>
+        <li>处理结果会同步到教师端，请在核对材料后再确认。</li>
+        <li>「通过」会为教师续期；「驳回」或「退回补充」需填写原因，便于教师补充材料重新提交。</li>
+        <li>驳回 / 退回补充后，教师可重新提交，审核记录会保留历史版本。</li>
       </ul>
     </section>
   </div>
@@ -38,29 +38,14 @@ import { useAuthStore } from '../stores/auth'
 
 const auth = useAuthStore()
 const role = computed(() => auth.admin?.role || 'super_admin')
-const roleLabel = computed(() => ({ reviewer: '审核成员', group_leader: '审核组长', admin: '年审管理员', super_admin: '系统管理员' }[role.value] || '审核成员'))
-const workspaceLabel = computed(() => role.value === 'reviewer' ? '我的审核' : role.value === 'group_leader' ? '审核小组' : '年审工作台')
-const copy = computed(() => ({
-  reviewer: {
-    headline: '先完成分配给你的核验意见', intro: '你只需要处理“我的审核”中的教师；提交后等待其他成员与组长继续推进。',
-    steps: [['查看材料', '核对教师档案、本期材料和引用的教学记录。', '仅处理已分配记录。'], ['提交个人意见', '选择建议结论，写清核验依据或待补充事项。', '提交后可在组内查看已提交意见。'], ['等待发布', '组长形成集体决议，管理员正式发布后教师才会看到结果。', '发布前请勿向教师确认最终结果。']],
-  },
-  group_leader: {
-    headline: '汇总成员意见，形成可发布的集体决议', intro: '成员意见全部提交后，系统才会开放组长决议，避免遗漏核验。',
-    steps: [['关注完成度', '在审核小组中查看“成员意见 x/y 已提交”。', '未齐前无需催促重复提交。'], ['形成集体决议', '综合材料和成员意见，选择建议结论并说明理由。', '提交后成员意见将锁定。'], ['处理退回', '管理员退回时查看原因，修订决议后再次提交。', '既有意见会保留，便于追溯。']],
-  },
-  admin: {
-    headline: '安排审核人并完成正式发布', intro: '管理员负责批次、分配、退回和发布，不替代小组成员填写意见。',
-    steps: [['安排本期审核人', '创建本期批次并明确组长、审核成员。', '一个教师在同一批次只分配一个审核组。'], ['核对待发布结果', '确认成员意见、组长决议、最终等级与有效期。', '信息不足时退回审核组并写明原因。'], ['正式发布', '二次确认后发布，系统同步更新教师端结果。', '发布后结果生效并保留操作留痕。']],
-  },
-  super_admin: {
-    headline: '维护规则与权限，保障年审有序流转', intro: '除年审管理外，你还可以维护账号、导入教师资料和系统规则。',
-    steps: [['设置账号与权限', '为审核成员、组长和管理员分配正确身份。', '角色决定其可见数据与操作入口。'], ['建立本期工作流', '创建批次、审核组并安排待审教师。', '避免同一教师被并行分配。'], ['核对并发布', '按管理员流程核对决议，必要时退回审核组。', '仅正式发布会更新教师资质。']],
-  },
-}[role.value] || {}))
-const headline = computed(() => copy.value.headline)
-const intro = computed(() => copy.value.intro)
-const steps = computed(() => (copy.value.steps || []).map(([title, description, tip]) => ({ title, description, tip })))
+const canManage = computed(() => ['admin', 'super_admin'].includes(role.value))
+const headline = computed(() => canManage.value ? '核对材料并一键处理年审' : '当前账号暂无年审处理权限')
+const intro = computed(() => canManage.value ? '在「年审管理」中查看教师本期提交的材料与引用的教学 / 服务记录，核对后选择通过、驳回或退回补充。' : '你的身份不参与年审处理；如需处理权限，请联系系统管理员调整角色。')
+const steps = computed(() => canManage.value ? [
+  { title: '查看材料', description: '核对教师档案、本期材料和引用的教学记录。', tip: '从待处理队列进入详情查看。' },
+  { title: '选择结论', description: '根据材料选择「通过」「驳回」或「退回补充」。', tip: '驳回与退回补充需填写原因。' },
+  { title: '同步结果', description: '处理后教师端同步展示结论，通过即完成续期。', tip: '驳回后教师可重新提交。' },
+] : [])
 </script>
 
 <style scoped>

@@ -16,7 +16,6 @@ const routes = [
   { path: '/reviews', name: 'Reviews', component: () => import('../views/Reviews.vue'), meta: { roles: ['admin', 'super_admin'] } },
   { path: '/teaching-records', name: 'TeachingRecords', component: () => import('../views/TeachingRecords.vue'), meta: { roles: ['admin', 'super_admin'] } },
   { path: '/service-records', name: 'ServiceRecords', component: () => import('../views/ServiceRecords.vue'), meta: { roles: ['admin', 'super_admin'] } },
-  { path: '/review-workflow', name: 'ReviewWorkflow', component: () => import('../views/ReviewWorkflow.vue') },
   { path: '/guide', name: 'Guide', component: () => import('../views/Guide.vue') },
   { path: '/studios', name: 'Studios', component: () => import('../views/Studios.vue'), meta: { roles: ['admin', 'super_admin'] } },
   { path: '/import', name: 'ImportTeachers', component: () => import('../views/ImportTeachers.vue'), meta: { roles: ['super_admin'] } },
@@ -35,7 +34,7 @@ router.beforeEach((to) => {
   const token = localStorage.getItem('admin_token')
   if (!token) return { name: 'Login', query: { redirect: to.fullPath } }
   const profile = JSON.parse(localStorage.getItem('admin_profile') || '{}')
-  if (to.meta.roles && !to.meta.roles.includes(profile.role || 'super_admin')) return { name: 'ReviewWorkflow' }
+  if (to.meta.roles && !to.meta.roles.includes(profile.role || 'super_admin')) return { name: 'Dashboard' }
   return true
 })
 

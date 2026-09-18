@@ -37,7 +37,7 @@ def upload_asset():
         return {"error": "file required"}, 400
     ext = os.path.splitext(secure_filename(uploaded.filename))[1].lower()
     if ext not in _IMAGE_EXTENSIONS:
-        return {"error": "only JPG, PNG and WebP images are supported"}, 400
+        return {"error": "仅支持 JPG、PNG 和 WebP 格式的图片"}, 400
     uploaded.stream.seek(0, 2)
     size = uploaded.stream.tell()
     uploaded.stream.seek(0)

@@ -3,7 +3,7 @@
     <div class="page-head">
       <div>
         <h1>年审管理</h1>
-        <p>查看教师本期提交的材料。审核、组长决议和正式发布均在年审工作台完成。</p>
+        <p>查看教师本期提交的材料，并在详情中一键完成通过、驳回或退回补充。</p>
       </div>
       <button v-if="selected" class="sync-btn" @click="clearSelection">返回队列</button>
     </div>
@@ -133,9 +133,19 @@
           </div>
         </div>
 
-        <div class="reviewer-comment">
-          <strong>材料处理提示：</strong>请在“年审工作台”完成成员意见、组长决议和正式发布。
-          <RouterLink to="/review-workflow" class="table-action">前往年审工作台</RouterLink>
+        <div v-if="reviewActionable" class="decision-block">
+          <h3>审核处理</h3>
+          <p class="form-hint">处理后将同步更新教师端结果；通过会为教师续期，驳回/退回补充需填写原因以便教师补充材料重新提交。</p>
+          <textarea v-model="decisionComment" placeholder="审核意见或驳回 / 退回补充的原因（驳回与退回补充时必填）"></textarea>
+          <div class="decision-actions">
+            <button class="approve-btn" :disabled="deciding" @click="applyDecision('approved')">通过</button>
+            <button class="reject-btn" :disabled="deciding" @click="applyDecision('rejected', true)">驳回</button>
+            <button class="return-btn" :disabled="deciding" @click="applyDecision('rejected', true, true)">退回补充</button>
+          </div>
+        </div>
+        <div v-else class="reviewer-comment">
+          <strong>处理结果：</strong>{{ statusLabel(selected.status) }}
+          <span v-if="selected.reviewerComment"> · {{ selected.reviewerComment }}</span>
         </div>
       </div>
     </section>
@@ -145,8 +155,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import ImagePreview from '../components/ImagePreview.vue'
-import { RouterLink } from 'vue-router'
-import { fetchAdminReviews } from '../api/adminData'
+import { fetchAdminReviews, decideReview } from '../api/adminData'
 import { useToast } from '../composables/useToast'
 import Pagination from '../components/Pagination.vue'
 
@@ -157,6 +166,22 @@ const filters = ref({ name: '', xileName: '', certNo: '', city: '' })
 const selectedId = ref(null)
 const currentPage = ref(1)
 const pageSize = 15
+const decisionComment = ref('')
+const deciding = ref(false)
+
+const PENDING_STATUSES = ['submitted', 'in_review', 'pending_publication', 'pending_publication_rejected', 'returned_to_group']
+const APPROVED_STATUSES = ['approved', 'published_approved']
+const REJECTED_STATUSES = ['rejected', 'published_rejected']
+
+function tabOf(status) {
+  if (APPROVED_STATUSES.includes(status)) return 'approved'
+  if (REJECTED_STATUSES.includes(status)) return 'rejected'
+  return 'pending'
+}
+
+function statusLabel(status) {
+  return { pending: '待处理', submitted: '待处理', in_review: '审核中', pending_publication: '待发布', pending_publication_rejected: '待发布', returned_to_group: '待处理', approved: '已通过', published_approved: '已通过', rejected: '已驳回', published_rejected: '已驳回' }[status] || status
+}
 
 onMounted(async () => {
   await loadReviews()
@@ -170,12 +195,12 @@ async function loadReviews() {
   }
 }
 
-const pendingCount = computed(() => reviews.value.filter((r) => r.status === 'pending').length)
-const approvedCount = computed(() => reviews.value.filter((r) => r.status === 'approved').length)
-const rejectedCount = computed(() => reviews.value.filter((r) => r.status === 'rejected').length)
+const pendingCount = computed(() => reviews.value.filter((r) => tabOf(r.status) === 'pending').length)
+const approvedCount = computed(() => reviews.value.filter((r) => tabOf(r.status) === 'approved').length)
+const rejectedCount = computed(() => reviews.value.filter((r) => tabOf(r.status) === 'rejected').length)
 
 const filteredReviews = computed(() => {
-  const list = reviews.value.filter((r) => r.status === activeTab.value)
+  const list = reviews.value.filter((r) => tabOf(r.status) === activeTab.value)
   const matches = (value, query) => !query || String(value || '').toLowerCase().includes(query)
   const name = filters.value.name.trim().toLowerCase()
   const xileName = filters.value.xileName.trim().toLowerCase()
@@ -192,9 +217,33 @@ watch(totalPages, (total) => {
 })
 
 const selected = computed(() => reviews.value.find((r) => r.id === selectedId.value))
+const reviewActionable = computed(() => selected.value && PENDING_STATUSES.includes(selected.value.status))
 
 function clearSelection() {
   selectedId.value = null
+  decisionComment.value = ''
+}
+
+async function applyDecision(status, requireComment = false, isReturn = false) {
+  const review = selected.value
+  if (!review) return
+  const comment = decisionComment.value.trim()
+  if (requireComment && !comment) {
+    toast(isReturn ? '退回补充需填写原因' : '驳回需填写原因', 'error')
+    return
+  }
+  if (status === 'approved' && !window.confirm(`确认通过「${review.name}」的本期年审？通过后将为其续期。`)) return
+  deciding.value = true
+  try {
+    await decideReview(review.id, status, comment)
+    toast(isReturn ? '已退回补充' : status === 'approved' ? '已通过并续期' : '已驳回')
+    await loadReviews()
+    clearSelection()
+  } catch (error) {
+    toast('处理失败，请稍后重试', 'error')
+  } finally {
+    deciding.value = false
+  }
 }
 </script>
 
@@ -227,6 +276,55 @@ function clearSelection() {
   font-size: 13px;
   color: #5a4a28;
 }
+.decision-block {
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid var(--brand-green, rgba(66, 109, 88, 0.35));
+  border-radius: 12px;
+  background: #f7faf7;
+}
+.decision-block h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+.decision-block textarea {
+  width: 100%;
+  min-height: 80px;
+  margin: 12px 0;
+  padding: 10px;
+  box-sizing: border-box;
+  border: 1px solid #d9ded9;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+}
+.form-hint {
+  color: #65706a;
+  font-size: 13px;
+  margin: 0 0 4px;
+}
+.decision-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.decision-actions button {
+  min-height: 38px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #fff;
+}
+.decision-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.approve-btn { background: var(--brand-green, #4a7c59); }
+.reject-btn { background: #b3543f; }
+.return-btn { background: #9c7a1a; }
 .teaching-records { margin-top: 18px; border-top: 1px solid #eee; padding-top: 14px; }
 .teaching-records h3 { margin: 0 0 10px; font-size: 15px; }
 .record-row { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }

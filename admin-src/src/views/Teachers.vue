@@ -452,6 +452,13 @@ async function copyLinkCode() {
 async function uploadTeacherAsset(event, assetType, targetField) {
   const file = event.target.files && event.target.files[0]
   if (!file) return
+  const allowed = ['.jpg', '.jpeg', '.png', '.webp']
+  const ext = (file.name || '').toLowerCase().match(/\.[a-z0-9]+$/)?.[0] || ''
+  if (!allowed.includes(ext)) {
+    toast(`「${file.name || '所选文件'}」格式不支持，仅支持 JPG、PNG 和 WebP 图片`, 'error')
+    event.target.value = ''
+    return
+  }
   try {
     const result = await uploadAdminAsset(file, assetType)
     editDraft[targetField] = result.url

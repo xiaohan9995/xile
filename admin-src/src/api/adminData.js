@@ -70,7 +70,7 @@ export function mapAdminReview(review) {
     level: review.tier,
     city: review.city,
     avatar: resolveAvatar(review.avatarUrl),
-    status: review.status === 'submitted' ? 'pending' : review.status,
+    status: review.status,
     reviewYear: `${review.reviewYear}年度`,
     submittedAt: review.submittedAt || '未记录',
     expiryDate: review.previousValidUntil || '待确认',
@@ -210,7 +210,7 @@ export async function rejectStudio(id, reason) {
   return api.post(`/studios/${id}/reject`, { reason })
 }
 
-export async function submitReviewDecision(reviewId, status, comment) {
+export async function decideReview(reviewId, status, comment) {
   return api.post(`/reviews/${reviewId}/decision`, { status, comment })
 }
 
@@ -277,44 +277,3 @@ export async function uploadAdminAsset(file, assetType) {
   return api.upload('/assets/upload', formData)
 }
 
-export async function fetchReviewCycles() {
-  const payload = await api.get('/review-cycles')
-  return payload.items || []
-}
-
-export async function createReviewCycle(data) {
-  return api.post('/review-cycles', data)
-}
-
-export async function fetchReviewGroups() {
-  const payload = await api.get('/review-groups')
-  return payload.items || []
-}
-
-export async function createReviewGroup(data) {
-  return api.post('/review-groups', data)
-}
-
-export async function assignReview(reviewId, data) {
-  return api.post(`/reviews/${reviewId}/assignment`, data)
-}
-
-export async function fetchReviewWorkflow(reviewId) {
-  return api.get(`/reviews/${reviewId}/workflow`)
-}
-
-export async function submitReviewOpinion(reviewId, data) {
-  return api.post(`/reviews/${reviewId}/opinions`, data)
-}
-
-export async function submitGroupDecision(reviewId, data) {
-  return api.post(`/reviews/${reviewId}/group-decision`, data)
-}
-
-export async function publishReview(reviewId, outcome) {
-  return api.post(`/reviews/${reviewId}/publish`, { outcome })
-}
-
-export async function returnReviewToGroup(reviewId, reason) {
-  return api.post(`/reviews/${reviewId}/return-to-group`, { reason })
-}

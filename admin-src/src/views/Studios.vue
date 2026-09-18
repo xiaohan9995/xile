@@ -106,9 +106,10 @@
             <span class="field-hint" :class="{ 'field-hint--warn': createTagsCount > MAX_TAGS }">{{ createTagsCount }}/{{ MAX_TAGS }} 个标签，每个最多 6 字</span>
           </label>
           <label>
-            课程介绍
-            <textarea v-model="createDraft.courseIntro" placeholder="介绍工作室开设的课程（最多500字）"></textarea>
+            地址
+            <input v-model="createDraft.address" readonly placeholder="请通过地图选点" />
           </label>
+          <button type="button" class="sync-btn map-pick-btn" @click="requestMapPicker(createDraft)">地图选点并自动填写地址</button>
         </div>
         <label>
           主理教师（可多选）
@@ -134,10 +135,9 @@
           </div>
         </label>
         <label>
-          地址
-          <input v-model="createDraft.address" readonly placeholder="请通过地图选点" />
+          课程介绍
+          <textarea v-model="createDraft.courseIntro" placeholder="介绍工作室开设的课程（最多500字）"></textarea>
         </label>
-        <button type="button" class="sync-btn map-pick-btn" @click="requestMapPicker(createDraft)">地图选点并自动填写地址</button>
         <label>
           简介
           <input v-model="createDraft.intro" placeholder="请输入工作室简介" />
@@ -203,9 +203,10 @@
             <span class="field-hint" :class="{ 'field-hint--warn': editTagsCount > MAX_TAGS }">{{ editTagsCount }}/{{ MAX_TAGS }} 个标签，每个最多 6 字</span>
           </label>
           <label>
-            课程介绍
-            <textarea v-model="editDraft.courseIntro" placeholder="介绍工作室开设的课程（最多500字）"></textarea>
+            地址
+            <input v-model="editDraft.address" readonly placeholder="请通过地图选点" />
           </label>
+          <button type="button" class="sync-btn map-pick-btn" @click="requestMapPicker(editDraft)">重新地图选点</button>
         </div>
         <label>
           主理教师（可多选）
@@ -231,10 +232,9 @@
           </div>
         </label>
         <label>
-          地址
-          <input v-model="editDraft.address" readonly placeholder="请通过地图选点" />
+          课程介绍
+          <textarea v-model="editDraft.courseIntro" placeholder="介绍工作室开设的课程（最多500字）"></textarea>
         </label>
-        <button type="button" class="sync-btn map-pick-btn" @click="requestMapPicker(editDraft)">重新地图选点</button>
         <label>
           简介
           <input v-model="editDraft.intro" placeholder="工作室简介" />
@@ -914,6 +914,15 @@ async function uploadStudioAssets(event, draft) {
     return
   }
   const toUpload = files.slice(0, remaining)
+  const allowed = ['.jpg', '.jpeg', '.png', '.webp']
+  for (const file of toUpload) {
+    const ext = (file.name || '').toLowerCase().match(/\.[a-z0-9]+$/)?.[0] || ''
+    if (!allowed.includes(ext)) {
+      toast(`「${file.name || '所选文件'}」格式不支持，仅支持 JPG、PNG 和 WebP 图片`, 'error')
+      event.target.value = ''
+      return
+    }
+  }
   try {
     for (const file of toUpload) {
       const result = await uploadAdminAsset(file, 'studio-cover')
