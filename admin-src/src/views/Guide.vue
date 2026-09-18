@@ -65,7 +65,7 @@ const steps = computed(() => (copy.value.steps || []).map(([title, description, 
 
 <style scoped>
 .guide-page { max-width:1080px; }
-.guide-hero { padding:32px; border-color:rgba(93,114,97,.35); background:linear-gradient(125deg,#eff5ee,#fffaf0); }
+.guide-hero { padding:32px; border-color:rgba(66,109,88,.35); background:linear-gradient(125deg,#eff5ee,#fffaf0); }
 .guide-hero span,.guide-step__number { color:var(--brand-gold); font:700 11px "JetBrains Mono",monospace; letter-spacing:.1em; }
 .guide-hero h2 { margin:10px 0; font:700 27px "Noto Serif SC",serif; color:var(--ink); }
 .guide-hero p { max-width:650px; margin:0 0 20px; color:var(--muted); line-height:1.7; }

@@ -135,7 +135,7 @@ td small { display:block; color:#738073; margin-top:4px; }
 .workflow-plan__summary strong { display:block; margin-top:5px; color:var(--ink); font-size:13px; }
 .workflow-setup { display:grid; gap:14px; margin-top:18px; padding-top:18px; border-top:1px dashed var(--line-strong); }
 .workflow-setup__section h3,.assignment-block h3 { margin:0 0 10px; font-size:14px; }
-.assignment-block { padding:18px; border:1px solid rgba(93,114,97,.35); border-radius:16px; background:var(--surface-soft); }
+.assignment-block { padding:18px; border:1px solid rgba(66,109,88,.35); border-radius:16px; background:var(--surface-soft); }
 .assignment-block p { margin:0 0 14px; color:var(--muted); font-size:13px; }
 .review-summary { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:16px 0; padding:16px; border:1px solid var(--line-strong); border-radius:16px; background:var(--surface-soft); }
 .review-summary span,.review-summary strong { display:block; }
@@ -148,9 +148,9 @@ td small { display:block; color:#738073; margin-top:4px; }
 .review-action-block { margin-top:16px; padding:18px; border:1px solid var(--line-strong); border-radius:16px; background:#fff; }
 .review-action-block h3,.review-result h3 { margin:0; font-size:15px; }
 .review-action-block--decision { border-color:rgba(170,137,82,.35); background:#fffdf8; }
-.review-action-block--publish { border-color:rgba(93,114,97,.38); background:#f3f7f2; }
+.review-action-block--publish { border-color:rgba(66,109,88,.38); background:#f3f7f2; }
 .review-action-block--publish p { margin:10px 0 14px; color:var(--muted); }
-.review-result { margin-top:16px; padding:22px; border:1px solid rgba(93,114,97,.3); border-radius:16px; background:linear-gradient(135deg,#f1f6f0,#fffdf8); }
+.review-result { margin-top:16px; padding:22px; border:1px solid rgba(66,109,88,.3); border-radius:16px; background:linear-gradient(135deg,#f1f6f0,#fffdf8); }
 .review-result__eyebrow { color:var(--brand-gold); font:700 10px "JetBrains Mono", monospace; letter-spacing:.1em; }
 .review-result h3 { margin-top:8px; color:var(--brand-green); font-family:"Noto Serif SC",serif; font-size:18px; }
 .review-result p { margin:9px 0; color:var(--muted); }

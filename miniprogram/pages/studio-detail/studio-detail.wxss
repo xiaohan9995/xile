@@ -126,8 +126,8 @@
 .info-tag {
   padding: 8rpx 18rpx;
   border-radius: var(--radius-full);
-  background: var(--color-gold-light);
-  color: var(--color-gold);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
   font-size: 22rpx;
   font-weight: 600;
 }
@@ -171,89 +171,32 @@
   color: var(--color-text);
 }
 
-/* 咨询服务（与「我的认证」页的菜单行保持一致） */
-.menu-list {
-  margin: 16rpx 28rpx 0;
-  overflow: hidden;
-  border: 1rpx solid var(--color-line);
-  border-radius: var(--radius-md);
-  background: var(--color-card);
-  box-shadow: var(--shadow-card);
-}
-
-.menu-item {
+/* 咨询服务：与上方 .grid-item 卡片同宽同高。承载元素是原生 button，
+   需复位 button 默认样式（宽度/内边距/边框/背景/行高）。 */
+.info-grid button.grid-item {
   width: 100%;
-  min-width: 100%;
-  max-width: none;
-  min-height: 112rpx;
+  min-width: 0;
+  max-width: 100%;
   margin: 0;
-  padding: 20rpx 24rpx;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  text-align: left;
+  padding: 24rpx;
   box-sizing: border-box;
-  border-bottom: 1rpx solid var(--color-line);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 18rpx;
+  text-align: left;
+  line-height: normal;
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
-.menu-item:last-child {
-  border-bottom: none;
+.info-grid button.grid-item::after {
+  border: none;
 }
 
-.menu-item:active {
+.info-grid button.grid-item:active {
   transform: scale(0.98);
   opacity: 0.84;
-}
-
-.menu-item-left {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  min-width: 0;
-}
-
-.menu-icon {
-  width: 64rpx;
-  height: 64rpx;
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-base);
-  background: var(--color-primary-light);
-  color: var(--color-primary-dark);
-  font-size: 24rpx;
-  font-weight: 800;
-}
-
-.menu-text {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-width: 0;
-  margin-left: 18rpx;
-}
-
-.menu-title {
-  color: var(--color-text);
-  font-size: 28rpx;
-  font-weight: 700;
-}
-
-.menu-subtitle {
-  margin-top: 4rpx;
-  color: var(--color-muted);
-  font-size: 22rpx;
-  line-height: 1.45;
-}
-
-.menu-arrow {
-  margin-left: 16rpx;
-  color: var(--color-muted);
-  font-size: 38rpx;
-  font-weight: 300;
-  line-height: 1;
 }
 
 /* Loading & Error */
@@ -270,4 +213,54 @@
 .error-wrap {
   padding: 60rpx 28rpx;
   text-align: center;
+}
+
+/* 主理教师管理入口 */
+.owner-panel {
+  margin: 24rpx 28rpx 48rpx;
+  padding: 24rpx;
+  border: 1rpx solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-card);
+  box-shadow: var(--shadow-card);
+}
+
+.owner-panel__status {
+  margin-bottom: 16rpx;
+  padding: 14rpx 18rpx;
+  border-radius: var(--radius-base);
+  background: var(--color-gold-light);
+  color: var(--color-gold);
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.owner-panel__reject {
+  margin-bottom: 16rpx;
+  padding: 14rpx 18rpx;
+  border-radius: var(--radius-base);
+  background: rgba(180, 140, 40, 0.10);
+  color: #8a6d1c;
+  font-size: 24rpx;
+  line-height: 1.6;
+}
+
+.owner-panel__reject-label {
+  display: block;
+  margin-bottom: 4rpx;
+  font-weight: 700;
+}
+
+.owner-panel__action {
+  width: 100%;
+}
+
+.owner-panel__actions {
+  display: flex;
+  gap: 16rpx;
+}
+
+.owner-panel__actions .owner-panel__action {
+  flex: 1;
+  margin: 0;
 }

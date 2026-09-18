@@ -1,3 +1,5 @@
+import json
+
 from flask import request
 
 from ...extensions import db
@@ -55,6 +57,25 @@ def _resolve_teacher_ids(value):
     return [i for i in ids if i in existing], None
 
 
+def _pending_draft_payload(s):
+    if not s.pending_draft:
+        return None
+    try:
+        draft = json.loads(s.pending_draft)
+    except (TypeError, ValueError):
+        return None
+    images = draft.get("images") or []
+    if isinstance(images, str):
+        images = [u.strip() for u in images.split(",") if u.strip()]
+    return {
+        "address": draft.get("address"),
+        "contact": draft.get("contact"),
+        "tags": [t.strip() for t in (draft.get("tags") or "").split(",") if t.strip()],
+        "courseIntro": draft.get("courseIntro"),
+        "images": images,
+    }
+
+
 def _studio_payload(s):
     images = [u.strip() for u in (s.images or "").split(",") if u.strip()]
     return {
@@ -80,6 +101,9 @@ def _studio_payload(s):
         "contactText": s.contact_text,
         "status": s.status,
         "displayOrder": s.display_order,
+        "hasPending": s.status == "pending",
+        "pendingRejectReason": s.pending_reject_reason,
+        "pending": _pending_draft_payload(s),
     }
 
 
@@ -87,7 +111,11 @@ def _studio_payload(s):
 @require_admin_token
 @require_admin_roles("admin", "super_admin")
 def studio_list():
-    studios = Studio.query.order_by(Studio.display_order.desc(), Studio.id.asc()).all()
+    query = Studio.query
+    status = request.args.get("status", "").strip()
+    if status:
+        query = query.filter_by(status=status)
+    studios = query.order_by(Studio.display_order.desc(), Studio.id.asc()).all()
     items = [_studio_payload(s) for s in studios]
     return {"items": items, "total": len(items)}
 
@@ -148,7 +176,7 @@ def delete_studio(studio_id):
     if studio is None:
         return {"error": "not found"}, 404
     studio.status = "hidden"
-    db.session.add(AuditLog(admin_id=1, action="delete_studio", target_type="studio", target_id=studio.id))
+    db.session.add(AuditLog(admin_id=current_admin_id() or 1, action="delete_studio", target_type="studio", target_id=studio.id))
     db.session.commit()
     return {"id": studio.id, "status": "hidden"}
 
@@ -205,3 +233,75 @@ def update_studio(studio_id):
     db.session.add(AuditLog(admin_id=current_admin_id() or 1, action="update_studio", target_type="studio", target_id=studio.id))
     db.session.commit()
     return {"id": studio.id, "name": studio.name}
+
+
+def _apply_pending_draft(studio, draft):
+    """Copy the approved draft fields onto the published studio fields.
+
+    Only the editable fields (地址/联系方式/标签/课程介绍/图片) are applied;
+    city/district/coordinates/intro stay admin-owned and never change here.
+    """
+    if "address" in draft:
+        studio.address = draft.get("address")
+    if "contact" in draft:
+        studio.contact_text = draft.get("contact")
+    if "tags" in draft:
+        studio.tags = draft.get("tags")
+    if "courseIntro" in draft:
+        studio.course_intro = draft.get("courseIntro")
+    if "images" in draft:
+        images = draft.get("images") or []
+        studio.images = ",".join(images) if images else None
+        if images:
+            studio.cover_url = images[0]
+
+
+@admin_bp.post("/studios/<int:studio_id>/approve")
+@require_admin_token
+@require_admin_roles("admin", "super_admin")
+def approve_studio(studio_id):
+    studio = db.session.get(Studio, studio_id)
+    if studio is None or studio.status == "hidden":
+        return {"error": "not found"}, 404
+    if studio.status != "pending" or not studio.pending_draft:
+        return {"error": "该工作室没有待审批的提交"}, 400
+
+    try:
+        draft = json.loads(studio.pending_draft)
+    except (TypeError, ValueError):
+        return {"error": "待审批草稿格式无效"}, 400
+
+    _apply_pending_draft(studio, draft)
+    studio.pending_draft = None
+    studio.pending_reject_reason = None
+    studio.status = "open"
+    db.session.add(AuditLog(admin_id=current_admin_id() or 1, action="approve_studio", target_type="studio", target_id=studio.id))
+    db.session.commit()
+    return {"id": studio.id, "status": "open"}
+
+
+@admin_bp.post("/studios/<int:studio_id>/reject")
+@require_admin_token
+@require_admin_roles("admin", "super_admin")
+def reject_studio(studio_id):
+    studio = db.session.get(Studio, studio_id)
+    if studio is None or studio.status == "hidden":
+        return {"error": "not found"}, 404
+    if studio.status != "pending":
+        return {"error": "该工作室没有待审批的提交"}, 400
+
+    payload = request.get_json(silent=True) or {}
+    reason = str(payload.get("reason") or "").strip()
+    if not reason:
+        return {"error": "请填写驳回原因"}, 400
+
+    studio.pending_reject_reason = reason[:256]
+    studio.pending_draft = None
+    # Revert to the previously-published state. If the studio had any formal
+    # content published before, it stays open; otherwise it falls back to
+    # incomplete so it is not shown publicly.
+    has_published_content = any([studio.city, studio.address, studio.images, studio.course_intro, studio.intro, studio.tags, studio.contact_text])
+    studio.status = "open" if has_published_content else "incomplete"
+    db.session.add(AuditLog(admin_id=current_admin_id() or 1, action="reject_studio", target_type="studio", target_id=studio.id))
+    db.session.commit()
+    return {"id": studio.id, "status": studio.status}

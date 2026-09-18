@@ -192,14 +192,14 @@ function resetState() {
 <style scoped>
 .import-drop {
   min-height: 260px;
-  border: 1px dashed rgba(93, 114, 97, 0.35);
+  border: 1px dashed rgba(66, 109, 88, 0.35);
   border-radius: 24px;
   display: grid;
   place-items: center;
   align-content: center;
   gap: 10px;
   background: #fafcfb;
-  color: #5d7261;
+  color: #426d58;
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s;
 }

@@ -2,10 +2,10 @@
   <div class="login-page">
     <section class="login-card">
       <div class="login-brand">
-        <div class="brand-mark">喜</div>
+        <img class="brand-mark" src="/xile-logo.png" alt="喜乐瑜伽" />
         <div>
           <h1>喜乐瑜伽</h1>
-          <p>TEACHER CERTIFICATION</p>
+          <p>XILE YOGA · TEACHER CERTIFICATION</p>
         </div>
       </div>
 
@@ -65,16 +65,16 @@ async function submit() {
   min-height: 100vh;
   display: grid;
   place-items: center;
-  background: #faf8f5;
+  background: #f5f7f4;
 }
 
 .login-card {
   width: 400px;
   padding: 40px;
-  border: 1px solid #eef0ee;
+  border: 1px solid #e3e9e4;
   border-radius: 28px;
   background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 30px 80px rgba(31, 37, 33, 0.10);
+  box-shadow: 0 30px 80px rgba(32, 57, 42, 0.10);
 }
 
 .login-brand {
@@ -88,18 +88,15 @@ async function submit() {
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  display: grid;
-  place-items: center;
-  background: #5d7261;
-  color: #fff;
-  font-size: 22px;
-  font-weight: 800;
+  object-fit: cover;
+  background: #fff;
+  border: 1px solid #dce4de;
 }
 
 h1 {
   margin: 0;
   font-size: 20px;
-  color: #1f2521;
+  color: #1c2a22;
 }
 
 p {
@@ -119,7 +116,7 @@ p {
 label span {
   display: block;
   margin-bottom: 8px;
-  color: #65706a;
+  color: #606b64;
   font-size: 12px;
   font-weight: 800;
 }
@@ -127,7 +124,7 @@ label span {
 input {
   width: 100%;
   height: 44px;
-  border: 1px solid #e7ebe8;
+  border: 1px solid #dce4de;
   border-radius: 14px;
   padding: 0 14px;
   background: #fafafa;
@@ -136,7 +133,7 @@ input {
 }
 
 input:focus {
-  border-color: #5d7261;
+  border-color: #426d58;
 }
 
 .login-error {
@@ -154,7 +151,7 @@ input:focus {
   margin-top: 4px;
   border: 0;
   border-radius: 14px;
-  background: #5d7261;
+  background: #426d58;
   color: #fff;
   font-size: 14px;
   font-weight: 700;
@@ -163,7 +160,7 @@ input:focus {
 }
 
 .primary-btn:hover:not(:disabled) {
-  background: #4b5c4e;
+  background: #2f5140;
 }
 
 .primary-btn:disabled {

@@ -8,6 +8,13 @@
     </div>
 
     <div class="toolbar">
+      <select v-model="filters.status">
+        <option value="">全部状态</option>
+        <option value="open">已公开</option>
+        <option value="pending">待审批</option>
+        <option value="hidden">已隐藏</option>
+        <option value="incomplete">未提交</option>
+      </select>
       <input v-model="filters.name" placeholder="工作室名称" />
       <input v-model="filters.city" placeholder="城市" />
       <input v-model="filters.address" placeholder="地址" />
@@ -43,8 +50,9 @@
             <td>{{ studio.city }}</td>
             <td>{{ studio.address }}</td>
             <td>{{ studio.contact }}</td>
-            <td><span :class="['status-pill', studio.status === 'hidden' ? 'hidden' : '']">{{ studio.status === 'hidden' ? '已隐藏' : '正常' }}</span></td>
+            <td><span :class="['status-pill', statusClass(studio)]">{{ statusLabel(studio) }}</span></td>
             <td class="table-actions">
+              <button v-if="studio.hasPending" class="table-action" @click="openApproval(studio)">审批</button>
               <button class="table-action" @click="openEdit(studio)">编辑</button>
               <button class="danger-action" @click="handleDelete(studio)">删除</button>
             </td>
@@ -81,6 +89,7 @@
           <label>
             标签
             <input v-model="createDraft.tags" placeholder="多个标签用逗号分隔，每个最多6字，最多8个" />
+            <span class="field-hint" :class="{ 'field-hint--warn': createTagsCount > MAX_TAGS }">{{ createTagsCount }}/{{ MAX_TAGS }} 个标签</span>
           </label>
           <label>
             课程介绍
@@ -88,10 +97,26 @@
           </label>
         </div>
         <label>
-          主理教师
-          <select v-model="createDraft.ownerTeacherIds" multiple size="4">
-            <option v-for="t in teacherOptions" :key="t.id" :value="t.id">{{ t.name }}（{{ t.xileName || '无喜乐名' }}）</option>
-          </select>
+          主理教师（可多选）
+          <div class="multi-select" @click="toggleCreateTeacherDropdown">
+            <div class="multi-select__trigger">
+              <span v-if="createDraft.ownerTeacherIds.length" class="multi-select__chips">
+                <span v-for="id in createDraft.ownerTeacherIds" :key="id" class="multi-select__chip">
+                  {{ teacherName(id) }}
+                  <button type="button" class="multi-select__chip-remove" @click.stop="removeCreateTeacher(id)">×</button>
+                </span>
+              </span>
+              <span v-else class="multi-select__placeholder">请选择主理教师</span>
+              <span class="multi-select__arrow">▾</span>
+            </div>
+            <div v-if="showCreateTeacherDropdown" class="multi-select__panel">
+              <label v-for="t in teacherOptions" :key="t.id" class="multi-select__option" @click.stop="toggleCreateTeacher(t.id)">
+                <input type="checkbox" :checked="createDraft.ownerTeacherIds.includes(t.id)" @click.stop />
+                <span>{{ t.name }}（{{ t.xileName || '无喜乐名' }}）</span>
+              </label>
+              <div v-if="!teacherOptions.length" class="multi-select__empty">暂无教师可选</div>
+            </div>
+          </div>
         </label>
         <label>
           地址
@@ -146,6 +171,7 @@
           <label>
             标签
             <input v-model="editDraft.tags" placeholder="多个标签用逗号分隔，每个最多6字，最多8个" />
+            <span class="field-hint" :class="{ 'field-hint--warn': editTagsCount > MAX_TAGS }">{{ editTagsCount }}/{{ MAX_TAGS }} 个标签</span>
           </label>
           <label>
             课程介绍
@@ -153,10 +179,26 @@
           </label>
         </div>
         <label>
-          主理教师
-          <select v-model="editDraft.ownerTeacherIds" multiple size="4">
-            <option v-for="t in teacherOptions" :key="t.id" :value="t.id">{{ t.name }}（{{ t.xileName || '无喜乐名' }}）</option>
-          </select>
+          主理教师（可多选）
+          <div class="multi-select" @click="toggleEditTeacherDropdown">
+            <div class="multi-select__trigger">
+              <span v-if="editDraft.ownerTeacherIds.length" class="multi-select__chips">
+                <span v-for="id in editDraft.ownerTeacherIds" :key="id" class="multi-select__chip">
+                  {{ teacherName(id) }}
+                  <button type="button" class="multi-select__chip-remove" @click.stop="removeEditTeacher(id)">×</button>
+                </span>
+              </span>
+              <span v-else class="multi-select__placeholder">请选择主理教师</span>
+              <span class="multi-select__arrow">▾</span>
+            </div>
+            <div v-if="showEditTeacherDropdown" class="multi-select__panel">
+              <label v-for="t in teacherOptions" :key="t.id" class="multi-select__option" @click.stop="toggleEditTeacher(t.id)">
+                <input type="checkbox" :checked="editDraft.ownerTeacherIds.includes(t.id)" @click.stop />
+                <span>{{ t.name }}（{{ t.xileName || '无喜乐名' }}）</span>
+              </label>
+              <div v-if="!teacherOptions.length" class="multi-select__empty">暂无教师可选</div>
+            </div>
+          </div>
         </label>
         <label>
           地址
@@ -213,20 +255,62 @@
         </div>
       </div>
     </div>
+
+    <!-- Approval Modal -->
+    <div v-if="showApproval" class="modal-backdrop" @click.self="closeApproval">
+      <div class="admin-modal wide">
+        <div class="modal-head">
+          <h2>审批工作室提交 — {{ approvalStudio && approvalStudio.name }}</h2>
+          <button type="button" @click="closeApproval">×</button>
+        </div>
+        <div class="approval-diff">
+          <div class="approval-col">
+            <h3>当前已公开</h3>
+            <DiffField label="地址" :value="approvalStudio && approvalStudio.address" />
+            <DiffField label="联系方式" :value="approvalStudio && approvalStudio.contact" />
+            <DiffField label="标签" :value="approvalStudio && approvalStudio.tags && approvalStudio.tags.join('、')" />
+            <DiffField label="课程介绍" :value="approvalStudio && approvalStudio.courseIntro" />
+            <DiffField label="图片" :count="approvalStudio && approvalStudio.images ? approvalStudio.images.length : 0" />
+          </div>
+          <div class="approval-col">
+            <h3>待审批草稿</h3>
+            <DiffField label="地址" :value="approvalPending && approvalPending.address" :changed="pendingChanged('address', 'address')" />
+            <DiffField label="联系方式" :value="approvalPending && approvalPending.contact" :changed="pendingChanged('contact', 'contact')" />
+            <DiffField label="标签" :value="approvalPending && approvalPending.tags && approvalPending.tags.join('、')" :changed="pendingChanged('tags', 'tagsText')" />
+            <DiffField label="课程介绍" :value="approvalPending && approvalPending.courseIntro" :changed="pendingChanged('courseIntro', 'courseIntro')" />
+            <DiffField label="图片" :count="approvalPending && approvalPending.images ? approvalPending.images.length : 0" :changed="pendingChanged('images', 'imagesCount')" />
+          </div>
+        </div>
+        <label class="reject-reason">
+          <span class="field-label">驳回原因（驳回时必填）</span>
+          <textarea v-model="rejectReason" placeholder="如通过则无需填写"></textarea>
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="sync-btn" @click="closeApproval">取消</button>
+          <button type="button" class="danger-action" :disabled="approving" @click="handleReject">驳回</button>
+          <button type="button" class="primary-btn" :disabled="approving" @click="handleApprove">{{ approving ? '处理中…' : '通过' }}</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import ImagePreview from '../components/ImagePreview.vue'
-import { fetchAdminStudios, fetchAdminTeachers, fetchMapConfig, searchMapPlaces, reverseGeocodeMapLocation, createStudio, updateStudio, deleteStudio, uploadAdminAsset } from '../api/adminData'
+import DiffField from './StudioDiffField.vue'
+import { fetchAdminStudios, fetchAdminTeachers, fetchMapConfig, searchMapPlaces, reverseGeocodeMapLocation, createStudio, updateStudio, deleteStudio, approveStudio, rejectStudio, uploadAdminAsset } from '../api/adminData'
 import { useToast } from '../composables/useToast'
 import Pagination from '../components/Pagination.vue'
 
 const { show: toast } = useToast()
-const filters = ref({ name: '', city: '', address: '', tags: '' })
+const filters = ref({ name: '', city: '', address: '', tags: '', status: '' })
 const showCreate = ref(false)
 const showEdit = ref(false)
+const showApproval = ref(false)
+const approvalStudio = ref(null)
+const rejectReason = ref('')
+const approving = ref(false)
 const studios = ref([])
 const teacherOptions = ref([])
 const currentPage = ref(1)
@@ -419,6 +503,49 @@ const MAX_TAG_LENGTH = 6
 const MAX_IMAGES = 9
 const MAX_COURSE_INTRO_LENGTH = 500
 
+const showCreateTeacherDropdown = ref(false)
+const showEditTeacherDropdown = ref(false)
+
+function teacherName(id) {
+  const teacher = teacherOptions.value.find((t) => t.id === id)
+  return teacher ? teacher.name : `教师#${id}`
+}
+
+function toggleCreateTeacher(id) {
+  const ids = createDraft.ownerTeacherIds
+  const index = ids.indexOf(id)
+  if (index === -1) ids.push(id)
+  else ids.splice(index, 1)
+}
+
+function removeCreateTeacher(id) {
+  const index = createDraft.ownerTeacherIds.indexOf(id)
+  if (index !== -1) createDraft.ownerTeacherIds.splice(index, 1)
+}
+
+function toggleEditTeacher(id) {
+  const ids = editDraft.ownerTeacherIds
+  const index = ids.indexOf(id)
+  if (index === -1) ids.push(id)
+  else ids.splice(index, 1)
+}
+
+function removeEditTeacher(id) {
+  const index = editDraft.ownerTeacherIds.indexOf(id)
+  if (index !== -1) editDraft.ownerTeacherIds.splice(index, 1)
+}
+
+function toggleCreateTeacherDropdown() {
+  showCreateTeacherDropdown.value = !showCreateTeacherDropdown.value
+}
+
+function toggleEditTeacherDropdown() {
+  showEditTeacherDropdown.value = !showEditTeacherDropdown.value
+}
+
+const createTagsCount = computed(() => String(createDraft.tags || '').split(',').map((t) => t.trim()).filter(Boolean).length)
+const editTagsCount = computed(() => String(editDraft.tags || '').split(',').map((t) => t.trim()).filter(Boolean).length)
+
 function validateTags(tagsText) {
   const tags = String(tagsText || '').split(',').map((t) => t.trim()).filter(Boolean)
   if (tags.length > MAX_TAGS) return `标签最多 ${MAX_TAGS} 个`
@@ -464,13 +591,29 @@ const filteredList = computed(() => {
   const city = filters.value.city.trim().toLowerCase()
   const address = filters.value.address.trim().toLowerCase()
   const tags = filters.value.tags.trim().toLowerCase()
+  const status = filters.value.status
   return studios.value.filter((s) => {
+    if (status && s.status !== status) return false
     const tagsText = Array.isArray(s.tags) ? s.tags.join(' ') : s.tags
     return matches(s.name, name) && matches(s.city, city) && matches(s.address, address) && matches(tagsText, tags)
   })
 })
 
-const hasFilters = computed(() => Object.values(filters.value).some((value) => value.trim()))
+const hasFilters = computed(() => Object.values(filters.value).some((value) => value && value.trim()))
+
+function statusLabel(studio) {
+  if (studio.status === 'hidden') return '已隐藏'
+  if (studio.status === 'pending') return '待审批'
+  if (studio.status === 'incomplete') return '未提交'
+  return '正常'
+}
+
+function statusClass(studio) {
+  if (studio.status === 'hidden') return 'hidden'
+  if (studio.status === 'pending') return 'pending'
+  if (studio.status === 'incomplete') return 'incomplete'
+  return ''
+}
 
 const totalPages = computed(() => Math.ceil(filteredList.value.length / pageSize))
 const pagedList = computed(() => filteredList.value.slice((currentPage.value - 1) * pageSize, currentPage.value * pageSize))
@@ -493,6 +636,7 @@ function openCreate() {
   createDraft.coverUrl = ''
   createDraft.latitude = ''
   createDraft.longitude = ''
+  showCreateTeacherDropdown.value = false
   showCreate.value = true
 }
 
@@ -511,6 +655,7 @@ function openEdit(studio) {
   editDraft.coverUrl = studio.coverUrl || ''
   editDraft.latitude = studio.latitude ?? ''
   editDraft.longitude = studio.longitude ?? ''
+  showEditTeacherDropdown.value = false
   showEdit.value = true
 }
 
@@ -587,6 +732,66 @@ async function handleDelete(studio) {
   await deleteStudio(studio.id)
   toast('工作室已删除', 'info')
   await loadStudios()
+}
+
+const approvalPending = computed(() => (approvalStudio.value && approvalStudio.value.pending) || null)
+
+function pendingChanged(draftKey, currentKey) {
+  const studio = approvalStudio.value
+  const pending = approvalPending.value
+  if (!studio || !pending) return false
+  if (draftKey === 'images') return pending.images.length !== (studio.images ? studio.images.length : 0)
+  if (currentKey === 'tagsText') return (pending.tags || []).join('、') !== (studio.tags || []).join('、')
+  return (pending[draftKey] || '') !== (studio[currentKey] || '')
+}
+
+function openApproval(studio) {
+  approvalStudio.value = studio
+  rejectReason.value = ''
+  showApproval.value = true
+}
+
+function closeApproval() {
+  showApproval.value = false
+  approvalStudio.value = null
+  rejectReason.value = ''
+  approving.value = false
+}
+
+async function handleApprove() {
+  const studio = approvalStudio.value
+  if (!studio) return
+  approving.value = true
+  try {
+    await approveStudio(studio.id)
+    toast('已通过并公开展示')
+    closeApproval()
+    await loadStudios()
+  } catch (e) {
+    toast(e?.response?.data?.error || '审批失败，请稍后重试', 'error')
+  } finally {
+    approving.value = false
+  }
+}
+
+async function handleReject() {
+  const studio = approvalStudio.value
+  if (!studio) return
+  if (!rejectReason.value.trim()) {
+    toast('请填写驳回原因', 'error')
+    return
+  }
+  approving.value = true
+  try {
+    await rejectStudio(studio.id, rejectReason.value.trim())
+    toast('已驳回')
+    closeApproval()
+    await loadStudios()
+  } catch (e) {
+    toast(e?.response?.data?.error || '驳回失败，请稍后重试', 'error')
+  } finally {
+    approving.value = false
+  }
 }
 
 async function uploadStudioAssets(event, draft) {
@@ -676,5 +881,155 @@ function removeImage(draft, index) {
   border: 1px solid #d7ddd7;
   border-radius: 8px;
   font-size: 14px;
+}
+
+.field-hint {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #8a948d;
+}
+
+.field-hint--warn {
+  color: #c84b45;
+}
+
+.multi-select {
+  position: relative;
+}
+
+.multi-select__trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 6px 10px;
+  border: 1px solid #d7ddd7;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.multi-select__placeholder {
+  color: #8a948d;
+  font-size: 14px;
+}
+
+.multi-select__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
+}
+
+.multi-select__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: #edf5ef;
+  color: #2f5140;
+  font-size: 13px;
+}
+
+.multi-select__chip-remove {
+  border: none;
+  background: transparent;
+  color: #2f5140;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.multi-select__arrow {
+  margin-left: auto;
+  color: #8a948d;
+  font-size: 12px;
+}
+
+.multi-select__panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid #d7ddd7;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.multi-select__option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.multi-select__option:hover {
+  background: #f5f8f5;
+}
+
+.multi-select__option input[type='checkbox'] {
+  margin: 0;
+}
+
+.multi-select__empty {
+  padding: 12px;
+  text-align: center;
+  color: #8a948d;
+  font-size: 13px;
+}
+
+.status-pill.pending {
+  background: #f7efd6;
+  color: #9c7a1a;
+}
+
+.status-pill.incomplete {
+  background: #f0f2f0;
+  color: #8a948d;
+}
+
+.approval-diff {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.approval-col {
+  padding: 12px;
+  border: 1px solid #e3e9e3;
+  border-radius: 8px;
+  background: #fafcfa;
+}
+
+.approval-col h3 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #2f5140;
+}
+
+.reject-reason {
+  display: block;
+  margin-bottom: 16px;
+}
+
+.reject-reason textarea {
+  width: 100%;
+  min-height: 64px;
+  padding: 8px 10px;
+  border: 1px solid #d7ddd7;
+  border-radius: 8px;
+  font-size: 14px;
+  resize: vertical;
+  box-sizing: border-box;
 }
 </style>

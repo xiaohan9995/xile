@@ -3,7 +3,7 @@
   <div v-else class="admin-console">
     <div class="admin-frame">
       <header class="admin-topbar">
-        <span class="version-pill">JOY YOGA · 管理工作台</span>
+        <span class="version-pill">XILE YOGA · 管理工作台</span>
         <span class="topbar-context">教师认证 / 年审协作</span>
         <div class="topbar-actions">
           <RouterLink to="/guide" class="topbar-help" aria-label="打开系统操作指引" title="操作指引">?</RouterLink>
@@ -19,7 +19,7 @@
         <aside class="admin-sidebar">
           <div>
             <div class="admin-brand">
-              <div class="brand-mark">喜</div>
+              <img class="brand-mark" src="/xile-logo.png" alt="喜乐瑜伽" />
               <div>
                 <strong>喜乐瑜伽教师</strong>
                 <span>认证管理中心</span>

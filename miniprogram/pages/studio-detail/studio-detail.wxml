@@ -61,32 +61,43 @@
           <text class="grid-value">{{studio.courseIntro || '暂无课程介绍'}}</text>
         </view>
       </view>
-      <view class="grid-item soft-card">
+      <view class="grid-item soft-card" bindtap="callStudio">
         <text class="grid-icon">📞</text>
         <view class="grid-text">
           <text class="grid-label">联系方式</text>
           <text class="grid-value">{{studio.contactText || '微信/电话预约'}}</text>
         </view>
       </view>
-    </view>
 
-    <!-- 咨询服务：与「我的认证」页保持一致，客服会话必须由
-         open-type="contact" 的独立 button 承载，无法动态绑定。 -->
-    <view class="menu-list">
+      <!-- 咨询服务：与「我的认证」页保持一致，客服会话必须由
+           open-type="contact" 的独立 button 承载，无法动态绑定。 -->
       <button
-        class="menu-item"
+        class="grid-item soft-card"
         open-type="contact"
         session-from="studio-detail"
       >
-        <view class="menu-item-left">
-          <text class="menu-icon">询</text>
-          <view class="menu-text">
-            <text class="menu-title">咨询服务</text>
-            <text class="menu-subtitle">与师资管理小助手在线沟通</text>
-          </view>
+        <text class="grid-icon">💬</text>
+        <view class="grid-text">
+          <text class="grid-value">咨询客服</text>
         </view>
-        <text class="menu-arrow">›</text>
       </button>
+    </view>
+
+    <!-- 主理教师管理入口：仅当当前登录用户是该工作室主理教师时显示 -->
+    <view wx:if="{{mine}}" class="owner-panel">
+      <view wx:if="{{mine.status === 'pending'}}" class="owner-panel__status">
+        <text>该工作室信息正在等待管理员审批</text>
+      </view>
+      <view wx:if="{{mine.rejectReason}}" class="owner-panel__reject">
+        <text class="owner-panel__reject-label">驳回原因</text>
+        <text>{{mine.rejectReason}}</text>
+      </view>
+      <view class="owner-panel__actions">
+        <button wx:if="{{mine.status === 'pending'}}" class="btn-secondary owner-panel__action" bindtap="withdraw">撤回提交</button>
+        <button class="btn-primary owner-panel__action" bindtap="goEdit">
+          {{mine.status === 'pending' ? '查看/修改提交' : (mine.status === 'open' ? '修改工作室信息' : '填写工作室信息')}}
+        </button>
+      </view>
     </view>
   </view>
 

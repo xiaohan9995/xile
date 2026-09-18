@@ -29,7 +29,12 @@ class Studio(db.Model):
     intro = db.Column(db.Text)
     opening_hours = db.Column(db.String(64))  # legacy, no longer displayed
     contact_text = db.Column(db.String(128))
-    status = db.Column(db.String(16), default="open", nullable=False)  # open/hidden/incomplete
+    status = db.Column(db.String(16), default="open", nullable=False)  # open/hidden/incomplete/pending
+    # A lead teacher may submit a full display-info draft that only takes
+    # effect after an admin approves it. The public fields above keep serving
+    # the already-published content until then, so submitting never unpublishes.
+    pending_draft = db.Column(db.Text)  # JSON string of the pending display fields
+    pending_reject_reason = db.Column(db.String(256))
     display_order = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())

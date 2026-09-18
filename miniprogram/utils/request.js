@@ -195,7 +195,6 @@ const request = (options) => {
 };
 
 const uploadFile = (options) => new Promise((resolve, reject) => {
-  const config = getEnvConfig();
   const header = { ...getAuthHeader(), ...(options.header || {}) };
   const handleSuccess = (response) => {
     if (response.statusCode >= 200 && response.statusCode < 300) {
@@ -231,15 +230,9 @@ const uploadFile = (options) => new Promise((resolve, reject) => {
     return;
   }
 
-  if (config.useCloudContainer && config.env && wx.cloud) {
-    wx.cloud.callContainer({
-      config: { env: config.env }, path: options.url, method: 'POST',
-      header: { 'X-WX-SERVICE': config.serviceName, 'content-type': 'multipart/form-data', ...header },
-      filePath: options.filePath, name: options.name || 'file', formData: options.formData || {},
-      success: handleSuccess, fail: handleFail,
-    });
-    return;
-  }
+  // wx.cloud.callContainer does NOT support multipart file upload (it has no
+  // filePath parameter). File uploads must go through wx.uploadFile against the
+  // public CloudRun origin, which getBaseUrl() already resolves to.
   wx.uploadFile({
     url: `${getBaseUrl()}${options.url}`, filePath: options.filePath, name: options.name || 'file',
     formData: options.formData || {}, header, timeout: options.timeout || 30000,

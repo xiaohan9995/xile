@@ -1,0 +1,51 @@
+<view class="page-shell studio-page">
+  <view class="page-header" style="padding-top:{{statusBarHeight}}px;"><view class="page-header__back" bindtap="goBack">‹</view><text class="page-header__title">{{directEdit ? '修改工作室信息' : '工作室信息'}}</text><navigator class="page-header__right page-header__home" url="/pages/index/index" open-type="reLaunch">首页</navigator></view>
+
+  <view class="content">
+    <view wx:if="{{!directEdit}}" class="intro"><text class="section-eyebrow">STUDIO PROFILE</text><text class="intro__title">维护工作室展示页</text><text class="intro__text">点击工作室进入详情页修改展示信息；提交后需管理员审批，通过后才会公开展示。</text></view>
+
+    <view wx:if="{{!directEdit && !loading && studios.length === 0}}" class="empty"><text class="empty__mark">01</text><text>暂无可维护的工作室</text><text>如你是工作室主理教师，请联系管理员为你开通工作室账户。</text></view>
+
+    <view wx:if="{{!directEdit}}" wx:for="{{studios}}" wx:key="id" class="studio-card" bindtap="openStudioDetail" data-id="{{item.id}}">
+      <view class="studio-card__head">
+        <text class="studio-card__name">{{item.name}}</text>
+        <text class="status-pill status-pill--{{item.status}}">{{statusLabel(item.status)}}</text>
+      </view>
+      <view wx:if="{{item.ownerTeachers && item.ownerTeachers.length}}" class="studio-card__teachers"><text>主理教师：</text><text wx:for="{{item.ownerTeachers}}" wx:for-item="t" wx:key="id">{{t.xileName || t.name}}{{index === item.ownerTeachers.length - 1 ? '' : '、'}}</text></view>
+      <view wx:if="{{item.rejectReason}}" class="studio-card__reject"><text class="studio-card__reject-label">驳回原因</text><text>{{item.rejectReason}}</text></view>
+    </view>
+
+    <view wx:if="{{editing}}" class="form-card">
+      <view class="form-card__head"><text class="form-card__title">{{editing.name}}</text><view wx:if="{{!directEdit}}" class="form-card__close" bindtap="closeEditor">×</view></view>
+      <text class="form-card__hint">名称、城市、主理教师由管理员设定，此处不可修改</text>
+
+      <input class="field" placeholder="详细地址" value="{{form.address}}" bindinput="input" data-field="address" />
+      <input class="field" placeholder="联系方式（可选）" value="{{form.contact}}" bindinput="input" data-field="contact" />
+
+      <view class="tag-section">
+        <view class="tag-list">
+          <view wx:for="{{form.tags}}" wx:key="*this" class="tag-chip"><text>{{item}}</text><text class="tag-chip__remove" bindtap="removeTag" data-index="{{index}}">×</text></view>
+        </view>
+        <view class="tag-input-row">
+          <input class="field tag-input" placeholder="添加标签（每个≤6字）" value="{{tagInput}}" bindinput="onTagInput" bindconfirm="addTag" />
+          <button class="btn-secondary tag-add" bindtap="addTag">添加</button>
+        </view>
+        <text class="field-hint">标签最多 {{maxTags}} 个，当前 {{form.tags.length}} 个</text>
+      </view>
+
+      <textarea class="field field--area" placeholder="课程介绍（≤500字）" value="{{form.courseIntro}}" bindinput="input" data-field="courseIntro" maxlength="500" />
+
+      <view class="image-section">
+        <view class="image-grid">
+          <view wx:for="{{form.images}}" wx:key="*this" class="image-item"><image src="{{item}}" mode="aspectFill" /><view class="image-item__remove" bindtap="removeImage" data-index="{{index}}">×</view><text wx:if="{{index === 0}}" class="image-item__cover">封面</text></view>
+          <view wx:if="{{form.images.length < maxImages}}" class="image-add" bindtap="chooseImages"><text class="image-add__plus">＋</text><text class="image-add__label">添加图片</text></view>
+        </view>
+        <text class="field-hint">图片最多 {{maxImages}} 张，第一张为封面</text>
+      </view>
+
+      <view class="record-actions"><button class="btn-primary" bindtap="submit" loading="{{saving}}">提交审批</button></view>
+    </view>
+  </view>
+
+  <tab-bar active="my" />
+</view>

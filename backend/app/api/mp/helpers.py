@@ -249,3 +249,10 @@ def _get_current_user():
 def _is_owner_teacher(user, teacher_id):
     """Check if user is the teacher who owns this resource."""
     return user and user.role == "teacher" and user.teacher_id == teacher_id
+
+
+def _is_studio_owner_teacher(user, studio):
+    """Check if user's linked teacher is one of the studio's lead teachers."""
+    if not user or user.role != "teacher" or not user.teacher_id or not studio:
+        return False
+    return any(t.id == user.teacher_id for t in studio.teachers)

@@ -54,6 +54,9 @@ export function mapAdminStudio(studio) {
     latitude: studio.latitude ?? null,
     longitude: studio.longitude ?? null,
     status: studio.status,
+    hasPending: Boolean(studio.hasPending),
+    pendingRejectReason: studio.pendingRejectReason || '',
+    pending: studio.pending || null,
   }
 }
 
@@ -133,9 +136,25 @@ export async function fetchAdminTeachingRecords(params = {}) {
   return payload.items || []
 }
 
+export async function updateTeachingRecord(id, data) {
+  return api.put(`/teaching-records/${id}`, data)
+}
+
+export async function deleteTeachingRecord(id) {
+  return api.delete(`/teaching-records/${id}`)
+}
+
 export async function fetchAdminServiceRecords(params = {}) {
   const payload = await api.get('/service-records', params)
   return payload.items || []
+}
+
+export async function updateServiceRecord(id, data) {
+  return api.put(`/service-records/${id}`, data)
+}
+
+export async function deleteServiceRecord(id) {
+  return api.delete(`/service-records/${id}`)
 }
 
 export async function fetchDashboardCards() {
@@ -180,6 +199,14 @@ export async function updateStudio(id, data) {
 
 export async function deleteStudio(id) {
   return api.delete(`/studios/${id}`)
+}
+
+export async function approveStudio(id) {
+  return api.post(`/studios/${id}/approve`)
+}
+
+export async function rejectStudio(id, reason) {
+  return api.post(`/studios/${id}/reject`, { reason })
 }
 
 export async function submitReviewDecision(reviewId, status, comment) {

@@ -160,7 +160,7 @@ async function handleSave() {
 .rules-table td { padding: 16px 14px; border-bottom: 1px solid #edf0ed; color: #4a5650; font-size: 13px; }
 .rules-table tbody tr:last-child td { border-bottom: 0; }
 .rules-empty { color: #7b877e; text-align: center; }
-.rules-table td:first-child strong { display: inline-block; min-width: 30px; color: #5d7261; font-family: "JetBrains Mono", monospace; }
+.rules-table td:first-child strong { display: inline-block; min-width: 30px; color: #426d58; font-family: "JetBrains Mono", monospace; }
 .rules-table td:first-child span { margin-left: 8px; color: #25322a; font-weight: 700; }
 .rule-tag { display: inline-flex; padding: 4px 8px; border-radius: 999px; font-size: 11px; font-weight: 800; }
 .rule-tag--active { background: #e9f4eb; color: #397243; }

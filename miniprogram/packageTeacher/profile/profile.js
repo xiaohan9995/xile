@@ -24,6 +24,7 @@ const teacherMenuItems = (teacherId) => [
   { icon: '我', title: '我的信息', subtitle: '查看对外公开显示的师资页面', url: `/pages/teacher-detail/teacher-detail?id=${teacherId || ''}` },
   { icon: '教', title: '教学记录', subtitle: '请定期提交你的教学传播活动记录', url: '/packageTeacher/teaching-records/teaching-records' },
   { icon: '服', title: '服务记录', subtitle: '请定期提交你的服务推广活动记录', url: '/packageTeacher/service-records/service-records' },
+  { icon: '馆', title: '工作室信息', subtitle: '提交或更新你主理的工作室展示信息', url: '/packageTeacher/studio-submit/studio-submit' },
   { icon: '年', title: '年审信息', subtitle: '查看年审进度及提交申请', url: '/packageTeacher/review-records/review-records' },
   { icon: '设', title: '个人设置', subtitle: '更新头像、密码及对外显示信息', url: '/packageTeacher/settings/settings' },
 ];

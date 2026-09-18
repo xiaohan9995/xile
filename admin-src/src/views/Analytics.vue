@@ -63,9 +63,9 @@
           <g class="grid-lines">
             <line v-for="i in 4" :key="i" x1="0" :y1="i * 32" x2="440" :y2="i * 32" />
           </g>
-          <polygon :points="areaPoints" fill="rgba(93,114,97,0.12)" />
-          <polyline :points="linePoints" fill="none" stroke="#5d7261" stroke-width="2" />
-          <circle v-for="(p, i) in pointCoords" :key="i" :cx="p.x" :cy="p.y" r="3" fill="#5d7261" />
+          <polygon :points="areaPoints" fill="rgba(66,109,88,0.12)" />
+          <polyline :points="linePoints" fill="none" stroke="#426d58" stroke-width="2" />
+          <circle v-for="(p, i) in pointCoords" :key="i" :cx="p.x" :cy="p.y" r="3" fill="#426d58" />
         </svg>
         <div class="month-axis">
           <span v-for="item in analytics.monthlyTrend || []" :key="item.month">{{ item.month.slice(5) }}月</span>

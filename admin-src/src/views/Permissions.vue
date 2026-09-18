@@ -388,7 +388,7 @@ async function handleInvite() {
 }
 .role-column-title { display:inline-flex; align-items:center; gap:6px; }
 .role-help { position:relative; display:inline-grid; width:17px; height:17px; place-items:center; padding:0; border:1px solid #c8d2c9; border-radius:50%; color:var(--brand-green); background:#fff; font-size:11px; font-weight:800; cursor:help; }
-.role-tooltip { position:absolute; z-index:8; top:calc(100% + 8px); left:-16px; display:none; width:250px; padding:13px; border:1px solid var(--line-strong); border-radius:10px; color:var(--ink); background:#fff; box-shadow:0 12px 28px rgba(41,56,44,.16); font-size:12px; font-weight:400; line-height:1.6; text-align:left; }
+.role-tooltip { position:absolute; z-index:8; top:calc(100% + 8px); left:-16px; display:none; width:250px; padding:13px; border:1px solid var(--line-strong); border-radius:10px; color:var(--ink); background:#fff; box-shadow:0 12px 28px rgba(32,57,42,.16); font-size:12px; font-weight:400; line-height:1.6; text-align:left; }
 .role-tooltip::before { content:""; position:absolute; top:-5px; left:20px; width:8px; height:8px; border-top:1px solid var(--line-strong); border-left:1px solid var(--line-strong); background:#fff; transform:rotate(45deg); }
 .role-tooltip b,.role-tooltip i { position:relative; display:block; font-style:normal; }
 .role-tooltip b { margin-bottom:5px; font-size:12px; }
