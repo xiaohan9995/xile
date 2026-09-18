@@ -88,8 +88,22 @@
           </label>
           <label>
             标签
-            <input v-model="createDraft.tags" placeholder="多个标签用逗号分隔，每个最多6字，最多8个" />
-            <span class="field-hint" :class="{ 'field-hint--warn': createTagsCount > MAX_TAGS }">{{ createTagsCount }}/{{ MAX_TAGS }} 个标签</span>
+            <div class="tag-editor" :class="{ 'tag-editor--focus': createTagFocus }">
+              <span v-for="(tag, idx) in createDraft.tags" :key="idx" class="tag-editor__chip">
+                {{ tag }}
+                <button type="button" class="tag-editor__remove" @click="removeCreateTag(idx)">×</button>
+              </span>
+              <input
+                v-model="createTagInput"
+                class="tag-editor__input"
+                placeholder="输入后回车添加"
+                @focus="createTagFocus = true"
+                @blur="createTagFocus = false"
+                @keydown.enter.prevent="addCreateTag"
+                @keydown="handleCreateTagKey"
+              />
+            </div>
+            <span class="field-hint" :class="{ 'field-hint--warn': createTagsCount > MAX_TAGS }">{{ createTagsCount }}/{{ MAX_TAGS }} 个标签，每个最多 6 字</span>
           </label>
           <label>
             课程介绍
@@ -98,7 +112,7 @@
         </div>
         <label>
           主理教师（可多选）
-          <div class="multi-select" @click="toggleCreateTeacherDropdown">
+          <div ref="createMultiSelect" class="multi-select" @click.stop="openCreateTeacherDropdown">
             <div class="multi-select__trigger">
               <span v-if="createDraft.ownerTeacherIds.length" class="multi-select__chips">
                 <span v-for="id in createDraft.ownerTeacherIds" :key="id" class="multi-select__chip">
@@ -109,10 +123,11 @@
               <span v-else class="multi-select__placeholder">请选择主理教师</span>
               <span class="multi-select__arrow">▾</span>
             </div>
-            <div v-if="showCreateTeacherDropdown" class="multi-select__panel">
-              <label v-for="t in teacherOptions" :key="t.id" class="multi-select__option" @click.stop="toggleCreateTeacher(t.id)">
-                <input type="checkbox" :checked="createDraft.ownerTeacherIds.includes(t.id)" @click.stop />
+            <div v-if="showCreateTeacherDropdown" class="multi-select__panel" @click.stop>
+              <label v-for="t in teacherOptions" :key="t.id" class="multi-select__option">
+                <span class="multi-select__check" :class="{ 'multi-select__check--on': createDraft.ownerTeacherIds.includes(t.id) }">✓</span>
                 <span>{{ t.name }}（{{ t.xileName || '无喜乐名' }}）</span>
+                <input type="checkbox" class="multi-select__input" :checked="createDraft.ownerTeacherIds.includes(t.id)" @change="toggleCreateTeacher(t.id)" />
               </label>
               <div v-if="!teacherOptions.length" class="multi-select__empty">暂无教师可选</div>
             </div>
@@ -170,8 +185,22 @@
           </label>
           <label>
             标签
-            <input v-model="editDraft.tags" placeholder="多个标签用逗号分隔，每个最多6字，最多8个" />
-            <span class="field-hint" :class="{ 'field-hint--warn': editTagsCount > MAX_TAGS }">{{ editTagsCount }}/{{ MAX_TAGS }} 个标签</span>
+            <div class="tag-editor" :class="{ 'tag-editor--focus': editTagFocus }">
+              <span v-for="(tag, idx) in editDraft.tags" :key="idx" class="tag-editor__chip">
+                {{ tag }}
+                <button type="button" class="tag-editor__remove" @click="removeEditTag(idx)">×</button>
+              </span>
+              <input
+                v-model="editTagInput"
+                class="tag-editor__input"
+                placeholder="输入后回车添加"
+                @focus="editTagFocus = true"
+                @blur="editTagFocus = false"
+                @keydown.enter.prevent="addEditTag"
+                @keydown="handleEditTagKey"
+              />
+            </div>
+            <span class="field-hint" :class="{ 'field-hint--warn': editTagsCount > MAX_TAGS }">{{ editTagsCount }}/{{ MAX_TAGS }} 个标签，每个最多 6 字</span>
           </label>
           <label>
             课程介绍
@@ -180,7 +209,7 @@
         </div>
         <label>
           主理教师（可多选）
-          <div class="multi-select" @click="toggleEditTeacherDropdown">
+          <div ref="editMultiSelect" class="multi-select" @click.stop="openEditTeacherDropdown">
             <div class="multi-select__trigger">
               <span v-if="editDraft.ownerTeacherIds.length" class="multi-select__chips">
                 <span v-for="id in editDraft.ownerTeacherIds" :key="id" class="multi-select__chip">
@@ -191,10 +220,11 @@
               <span v-else class="multi-select__placeholder">请选择主理教师</span>
               <span class="multi-select__arrow">▾</span>
             </div>
-            <div v-if="showEditTeacherDropdown" class="multi-select__panel">
-              <label v-for="t in teacherOptions" :key="t.id" class="multi-select__option" @click.stop="toggleEditTeacher(t.id)">
-                <input type="checkbox" :checked="editDraft.ownerTeacherIds.includes(t.id)" @click.stop />
+            <div v-if="showEditTeacherDropdown" class="multi-select__panel" @click.stop>
+              <label v-for="t in teacherOptions" :key="t.id" class="multi-select__option">
+                <span class="multi-select__check" :class="{ 'multi-select__check--on': editDraft.ownerTeacherIds.includes(t.id) }">✓</span>
                 <span>{{ t.name }}（{{ t.xileName || '无喜乐名' }}）</span>
+                <input type="checkbox" class="multi-select__input" :checked="editDraft.ownerTeacherIds.includes(t.id)" @change="toggleEditTeacher(t.id)" />
               </label>
               <div v-if="!teacherOptions.length" class="multi-select__empty">暂无教师可选</div>
             </div>
@@ -296,7 +326,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import ImagePreview from '../components/ImagePreview.vue'
 import DiffField from './StudioDiffField.vue'
 import { fetchAdminStudios, fetchAdminTeachers, fetchMapConfig, searchMapPlaces, reverseGeocodeMapLocation, createStudio, updateStudio, deleteStudio, approveStudio, rejectStudio, uploadAdminAsset } from '../api/adminData'
@@ -470,7 +500,7 @@ const createDraft = reactive({
   city: '',
   district: '',
   contact: '',
-  tags: '',
+  tags: [],
   address: '',
   intro: '',
   courseIntro: '',
@@ -487,7 +517,7 @@ const editDraft = reactive({
   city: '',
   district: '',
   contact: '',
-  tags: '',
+  tags: [],
   address: '',
   intro: '',
   courseIntro: '',
@@ -505,6 +535,13 @@ const MAX_COURSE_INTRO_LENGTH = 500
 
 const showCreateTeacherDropdown = ref(false)
 const showEditTeacherDropdown = ref(false)
+const createMultiSelect = ref(null)
+const editMultiSelect = ref(null)
+
+const createTagInput = ref('')
+const editTagInput = ref('')
+const createTagFocus = ref(false)
+const editTagFocus = ref(false)
 
 function teacherName(id) {
   const teacher = teacherOptions.value.find((t) => t.id === id)
@@ -535,19 +572,83 @@ function removeEditTeacher(id) {
   if (index !== -1) editDraft.ownerTeacherIds.splice(index, 1)
 }
 
-function toggleCreateTeacherDropdown() {
-  showCreateTeacherDropdown.value = !showCreateTeacherDropdown.value
+function openCreateTeacherDropdown() {
+  showCreateTeacherDropdown.value = true
+  showEditTeacherDropdown.value = false
 }
 
-function toggleEditTeacherDropdown() {
-  showEditTeacherDropdown.value = !showEditTeacherDropdown.value
+function openEditTeacherDropdown() {
+  showEditTeacherDropdown.value = true
+  showCreateTeacherDropdown.value = false
 }
 
-const createTagsCount = computed(() => String(createDraft.tags || '').split(',').map((t) => t.trim()).filter(Boolean).length)
-const editTagsCount = computed(() => String(editDraft.tags || '').split(',').map((t) => t.trim()).filter(Boolean).length)
+function closeTeacherDropdowns() {
+  showCreateTeacherDropdown.value = false
+  showEditTeacherDropdown.value = false
+}
 
-function validateTags(tagsText) {
-  const tags = String(tagsText || '').split(',').map((t) => t.trim()).filter(Boolean)
+// 点击下拉框外部任意位置或按 Esc 时关闭选框
+function handleDocumentClick(event) {
+  const createEl = createMultiSelect.value
+  const editEl = editMultiSelect.value
+  if (createEl && !createEl.contains(event.target) && editEl && !editEl.contains(event.target)) {
+    closeTeacherDropdowns()
+  }
+}
+
+function handleKeydown(event) {
+  if (event.key === 'Escape') closeTeacherDropdowns()
+}
+
+const createTagsCount = computed(() => createDraft.tags.length)
+const editTagsCount = computed(() => editDraft.tags.length)
+
+function addTagTo(tags, raw) {
+  const tag = String(raw || '').trim().replace(/[,，]/g, '').trim()
+  if (!tag) return ''
+  if (tag.length > MAX_TAG_LENGTH) return `每个标签最多 ${MAX_TAG_LENGTH} 个字`
+  if (tags.length >= MAX_TAGS) return `标签最多 ${MAX_TAGS} 个`
+  if (tags.includes(tag)) return '标签已存在'
+  tags.push(tag)
+  return ''
+}
+
+function addCreateTag() {
+  const err = addTagTo(createDraft.tags, createTagInput.value)
+  if (err) { toast(err, 'error'); return }
+  createTagInput.value = ''
+}
+
+function addEditTag() {
+  const err = addTagTo(editDraft.tags, editTagInput.value)
+  if (err) { toast(err, 'error'); return }
+  editTagInput.value = ''
+}
+
+// 中文输入法回车确认（keyCode 229）不应触发添加，仅在英文逗号/回车时提交
+function handleCreateTagKey(e) {
+  if (e.key === ',' || e.key === '，') {
+    e.preventDefault()
+    addCreateTag()
+  }
+}
+
+function handleEditTagKey(e) {
+  if (e.key === ',' || e.key === '，') {
+    e.preventDefault()
+    addEditTag()
+  }
+}
+
+function removeCreateTag(idx) {
+  createDraft.tags.splice(idx, 1)
+}
+
+function removeEditTag(idx) {
+  editDraft.tags.splice(idx, 1)
+}
+
+function validateTags(tags) {
   if (tags.length > MAX_TAGS) return `标签最多 ${MAX_TAGS} 个`
   if (tags.some((t) => t.length > MAX_TAG_LENGTH)) return `每个标签最多 ${MAX_TAG_LENGTH} 个字`
   return ''
@@ -573,6 +674,13 @@ onMounted(() => {
   loadStudios()
   loadTeachers()
   loadMapKey()
+  document.addEventListener('click', handleDocumentClick)
+  document.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleDocumentClick)
+  document.removeEventListener('keydown', handleKeydown)
 })
 
 async function loadMapKey() {
@@ -627,7 +735,7 @@ function openCreate() {
   createDraft.city = ''
   createDraft.district = ''
   createDraft.contact = ''
-  createDraft.tags = ''
+  createDraft.tags = []
   createDraft.address = ''
   createDraft.intro = ''
   createDraft.courseIntro = ''
@@ -636,6 +744,7 @@ function openCreate() {
   createDraft.coverUrl = ''
   createDraft.latitude = ''
   createDraft.longitude = ''
+  createTagInput.value = ''
   showCreateTeacherDropdown.value = false
   showCreate.value = true
 }
@@ -646,7 +755,7 @@ function openEdit(studio) {
   editDraft.city = studio.city || ''
   editDraft.district = studio.district || ''
   editDraft.contact = studio.contact || ''
-  editDraft.tags = Array.isArray(studio.tags) ? studio.tags.join(', ') : (studio.tags || '')
+  editDraft.tags = Array.isArray(studio.tags) ? studio.tags.slice() : String(studio.tags || '').split(',').map((t) => t.trim()).filter(Boolean)
   editDraft.address = studio.address || ''
   editDraft.intro = studio.intro || ''
   editDraft.courseIntro = studio.courseIntro || ''
@@ -655,6 +764,7 @@ function openEdit(studio) {
   editDraft.coverUrl = studio.coverUrl || ''
   editDraft.latitude = studio.latitude ?? ''
   editDraft.longitude = studio.longitude ?? ''
+  editTagInput.value = ''
   showEditTeacherDropdown.value = false
   showEdit.value = true
 }
@@ -678,7 +788,7 @@ async function handleCreate() {
     city: createDraft.city,
     district: createDraft.district,
     contact: createDraft.contact,
-    tags: createDraft.tags,
+    tags: createDraft.tags.join(','),
     address: createDraft.address,
     intro: createDraft.intro,
     courseIntro: createDraft.courseIntro,
@@ -712,7 +822,7 @@ async function handleUpdate() {
     city: editDraft.city,
     district: editDraft.district,
     contact: editDraft.contact,
-    tags: editDraft.tags,
+    tags: editDraft.tags.join(','),
     address: editDraft.address,
     intro: editDraft.intro,
     courseIntro: editDraft.courseIntro,
@@ -970,14 +1080,40 @@ function removeImage(draft, index) {
   padding: 8px 10px;
   cursor: pointer;
   font-size: 14px;
+  user-select: none;
 }
 
 .multi-select__option:hover {
   background: #f5f8f5;
 }
 
-.multi-select__option input[type='checkbox'] {
-  margin: 0;
+.multi-select__input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.multi-select__check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  border: 1px solid #c6d0c6;
+  border-radius: 4px;
+  color: transparent;
+  font-size: 12px;
+  line-height: 1;
+  background: #fff;
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+
+.multi-select__check--on {
+  background: #426d58;
+  border-color: #426d58;
+  color: #fff;
 }
 
 .multi-select__empty {
@@ -985,6 +1121,55 @@ function removeImage(draft, index) {
   text-align: center;
   color: #8a948d;
   font-size: 13px;
+}
+
+.tag-editor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 5px 8px;
+  border: 1px solid #d7ddd7;
+  border-radius: 8px;
+  background: #fff;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.tag-editor--focus {
+  border-color: #426d58;
+  box-shadow: 0 0 0 3px rgba(66, 109, 88, .12);
+}
+
+.tag-editor__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: #edf5ef;
+  color: #2f5140;
+  font-size: 13px;
+}
+
+.tag-editor__remove {
+  border: none;
+  background: transparent;
+  color: #2f5140;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.tag-editor__input {
+  flex: 1;
+  min-width: 100px;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  padding: 4px 2px;
+  background: transparent;
 }
 
 .status-pill.pending {

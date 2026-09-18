@@ -1,10 +1,11 @@
 import api from './index.js'
 
-const DEFAULT_AVATAR = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop'
 const DEFAULT_STUDIO = 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=600&auto=format&fit=crop'
 
+// 教师无头像时不再回退到外部占位图，而是返回空字符串，由各视图用姓名首字
+// 渲染本地占位（与小程序端默认头像样式保持一致）。
 function resolveAvatar(url) {
-  if (!url || url.startsWith('/static/demo/')) return DEFAULT_AVATAR
+  if (!url || url.startsWith('/static/demo/')) return ''
   return url
 }
 

@@ -51,7 +51,8 @@
             <tr v-for="review in pagedReviews" :key="review.id">
               <td>
                 <div class="cell-person compact">
-                  <ImagePreview :src="review.avatar" :alt="review.name" image-class="review-avatar" />
+                  <ImagePreview v-if="review.avatar" :src="review.avatar" :alt="review.name" image-class="review-avatar" />
+                  <div v-else class="review-avatar-fallback">{{ (review.name || '教').slice(0, 1) }}</div>
                   <div>
                     <strong>{{ review.name }}</strong>
                     <span>喜乐名：{{ review.xileName }}</span>
@@ -72,7 +73,8 @@
 
     <section v-else class="review-detail">
       <aside class="profile-panel">
-        <ImagePreview :src="selected.avatar" :alt="selected.name" image-class="review-avatar-large" />
+        <ImagePreview v-if="selected.avatar" :src="selected.avatar" :alt="selected.name" image-class="review-avatar-large" />
+        <div v-else class="review-avatar-fallback review-avatar-fallback--large">{{ (selected.name || '教').slice(0, 1) }}</div>
         <h2>{{ selected.name }}</h2>
         <p>证书编号：{{ selected.certNo }}</p>
         <p>喜乐名：{{ selected.xileName }}</p>
@@ -230,4 +232,22 @@ function clearSelection() {
 .record-row { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
 .record-row span { color: #65706a; }
 .record-row a { margin-left: auto; color: #426c55; }
+.review-avatar-fallback {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 36px;
+  border-radius: 50%;
+  background: var(--brand-green-light, #edf5ef);
+  color: var(--brand-green, #426d58);
+  font-weight: 800;
+  font-size: 14px;
+}
+.review-avatar-fallback--large {
+  width: 64px;
+  height: 64px;
+  flex-basis: 64px;
+  font-size: 24px;
+}
 </style>
