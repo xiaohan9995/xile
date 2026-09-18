@@ -17,7 +17,7 @@ Page({
     residencesText: '',
     loading: false,
     error: '',
-    bioExpanded: false,
+    bioDrawerVisible: false,
   },
 
   onLoad(options) {
@@ -52,10 +52,16 @@ Page({
     wx.navigateBack();
   },
 
-  toggleBio() {
-    this.setData({ bioExpanded: !this.data.bioExpanded });
+  openBioDrawer() {
+    if (!this.data.teacher || !this.data.teacher.teachingSummary) return;
+    this.setData({ bioDrawerVisible: true });
   },
 
+  closeBioDrawer() {
+    this.setData({ bioDrawerVisible: false });
+  },
+
+  noop() {},
   previewCertificate() {
     const url = this.data.teacher && this.data.teacher.certificateUrl;
     if (!url) {

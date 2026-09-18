@@ -171,6 +171,22 @@
   color: var(--color-text);
 }
 
+.grid-value--clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.grid-arrow {
+  flex-shrink: 0;
+  font-size: 34rpx;
+  color: var(--color-muted);
+  margin-left: 8rpx;
+}
+
 /* 咨询服务：与上方 .grid-item 卡片同宽同高。承载元素是原生 button，
    需复位 button 默认样式（宽度/内边距/边框/背景/行高）。 */
 .info-grid button.grid-item {
@@ -263,4 +279,73 @@
 .owner-panel__actions .owner-panel__action {
   flex: 1;
   margin: 0;
+}
+
+/* ===== Bottom drawer ===== */
+.drawer-mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  background: rgba(20, 28, 23, 0.5);
+  display: flex;
+  align-items: flex-end;
+}
+
+.drawer {
+  width: 100%;
+  max-height: 72vh;
+  background: var(--color-card);
+  border-radius: 32rpx 32rpx 0 0;
+  padding: 16rpx 32rpx calc(32rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  animation: drawer-up 0.24s ease;
+}
+
+@keyframes drawer-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.drawer__handle {
+  width: 72rpx;
+  height: 8rpx;
+  margin: 0 auto 20rpx;
+  border-radius: 8rpx;
+  background: var(--color-line);
+}
+
+.drawer__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.drawer__title {
+  font-size: 30rpx;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.drawer__close {
+  font-size: 32rpx;
+  color: var(--color-muted);
+  padding: 8rpx;
+  line-height: 1;
+}
+
+.drawer__body {
+  max-height: 56vh;
+}
+
+.drawer__text {
+  font-size: 26rpx;
+  line-height: 1.8;
+  color: var(--color-text);
+  white-space: pre-wrap;
 }

@@ -56,10 +56,10 @@
     </view>
 
     <!-- Bio -->
-    <view class="bio-card">
+    <view class="bio-card" bindtap="openBioDrawer">
       <text class="bio-title">个人简介</text>
-      <text class="bio-text {{bioExpanded ? '' : 'bio-text--clamp'}}">{{teacher.teachingSummary || '—'}}</text>
-      <text wx:if="{{teacher.teachingSummary && teacher.teachingSummary.length > 40}}" class="bio-toggle" bindtap="toggleBio">{{bioExpanded ? '收起' : '展开'}}</text>
+      <text class="bio-text bio-text--clamp">{{teacher.teachingSummary || '暂无个人简介'}}</text>
+      <text wx:if="{{teacher.teachingSummary}}" class="bio-toggle">查看全部</text>
     </view>
 
     <!-- Certificate card -->
@@ -88,4 +88,18 @@
 
   <!-- Error state -->
   <view wx:if="{{error}}" class="error-tip">{{error}}</view>
+
+  <!-- Bio drawer -->
+  <view wx:if="{{bioDrawerVisible}}" class="drawer-mask" bindtap="closeBioDrawer">
+    <view class="drawer" catchtap="noop">
+      <view class="drawer__handle"></view>
+      <view class="drawer__head">
+        <text class="drawer__title">个人简介</text>
+        <text class="drawer__close" bindtap="closeBioDrawer">✕</text>
+      </view>
+      <scroll-view scroll-y class="drawer__body">
+        <text class="drawer__text">{{teacher.teachingSummary || '暂无个人简介'}}</text>
+      </scroll-view>
+    </view>
+  </view>
 </view>

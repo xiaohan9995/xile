@@ -10,6 +10,7 @@ Page({
     loading: false,
     error: '',
     mine: null, // { status, rejectReason } when the viewer is a lead teacher
+    courseDrawerVisible: false,
   },
 
   onLoad(options) {
@@ -89,6 +90,17 @@ Page({
   goBack() {
     wx.navigateBack();
   },
+
+  openCourseDrawer() {
+    if (!this.data.studio || !this.data.studio.courseIntro) return;
+    this.setData({ courseDrawerVisible: true });
+  },
+
+  closeCourseDrawer() {
+    this.setData({ courseDrawerVisible: false });
+  },
+
+  noop() {},
 
   openMap() {
     const studio = this.data.studio;
