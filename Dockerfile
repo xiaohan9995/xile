@@ -1,4 +1,8 @@
 # ─── Stage 1: Build admin frontend ──────────────────────────────────────────
+# cache-bust: force a fresh build to sidestep a stuck CODING build-node cache
+# (CloudBase ErrorCode 300502 "build not found"). Bump the value to retry.
+ARG CACHE_BUST=20260918
+
 FROM node:20-alpine AS admin-build
 
 WORKDIR /build
