@@ -27,6 +27,20 @@ admin-src/dist/
 .DS_Store
 Thumbs.db
 
+# Tooling / local config
+.agents/
+.claude/
+.codebuddy/
+.lingma/
+.roo/
+.rules/
+.workbuddy/
+codebuddy-plugin/
+rules/
+skills-lock.json
+.mcp.json
+uploads/
+
 # Miniprogram
 miniprogram/miniprogram_npm/
 project.private.config.json
