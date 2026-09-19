@@ -14,6 +14,8 @@ class Teacher(db.Model):
     city = db.Column(db.String(32), index=True)
     district = db.Column(db.String(32))
     status = db.Column(db.String(16), default="active", nullable=False)  # active/expiring/expired/hidden
+    # 列表排序号：按导入文件顺序递增；0 表示未排序，排在最末。
+    sort_order = db.Column(db.Integer, default=0, nullable=False)
     first_certified_on = db.Column(db.Date)
     valid_until = db.Column(db.Date, index=True)
     current_tier_certified_on = db.Column(db.Date)

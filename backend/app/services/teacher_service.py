@@ -52,6 +52,8 @@ def create_teacher(name, tier_code="L1", city=None, district=None, xile_name=Non
     # 未显式提供证书号时，若具备首次认证日期，则按规则自动生成。
     if not certificate_no and certified_on:
         certificate_no = generate_certificate_no(tier_code, certified_on.year, id_number)
+    # 排序号：新添加的教师排在当前最大 sort_order 之后。
+    sort_order = (db.session.query(db.func.max(Teacher.sort_order)).scalar() or 0) + 1
     # A concurrent certificate-number allocation can collide between the read
     # and commit. Teacher numbers themselves are ID credentials and supplied
     # by the administrator.
@@ -67,6 +69,7 @@ def create_teacher(name, tier_code="L1", city=None, district=None, xile_name=Non
             status="active",
             first_certified_on=certified_on,
             valid_until=valid_until,
+            sort_order=sort_order,
         )
         db.session.add(teacher)
         try:

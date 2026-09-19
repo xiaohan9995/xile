@@ -17,7 +17,15 @@ from . import admin_bp
 @require_admin_token
 @require_admin_roles("admin", "super_admin")
 def teacher_list():
-    teachers = Teacher.query.filter(Teacher.status != "hidden").order_by(Teacher.real_name.asc()).all()
+    teachers = (
+        Teacher.query.filter(Teacher.status != "hidden")
+        .order_by(
+            db.case((Teacher.sort_order == 0, 1), else_=0),  # 未排序（0）排最末
+            Teacher.sort_order.asc(),
+            Teacher.real_name.asc(),
+        )
+        .all()
+    )
     can_view_identity = getattr(g, "current_admin_role", None) in ("admin", "super_admin")
     items = [
         {
@@ -491,6 +499,9 @@ def import_commit():
     )
     created = 0
     skipped = 0
+    # 排序号：从当前最大 sort_order 之后继续递增，新导入的教师排在末尾。
+    max_sort = db.session.query(db.func.max(Teacher.sort_order)).scalar() or 0
+    next_order = max_sort + 1
 
     for row in rows:
         # Skip empty rows
@@ -545,6 +556,7 @@ def import_commit():
             status="active",
             first_certified_on=cert_date,
             valid_until=valid_until,
+            sort_order=next_order,
         )
         db.session.add(teacher)
         db.session.flush()
@@ -555,6 +567,7 @@ def import_commit():
         if data["idNumber"]:
             existing_id_numbers.add(data["idNumber"])
         created += 1
+        next_order += 1
 
     batch.status = "committed"
     batch.success_rows = created
