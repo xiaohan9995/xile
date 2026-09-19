@@ -56,7 +56,13 @@
             <td>{{ ownerTeachersText(studio) }}</td>
             <td>{{ studio.city }}</td>
             <td>{{ studio.address }}</td>
-            <td>{{ studio.contact }}</td>
+            <td>
+              <div class="contact-cell">
+                <span class="contact-cell__phone">{{ studio.contact || '—' }}</span>
+                <ImagePreview v-if="studio.contactImage" :src="studio.contactImage" alt="微信二维码" image-class="contact-qr-thumb" />
+                <span v-else class="contact-cell__empty">无二维码</span>
+              </div>
+            </td>
             <td><span :class="['status-pill', statusClass(studio)]">{{ statusLabel(studio) }}</span></td>
             <td class="table-actions">
               <button v-if="studio.hasPending" class="table-action" @click="openApproval(studio)">审批</button>
@@ -158,12 +164,12 @@
           </div>
         </label>
         <label>
-          联系工作室图片（可选，含电话、二维码等信息）
+          微信二维码（可选）
           <input type="file" accept="image/jpeg,image/png,image/webp" @change="uploadContactImage($event, createDraft)" />
-          <span class="field-hint">小程序详情页点选「联系工作室」时直接展示该图片，不再单独展示联系方式文字</span>
+          <span class="field-hint">小程序详情页「联系工作室」抽屉中的「微信二维码」展示此图片，家长可扫码添加</span>
           <div v-if="createDraft.contactImage" class="asset-preview-list">
-            <div class="asset-preview-item">
-              <img class="asset-preview" :src="createDraft.contactImage" alt="联系工作室图片预览" />
+            <div class="asset-preview-item asset-preview-item--qr">
+              <img class="asset-preview asset-preview--qr" :src="createDraft.contactImage" alt="微信二维码预览" />
               <button type="button" class="asset-preview-remove" @click="createDraft.contactImage = ''">×</button>
             </div>
           </div>
@@ -264,12 +270,12 @@
           </div>
         </label>
         <label>
-          联系工作室图片（可选，含电话、二维码等信息）
+          微信二维码（可选）
           <input type="file" accept="image/jpeg,image/png,image/webp" @change="uploadContactImage($event, editDraft)" />
-          <span class="field-hint">小程序详情页点选「联系工作室」时直接展示该图片，不再单独展示联系方式文字</span>
+          <span class="field-hint">小程序详情页「联系工作室」抽屉中的「微信二维码」展示此图片，家长可扫码添加</span>
           <div v-if="editDraft.contactImage" class="asset-preview-list">
-            <div class="asset-preview-item">
-              <img class="asset-preview" :src="editDraft.contactImage" alt="联系工作室图片预览" />
+            <div class="asset-preview-item asset-preview-item--qr">
+              <img class="asset-preview asset-preview--qr" :src="editDraft.contactImage" alt="微信二维码预览" />
               <button type="button" class="asset-preview-remove" @click="editDraft.contactImage = ''">×</button>
             </div>
           </div>
@@ -1104,6 +1110,14 @@ async function uploadContactImage(event, draft) {
   object-fit: cover;
 }
 
+/* 微信二维码预览：正方形 + contain，避免裁切二维码导致无法识别 */
+.asset-preview--qr {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  background: #fff;
+}
+
 .asset-preview-list {
   display: flex;
   flex-wrap: wrap;
@@ -1365,6 +1379,32 @@ async function uploadContactImage(event, draft) {
   color: #8a948d;
   font-size: 12px;
   margin-top: 2px;
+}
+
+/* 列表页「联系方式」列：电话 + 微信二维码缩略图 */
+.contact-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.contact-cell__phone {
+  color: #34445c;
+}
+
+.contact-cell__empty {
+  color: #b4bcb6;
+  font-size: 12px;
+}
+
+.contact-qr-thumb {
+  width: 48px;
+  height: 48px;
+  border: 1px solid #e3e9e3;
+  border-radius: 6px;
+  object-fit: contain;
+  background: #fff;
 }
 
 .approval-diff {
