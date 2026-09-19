@@ -238,12 +238,6 @@ Page({
     wx.navigateTo({ url: `/packageTeacher/studio-submit/studio-submit?id=${id}` });
   },
 
-  goManageTeachers() {
-    const id = this.data.studio && this.data.studio.id;
-    if (!id) return;
-    wx.navigateTo({ url: `/packageTeacher/studio-teachers/studio-teachers?id=${id}` });
-  },
-
   withdraw() {
     const id = this.data.studio && this.data.studio.id;
     if (!id) return;

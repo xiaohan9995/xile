@@ -251,6 +251,14 @@ Page({
     wx.navigateTo({ url: `/pages/studio-detail/studio-detail?id=${id}` });
   },
 
+  // 管理教师：仅在当前用户是工作室管理员（manager）时展示入口，跳转到
+  // 独立的教师管理页，页面内部会再次校验权限。
+  goManageTeachers() {
+    const id = this.data.editing && this.data.editing.id;
+    if (!id) return;
+    wx.navigateTo({ url: `/packageTeacher/studio-teachers/studio-teachers?id=${id}` });
+  },
+
   closeEditor() {
     this.setData({ editing: null, editingId: '', form: { city: '', district: '', address: '', contact: '', contactImage: '', tags: [], courseIntro: '', images: [], latitude: null, longitude: null } });
   },

@@ -90,8 +90,23 @@
             <input v-model="createDraft.district" placeholder="请输入区/县，或通过地图选点自动填写" />
           </label>
           <label>
+            详细地址
+            <input v-model="createDraft.address" placeholder="可手动输入，或通过地图选点自动填写" />
+          </label>
+          <label>
             联系方式
             <input v-model="createDraft.contact" placeholder="请输入联系方式" />
+          </label>
+          <label>
+            联系方式图片（微信二维码）
+            <input type="file" accept="image/jpeg,image/png,image/webp" @change="uploadContactImage($event, createDraft)" />
+            <span class="field-hint">小程序详情页「联系工作室」抽屉中的「微信二维码」展示此图片，用户可扫码添加</span>
+            <div v-if="createDraft.contactImage" class="asset-preview-list">
+              <div class="asset-preview-item asset-preview-item--qr">
+                <img class="asset-preview asset-preview--qr" :src="createDraft.contactImage" alt="微信二维码预览" />
+                <button type="button" class="asset-preview-remove" @click="createDraft.contactImage = ''">×</button>
+              </div>
+            </div>
           </label>
           <label>
             标签
@@ -111,10 +126,6 @@
               />
             </div>
             <span class="field-hint" :class="{ 'field-hint--warn': createTagsCount > MAX_TAGS }">{{ createTagsCount }}/{{ MAX_TAGS }} 个标签，每个最多 6 字</span>
-          </label>
-          <label>
-            地址
-            <input v-model="createDraft.address" placeholder="可手动输入，或通过地图选点自动填写" />
           </label>
           <button type="button" class="sync-btn map-pick-btn" @click="requestMapPicker(createDraft)">地图选点并自动填写地址</button>
         </div>
@@ -165,7 +176,7 @@
           <span class="field-hint">被选中的主理教师可在小程序端添加/删除其他主理教师</span>
         </div>
         <label>
-          课程介绍
+          工作室介绍
           <textarea v-model="createDraft.courseIntro" placeholder="介绍工作室开设的课程（最多500字）"></textarea>
         </label>
         <label>
@@ -175,17 +186,6 @@
             <div v-for="(img, idx) in createDraft.images" :key="idx" class="asset-preview-item">
               <img class="asset-preview" :src="img" alt="工作室图片预览" />
               <button type="button" class="asset-preview-remove" @click="removeImage(createDraft, idx)">×</button>
-            </div>
-          </div>
-        </label>
-        <label>
-          微信二维码（可选）
-          <input type="file" accept="image/jpeg,image/png,image/webp" @change="uploadContactImage($event, createDraft)" />
-          <span class="field-hint">小程序详情页「联系工作室」抽屉中的「微信二维码」展示此图片，家长可扫码添加</span>
-          <div v-if="createDraft.contactImage" class="asset-preview-list">
-            <div class="asset-preview-item asset-preview-item--qr">
-              <img class="asset-preview asset-preview--qr" :src="createDraft.contactImage" alt="微信二维码预览" />
-              <button type="button" class="asset-preview-remove" @click="createDraft.contactImage = ''">×</button>
             </div>
           </div>
         </label>
@@ -217,8 +217,23 @@
             <input v-model="editDraft.district" placeholder="请输入区/县，或通过地图选点自动填写" />
           </label>
           <label>
+            详细地址
+            <input v-model="editDraft.address" placeholder="可手动输入，或通过地图选点自动填写" />
+          </label>
+          <label>
             联系方式
             <input v-model="editDraft.contact" placeholder="联系方式" />
+          </label>
+          <label>
+            联系方式图片（微信二维码）
+            <input type="file" accept="image/jpeg,image/png,image/webp" @change="uploadContactImage($event, editDraft)" />
+            <span class="field-hint">小程序详情页「联系工作室」抽屉中的「微信二维码」展示此图片，用户可扫码添加</span>
+            <div v-if="editDraft.contactImage" class="asset-preview-list">
+              <div class="asset-preview-item asset-preview-item--qr">
+                <img class="asset-preview asset-preview--qr" :src="editDraft.contactImage" alt="微信二维码预览" />
+                <button type="button" class="asset-preview-remove" @click="editDraft.contactImage = ''">×</button>
+              </div>
+            </div>
           </label>
           <label>
             标签
@@ -238,10 +253,6 @@
               />
             </div>
             <span class="field-hint" :class="{ 'field-hint--warn': editTagsCount > MAX_TAGS }">{{ editTagsCount }}/{{ MAX_TAGS }} 个标签，每个最多 6 字</span>
-          </label>
-          <label>
-            地址
-            <input v-model="editDraft.address" placeholder="可手动输入，或通过地图选点自动填写" />
           </label>
           <button type="button" class="sync-btn map-pick-btn" @click="requestMapPicker(editDraft)">重新地图选点</button>
         </div>
@@ -292,7 +303,7 @@
           <span class="field-hint">被选中的主理教师可在小程序端添加/删除其他主理教师</span>
         </div>
         <label>
-          课程介绍
+          工作室介绍
           <textarea v-model="editDraft.courseIntro" placeholder="介绍工作室开设的课程（最多500字）"></textarea>
         </label>
         <label>
@@ -302,17 +313,6 @@
             <div v-for="(img, idx) in editDraft.images" :key="idx" class="asset-preview-item">
               <img class="asset-preview" :src="img" alt="工作室图片预览" />
               <button type="button" class="asset-preview-remove" @click="removeImage(editDraft, idx)">×</button>
-            </div>
-          </div>
-        </label>
-        <label>
-          微信二维码（可选）
-          <input type="file" accept="image/jpeg,image/png,image/webp" @change="uploadContactImage($event, editDraft)" />
-          <span class="field-hint">小程序详情页「联系工作室」抽屉中的「微信二维码」展示此图片，家长可扫码添加</span>
-          <div v-if="editDraft.contactImage" class="asset-preview-list">
-            <div class="asset-preview-item asset-preview-item--qr">
-              <img class="asset-preview asset-preview--qr" :src="editDraft.contactImage" alt="微信二维码预览" />
-              <button type="button" class="asset-preview-remove" @click="editDraft.contactImage = ''">×</button>
             </div>
           </div>
         </label>

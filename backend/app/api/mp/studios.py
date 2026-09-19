@@ -69,7 +69,7 @@ def _draft_to_fields(draft):
     }
 
 
-def _my_studio_payload(studio):
+def _my_studio_payload(studio, user):
     # Prefer the pending draft for form backfill; otherwise the published fields.
     if studio.pending_draft:
         try:
@@ -96,6 +96,7 @@ def _my_studio_payload(studio):
         "name": studio.name,
         "status": studio.status,
         "rejectReason": studio.pending_reject_reason,
+        "manager": _is_studio_manager(user, studio),
         "ownerTeachers": [
             {"id": t.id, "name": t.real_name, "xileName": t.xile_name}
             for t in owner_teachers
@@ -117,7 +118,7 @@ def my_studios():
         .order_by(Studio.id.asc())
         .all()
     )
-    return {"items": [_my_studio_payload(s) for s in studios]}
+    return {"items": [_my_studio_payload(s, user) for s in studios]}
 
 
 @mp_bp.put("/teachers/me/studios/<int:studio_id>")

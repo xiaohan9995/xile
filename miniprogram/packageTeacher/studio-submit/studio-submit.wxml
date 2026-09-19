@@ -90,6 +90,10 @@
       </view>
 
       <view class="record-actions"><button class="btn-primary" bindtap="submit" loading="{{saving}}">提交审批</button></view>
+
+      <view wx:if="{{editing.manager}}" class="manage-entry">
+        <button class="btn-secondary" bindtap="goManageTeachers">管理教师</button>
+      </view>
     </view>
   </view>
 
