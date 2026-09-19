@@ -316,6 +316,10 @@
               <text>证书展示</text>
               <text class="teacher-drawer__section-action" wx:if="{{selectedTeacher.certificateUrl}}" bindtap="previewTeacherCertificate">查看大图</text>
             </view>
+            <view wx:if="{{selectedTeacher.teacherNo}}" class="teacher-drawer__cert-no">
+              <text class="teacher-drawer__cert-no-label">证书编号</text>
+              <text class="teacher-drawer__cert-no-value">{{selectedTeacher.teacherNo}}</text>
+            </view>
             <view class="teacher-drawer__cert-preview" bindtap="previewTeacherCertificate">
               <image wx:if="{{selectedTeacher.certificateUrl}}" class="teacher-drawer__cert-image" src="{{selectedTeacher.certificateUrl}}" mode="aspectFit" />
               <text wx:else class="teacher-drawer__cert-text">喜乐瑜伽教师认证证书</text>

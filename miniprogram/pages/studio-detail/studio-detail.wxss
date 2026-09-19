@@ -612,6 +612,28 @@
   color: var(--color-primary);
 }
 
+/* 证书编号：置于证书图片上方，与教师详情页 cert-no 一致 */
+.teacher-drawer__cert-no {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.teacher-drawer__cert-no-label {
+  font-size: 24rpx;
+  color: var(--color-muted);
+}
+
+.teacher-drawer__cert-no-value {
+  font-size: 30rpx;
+  font-weight: 800;
+  color: var(--color-text);
+  font-family: "SF Mono", "Menlo", "Consolas", monospace;
+  letter-spacing: 2rpx;
+}
+
 /* 6. 证书展示：与教师详情页 cert-preview 一致 */
 .teacher-drawer__cert-preview {
   height: 520rpx;
