@@ -347,17 +347,19 @@ function openCreate() {
   showCreate.value = true
 }
 
-// 按「2050 + 级别 + XL + 首次认证年份 + 身份证后四位」生成证书号填入输入框
-function autoGenerateCertNo(draft) {
+// 按「2050 + 级别 + XL + 首次认证年份 + 身份证后四位」生成证书号填入输入框。
+// silent 模式用于「上传证书图片时自动生成」：信息不全时静默跳过，不打扰用户。
+function autoGenerateCertNo(draft, silent = false) {
   const level = (draft.level || '').trim().toUpperCase()
   const year = (draft.certifiedAt || '').trim().slice(0, 4)
   const idNumber = (draft.idNumber || '').trim()
   const last4 = idNumber.slice(-4)
   if (!level || !/^\d{4}$/.test(year) || last4.length < 4) {
-    toast('需先填写等级、首次认证日期（YYYY-MM-DD）和身份证号', 'error')
-    return
+    if (!silent) toast('需先填写等级、首次认证日期（YYYY-MM-DD）和身份证号', 'error')
+    return false
   }
   draft.certNo = `2050${level}XL${year}${last4}`
+  return true
 }
 
 function openEdit(teacher) {
@@ -472,6 +474,10 @@ async function uploadTeacherAsset(event, assetType, targetField) {
   try {
     const result = await uploadAdminAsset(file, assetType)
     editDraft[targetField] = result.url
+    // 上传证书图片时，若证书编号为空则按「级别+首次认证年份+身份证后四位」自动生成
+    if (targetField === 'certificateUrl' && !editDraft.certNo) {
+      autoGenerateCertNo(editDraft, true)
+    }
     toast('图片已上传到对象存储')
   } catch (e) {
     const message = e?.response?.data?.error || e?.message || '图片上传失败，请检查对象存储配置'
