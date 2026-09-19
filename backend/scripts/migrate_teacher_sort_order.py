@@ -1,81 +1,62 @@
-"""一次性脚本：按 xlsx 名单顺序回填教师的 sort_order。
+"""按 xlsx 名单顺序回填教师 sort_order。
 
-读取 docss/喜乐瑜伽教师信息表-部分.xlsx 的「教师名单汇总」sheet（数据从
-第 4 行开始），按行顺序取身份证号（ID NO. 列，索引 18），用 teacher_no
-匹配数据库教师并依次设置 sort_order = 1..N。未匹配的教师保持 0（排最末）。
+docss/喜乐瑜伽教师信息表-部分.xlsx「教师名单汇总」sheet 第 4 行起的 28 位
+教师身份证号顺序已硬编码于此（生产容器无 docss 目录）。按 teacher_no
+（身份证号）大小写归一化匹配，依次设置 sort_order = 1..N。幂等，可重复执行。
 
 用法（在 backend/ 目录下运行）：
     python scripts/migrate_teacher_sort_order.py
 """
-import os
-import sys
-
-import openpyxl
-
 from app import create_app
 from app.extensions import db
 from app.models import Teacher
 
-XLSX_PATH = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    "..", "..", "docss", "喜乐瑜伽教师信息表-部分.xlsx",
-)
+# docss/喜乐瑜伽教师信息表-部分.xlsx「教师名单汇总」第 4 行起的身份证号顺序。
+TEACHER_ID_NUMBERS = [
+    "06104446", "231005197504122026", "03353291", "750120-01-5016",
+    "421127198904130037", "00605986", "04334155", "430111198301141722",
+    "440105197605140921", "441302197711255426", "320381198908150611",
+    "211323197708220045", "15282719810628422X", "152827198509154227",
+    "110102197601071142", "110104198108131321", "510102196706148441",
+    "110105197802081127", "110224197110040027", "350322198302160028",
+    "110108196906304027", "152628198407217229", "130626199202105860",
+    "130721198207124648", "42242619840310002x", "130631198202210229",
+    "152827195602150144", "110108197201169720",
+]
 
 
-def read_xlsx_id_numbers():
-    wb = openpyxl.load_workbook(XLSX_PATH, read_only=True, data_only=True)
-    ws = wb["教师名单汇总"]
-    id_numbers = []
-    for i, row in enumerate(ws.iter_rows(values_only=True)):
-        if i < 3:
-            continue  # 跳过前 3 行（标题 / 分组表头 / 字段名）
-        name = row[5] if len(row) > 5 else None
-        if not name or not str(name).strip():
+def backfill_teacher_sort_order():
+    """幂等回填：按 xlsx 名单顺序，用身份证号匹配设置 sort_order=1..N。
+
+    未匹配的教师（数据库中没有对应身份证号）保持原有 sort_order 不变。
+    返回 (matched, skipped)，skipped 为 (顺序, 身份证号, 原因) 列表。
+    """
+    teachers = Teacher.query.filter(Teacher.status != "hidden").all()
+    by_no = {}
+    for teacher in teachers:
+        if teacher.teacher_no:
+            by_no[teacher.teacher_no.strip().upper()] = teacher
+
+    matched = 0
+    skipped = []
+    for order, id_number in enumerate(TEACHER_ID_NUMBERS, start=1):
+        key = id_number.strip().upper()
+        teacher = by_no.get(key)
+        if teacher is None:
+            skipped.append((order, id_number, "数据库中未找到"))
             continue
-        id_number = row[18] if len(row) > 18 else None
-        if id_number is None or not str(id_number).strip():
-            continue
-        id_numbers.append(str(id_number).strip())
-    wb.close()
-    return id_numbers
+        teacher.sort_order = order
+        matched += 1
+        del by_no[key]
+
+    db.session.commit()
+    return matched, skipped
 
 
 def main():
-    if not os.path.exists(XLSX_PATH):
-        print(f"未找到 xlsx 文件：{XLSX_PATH}")
-        sys.exit(1)
-
-    id_numbers = read_xlsx_id_numbers()
-    if not id_numbers:
-        print("xlsx 中未解析到任何教师")
-        sys.exit(1)
-
     app = create_app()
     with app.app_context():
-        teachers = Teacher.query.filter(Teacher.status != "hidden").all()
-        by_no = {}
-        for teacher in teachers:
-            if teacher.teacher_no:
-                by_no[teacher.teacher_no] = teacher
-
-        matched = 0
-        skipped = []
-        for order, id_number in enumerate(id_numbers, start=1):
-            teacher = by_no.get(id_number)
-            if teacher is None:
-                skipped.append((order, id_number, "数据库中未找到"))
-                continue
-            teacher.sort_order = order
-            matched += 1
-            del by_no[id_number]
-
-        try:
-            db.session.commit()
-        except Exception as exc:
-            db.session.rollback()
-            print(f"提交失败：{exc}")
-            sys.exit(1)
-
+        matched, skipped = backfill_teacher_sort_order()
         print(f"回填完成：按 xlsx 顺序设置 sort_order，匹配 {matched} 位教师")
         if skipped:
             print(f"跳过 {len(skipped)} 个（数据库未找到）：")

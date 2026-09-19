@@ -19,6 +19,10 @@ nginx
 echo "[startup] applying database migrations"
 flask db upgrade
 
+# 回填教师排序号（幂等，按 xlsx 名单顺序，未匹配的保持原值）。失败不阻塞启动。
+echo "[startup] backfilling teacher sort_order"
+python /app/scripts/migrate_teacher_sort_order.py || echo "[startup] teacher sort_order backfill failed (non-fatal)"
+
 if [ "${RUN_PRODUCTION_INIT:-}" = "run-once" ]; then
     # Create only required reference data (tiers, system defaults and first admin);
     # no demo data is created.
