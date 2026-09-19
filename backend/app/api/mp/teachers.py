@@ -69,9 +69,9 @@ def featured_teachers():
     total = query.count()
     teachers = (
         query.order_by(
-            TeacherTier.sort_order.desc(),
-            Teacher.updated_at.desc(),
-            Teacher.id.desc(),
+            db.case((Teacher.sort_order == 0, 1), else_=0),  # 未排序排最末
+            Teacher.sort_order.asc(),
+            Teacher.id.asc(),
         )
         .offset((page - 1) * page_size)
         .limit(page_size)
@@ -137,14 +137,13 @@ def search_teachers():
         query = query.join(Teacher.tier).filter_by(code=tier)
 
     total = query.count()
-    # Default ordering is tier-descending so the highest certified levels show
-    # first when browsing without filters; valid_until/id keep the order stable.
+    # 按 sort_order 升序（0 排最末），与名单顺序一致；未排序的按 id。
     if not tier:
         query = query.join(Teacher.tier)
     teachers = (
         query.order_by(
-            TeacherTier.sort_order.desc(),
-            Teacher.valid_until.desc(),
+            db.case((Teacher.sort_order == 0, 1), else_=0),
+            Teacher.sort_order.asc(),
             Teacher.id.asc(),
         )
         .offset((page - 1) * page_size)
