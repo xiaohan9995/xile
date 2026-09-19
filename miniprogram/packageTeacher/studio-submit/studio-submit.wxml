@@ -49,7 +49,7 @@
       </view>
 
       <view class="form-field">
-        <text class="form-field__label">联系工作室图片</text>
+        <text class="form-field__label">联系工作室微信二维码</text>
         <view class="contact-image">
           <view wx:if="{{form.contactImage}}" class="contact-image__preview" bindtap="previewContactImage">
             <image src="{{form.contactImage}}" mode="aspectFit" />
