@@ -201,9 +201,10 @@
   margin-left: 8rpx;
 }
 
-/* 联系工作室按钮容器：控制左右外边距，与 .owner-panel 卡片外框对齐（28rpx）。 */
+/* 联系工作室按钮容器：控制左右外边距，与 .owner-panel 卡片内部「修改工作室信息」
+   按钮精确对齐（卡片 28rpx 外边距 + 1rpx 边框 + 24rpx 内边距 = 53rpx）。 */
 .contact-button-wrap {
-  margin: 24rpx 28rpx 0;
+  margin: 24rpx 53rpx 0;
 }
 
 /* 联系工作室按钮：与「修改工作室信息」按钮同款浅绿描边视觉，并复用「我的」页
