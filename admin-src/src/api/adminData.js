@@ -1,12 +1,12 @@
 import api from './index.js'
 import { normalizeMultiline } from '../utils/text.js'
+import defaultAvatar from '../assets/avatar-default.png'
 
 const DEFAULT_STUDIO = 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=600&auto=format&fit=crop'
 
-// 教师无头像时不再回退到外部占位图，而是返回空字符串，由各视图用姓名首字
-// 渲染本地占位（与小程序端默认头像样式保持一致）。
+// 教师无头像时回退到本地默认头像（灰色人形剪影，与小程序端一致）。
 function resolveAvatar(url) {
-  if (!url || url.startsWith('/static/demo/')) return ''
+  if (!url || url.startsWith('/static/demo/')) return defaultAvatar
   return url
 }
 
