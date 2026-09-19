@@ -52,3 +52,6 @@ project.private.config.json
 
 # CloudBase CLI local debug config
 .cloudbase/
+
+# 教师信息导出表（含个人信息，不提交到版本库）
+docss/*.xlsx
