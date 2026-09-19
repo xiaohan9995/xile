@@ -201,13 +201,13 @@
   margin-left: 8rpx;
 }
 
-/* 联系工作室按钮：与「我的认证」页的 .logout-button 保持完全一致的视觉
-   （浅绿底 + 细边框 + 深绿字 + 30rpx/500 字重），仅保留页面所需的左右外边距。 */
+/* 联系工作室按钮：与「修改工作室信息」按钮（.owner-panel__actions .btn-primary.owner-panel__action）
+   保持完全一致的视觉与尺寸——浅绿底 + 细边框 + 深绿字，覆盖全局 .btn-primary 的深绿实底。
+   左右各 52rpx 内边距对齐 .owner-panel 的盒模型（外层 28rpx + 内层 24rpx），
+   使按钮左右边缘与「修改工作室信息」按钮严格对齐。 */
 .contact-button {
-  /* 与上方 info-grid 卡片等宽：用 calc 显式算出「容器宽 − 左右 28rpx」，
-     避免 .btn-primary 的 width:100% 与 margin 叠加造成溢出。 */
-  margin: 24rpx 28rpx 0;
-  width: calc(100% - 56rpx);
+  margin: 24rpx 52rpx 0;
+  width: calc(100% - 104rpx);
   min-width: 0;
   max-width: none;
   box-sizing: border-box;
@@ -221,7 +221,6 @@
   color: var(--color-primary-dark);
   font-size: 30rpx;
   font-weight: 500;
-  line-height: 1;
   text-align: center;
   box-shadow: none;
 }
