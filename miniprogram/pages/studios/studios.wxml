@@ -12,7 +12,7 @@
     <view class="studio-hero__overlay"></view>
     <view class="studio-hero__content">
       <text class="studio-hero__eyebrow">认证场馆</text>
-      <text class="studio-hero__heading">眼对眼 心对心 呼吸对呼吸</text>
+      <text class="studio-hero__heading">心对心，眼对眼，呼吸对呼吸</text>
       <view class="studio-hero__badge">
         <text class="studio-hero__badge-text">已收录 {{studios.length || 36}} 家喜乐瑜伽认证工作室</text>
       </view>

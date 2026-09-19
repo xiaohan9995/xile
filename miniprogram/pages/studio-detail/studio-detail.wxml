@@ -52,7 +52,7 @@
       <view class="grid-item soft-card" bindtap="openCourseDrawer">
         <text class="grid-icon">📚</text>
         <view class="grid-text">
-          <text class="grid-label">课程介绍</text>
+          <text class="grid-label">工作室介绍</text>
           <text class="grid-value grid-value--clamp">{{studio.courseIntro || '暂无课程介绍'}}</text>
         </view>
         <text class="grid-arrow">›</text>

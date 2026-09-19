@@ -47,11 +47,13 @@
 }
 
 .studio-hero__heading {
+  display: block;
   font-family: "Noto Serif SC", serif;
-  font-size: 48rpx;
+  font-size: 36rpx;
   font-weight: 700;
   line-height: 1.32;
   color: #fff;
+  white-space: nowrap;
 }
 
 .studio-hero__badge {

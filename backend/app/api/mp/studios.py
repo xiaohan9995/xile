@@ -231,7 +231,8 @@ def list_studios():
         page_size = 20
     city = request.args.get("city", "").strip()
     keyword = request.args.get("q", "").strip()
-    query = Studio.query.filter_by(status="open")
+    # 已公开与审批中的工作室都展示；审批中展示的是审批前的公开字段（草稿不生效）。
+    query = Studio.query.filter(Studio.status.in_(("open", "pending")))
     if city:
         query = query.filter(Studio.city.like(f"%{escape_like(city)}%"))
     if keyword:
@@ -241,11 +242,11 @@ def list_studios():
     query = query.order_by(Studio.display_order.desc(), Studio.id.asc())
     total = query.count()
     studios = query.offset((page - 1) * page_size).limit(page_size).all()
-    # 城市筛选项动态来自已公开工作室，避免工作室设置了非预设城市时无法筛选。
+    # 城市筛选项动态来自已公开与审批中的工作室，避免工作室设置了非预设城市时无法筛选。
     cities = [
         row[0]
         for row in db.session.query(Studio.city)
-        .filter(Studio.status == "open", Studio.city.isnot(None), Studio.city != "")
+        .filter(Studio.status.in_(("open", "pending")), Studio.city.isnot(None), Studio.city != "")
         .distinct()
         .order_by(Studio.city.asc())
         .all()
@@ -265,8 +266,8 @@ def get_studio(studio_id):
         return {"error": "not found"}, 404
 
     is_owner = _is_studio_owner_teacher(user, studio)
-    # Non-open studios are only visible to their own lead teachers.
-    if studio.status != "open" and not is_owner:
+    # 已公开与审批中均公开展示（审批中展示的是审批前的公开字段）；仅未提交/隐藏仅 owner 可见。
+    if studio.status not in ("open", "pending") and not is_owner:
         return {"error": "not found"}, 404
 
     payload = _studio_summary(studio)
