@@ -40,11 +40,14 @@ Page({
         setTimeout(() => wx.navigateBack(), 1200);
         return;
       }
+      const myId = String(this.data.myTeacherId);
       const teachers = (studio.ownerTeachers || []).map((t) => ({
         id: t.id,
         name: t.name || t.xileName || t.realName || '教师',
         xileName: t.xileName || '',
         avatarUrl: t.avatarUrl || '',
+        // WXML 不支持 String() 函数调用，预先算好是否为自己
+        isMe: String(t.id) === myId,
       }));
       this.setData({ studioName: studio.name, teachers, loading: false });
     } catch (error) {

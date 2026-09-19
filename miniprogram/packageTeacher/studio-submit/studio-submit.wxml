@@ -76,7 +76,7 @@
       </view>
 
       <view class="form-field">
-        <text class="form-field__label">课程介绍</text>
+        <text class="form-field__label">工作室介绍</text>
         <textarea class="field field--area" placeholder="介绍工作室开设的课程（≤500字）" value="{{form.courseIntro}}" bindinput="input" data-field="courseIntro" maxlength="500" />
       </view>
 

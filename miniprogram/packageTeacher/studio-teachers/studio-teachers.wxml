@@ -28,7 +28,7 @@
           <text class="teacher-row__name">{{item.name}}</text>
           <text class="teacher-row__sub" wx:if="{{item.xileName}}">喜乐名：{{item.xileName}}</text>
         </view>
-        <view wx:if="{{String(item.id) !== String(myTeacherId)}}" class="teacher-row__remove" bindtap="removeTeacher" data-id="{{item.id}}">移除</view>
+        <view wx:if="{{!item.isMe}}" class="teacher-row__remove" bindtap="removeTeacher" data-id="{{item.id}}">移除</view>
         <text wx:else class="teacher-row__self">我</text>
       </view>
     </view>
