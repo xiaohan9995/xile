@@ -56,13 +56,7 @@
             <td>{{ ownerTeachersText(studio) }}</td>
             <td>{{ studio.city }}</td>
             <td>{{ studio.address }}</td>
-            <td>
-              <div class="contact-cell">
-                <span class="contact-cell__phone">{{ studio.contact || '—' }}</span>
-                <ImagePreview v-if="studio.contactImage" :src="studio.contactImage" alt="微信二维码" image-class="contact-qr-thumb" />
-                <span v-else class="contact-cell__empty">无二维码</span>
-              </div>
-            </td>
+            <td>{{ studio.contact || '—' }}</td>
             <td><span :class="['status-pill', statusClass(studio)]">{{ statusLabel(studio) }}</span></td>
             <td class="table-actions">
               <button v-if="studio.hasPending" class="table-action" @click="openApproval(studio)">审批</button>
@@ -1379,32 +1373,6 @@ async function uploadContactImage(event, draft) {
   color: #8a948d;
   font-size: 12px;
   margin-top: 2px;
-}
-
-/* 列表页「联系方式」列：电话 + 微信二维码缩略图 */
-.contact-cell {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-}
-
-.contact-cell__phone {
-  color: #34445c;
-}
-
-.contact-cell__empty {
-  color: #b4bcb6;
-  font-size: 12px;
-}
-
-.contact-qr-thumb {
-  width: 48px;
-  height: 48px;
-  border: 1px solid #e3e9e3;
-  border-radius: 6px;
-  object-fit: contain;
-  background: #fff;
 }
 
 .approval-diff {
