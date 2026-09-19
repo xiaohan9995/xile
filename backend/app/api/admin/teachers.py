@@ -124,6 +124,12 @@ def update_teacher(teacher_id):
             teacher.first_certified_on = date.fromisoformat(value) if value else None
         except ValueError:
             return {"error": "首次认证日期格式无效（需 YYYY-MM-DD）"}, 400
+    if "expiryDate" in payload:
+        value = str(payload["expiryDate"] or "").strip().replace(".", "-")
+        try:
+            teacher.valid_until = date.fromisoformat(value) if value else None
+        except ValueError:
+            return {"error": "有效期至格式无效（需 YYYY-MM-DD）"}, 400
     if "currentTierCertifiedOn" in payload:
         value = str(payload["currentTierCertifiedOn"] or "").strip().replace(".", "-")
         try:

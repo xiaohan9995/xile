@@ -118,6 +118,10 @@
             <input v-model="createDraft.certifiedAt" placeholder="如 2026-01-01" />
           </label>
           <label>
+            认证有效期至
+            <input v-model="createDraft.expiryDate" placeholder="如 2029-12-31" />
+          </label>
+          <label>
             城市
             <input v-model="createDraft.city" placeholder="请输入城市" />
           </label>
@@ -171,6 +175,10 @@
           <label>
             首次认证日期
             <input v-model="editDraft.certifiedAt" placeholder="如 2026-01-01" />
+          </label>
+          <label>
+            认证有效期至
+            <input v-model="editDraft.expiryDate" placeholder="如 2029-12-31" />
           </label>
           <label>
             城市
@@ -258,6 +266,7 @@ const createDraft = reactive({
   phone: '',
   level: 'L2',
   certifiedAt: '',
+  expiryDate: '',
   city: '',
   district: '',
 })
@@ -272,6 +281,7 @@ const editDraft = reactive({
   phone: '',
   level: 'L2',
   certifiedAt: '',
+  expiryDate: '',
   city: '',
   district: '',
   committeeRemark: '',
@@ -342,6 +352,7 @@ function openCreate() {
   createDraft.phone = ''
   createDraft.level = 'L2'
   createDraft.certifiedAt = ''
+  createDraft.expiryDate = ''
   createDraft.city = ''
   createDraft.district = ''
   showCreate.value = true
@@ -379,6 +390,7 @@ function openEdit(teacher) {
   editDraft.residencesText = Array.isArray(teacher.residences) ? teacher.residences.join(', ') : ''
   editDraft.currentTierCertifiedOn = teacher.currentTierCertifiedOn || ''
   editDraft.certifiedAt = teacher.certifiedAt || ''
+  editDraft.expiryDate = teacher.expiryDate === '待确认' ? '' : (teacher.expiryDate || '')
   editDraft.level = teacher.tier || 'L2'
   showEdit.value = true
 }
@@ -392,6 +404,7 @@ async function handleCreate() {
     phone: createDraft.phone,
     level: createDraft.level,
     certifiedAt: createDraft.certifiedAt,
+    expiryDate: createDraft.expiryDate,
     city: createDraft.city,
     district: createDraft.district,
   })
@@ -416,6 +429,7 @@ async function handleUpdate() {
       phone: editDraft.phone,
       level: editDraft.level,
       certifiedAt: editDraft.certifiedAt,
+      expiryDate: editDraft.expiryDate,
       city: editDraft.city,
       district: editDraft.district,
       committeeRemark: editDraft.committeeRemark,

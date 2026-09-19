@@ -22,11 +22,10 @@
 .tag-section, .image-section { margin-bottom:16rpx; }
 .form-field { margin-bottom:24rpx; }
 .form-field__label { display:block; margin-bottom:10rpx; color:var(--color-text); font-size:26rpx; font-weight:600; }
-/* 地址栏：点击整行调出地图选点，与 .field 同高同边框 */
-.field--picker { display:flex; align-items:center; justify-content:space-between; gap:16rpx; margin-bottom:0; }
-.field__value { flex:1; min-width:0; word-break:break-word; }
-.field__value--placeholder { color:var(--color-muted); }
-.field__arrow { flex-shrink:0; color:var(--color-muted); font-size:32rpx; line-height:1; }
+/* 地址栏：手动输入为主，「地图选点」按钮一键回填地址与城市/地区 */
+.address-row { display:flex; align-items:center; gap:16rpx; }
+.address-input { flex:1; min-width:0; margin-bottom:0; }
+.address-pick { flex-shrink:0; width:48rpx; height:48rpx; background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAyNCAyNCcgZmlsbD0nbm9uZScgc3Ryb2tlPScjMmY1MTQwJyBzdHJva2Utd2lkdGg9JzEuOCcgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJyBzdHJva2UtbGluZWpvaW49J3JvdW5kJz48cGF0aCBkPSdNMjAgMTBjMCA2LTggMTItOCAxMnMtOC02LTgtMTJhOCA4IDAgMCAxIDE2IDB6Jy8+PGNpcmNsZSBjeD0nMTInIGN5PScxMCcgcj0nMycvPjwvc3ZnPg=="); background-repeat:no-repeat; background-position:center; background-size:100% 100%; }
 /* 城市 / 地区：只读展示，由地图选点自动填充，视觉上弱化以区别于可编辑输入 */
 .region-row { display:flex; gap:16rpx; }
 .region-row .field { flex:1; min-width:0; margin-bottom:0; }
