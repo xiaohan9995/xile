@@ -373,11 +373,11 @@
           <div class="approval-diff__row">
             <span class="approval-diff__field-col">联系工作室图片</span>
             <div class="approval-diff__cell">
-              <img v-if="approvalStudio && approvalStudio.contactImage" class="asset-preview" :src="approvalStudio.contactImage" alt="当前联系工作室图片" />
+              <img v-if="approvalStudio && approvalStudio.contactImage" class="asset-preview asset-preview--qr" :src="approvalStudio.contactImage" alt="当前联系工作室图片" />
               <span v-else>—</span>
             </div>
             <div class="approval-diff__cell" :class="{ 'is-changed': pendingChanged('contactImage', 'contactImage') }">
-              <img v-if="approvalPending && approvalPending.contactImage" class="asset-preview" :src="approvalPending.contactImage" alt="待审批联系工作室图片" />
+              <img v-if="approvalPending && approvalPending.contactImage" class="asset-preview asset-preview--qr" :src="approvalPending.contactImage" alt="待审批联系工作室图片" />
               <span v-else>—</span>
             </div>
           </div>
@@ -1112,8 +1112,8 @@ async function uploadContactImage(event, draft) {
 
 /* 微信二维码预览：正方形 + contain，避免裁切二维码导致无法识别 */
 .asset-preview--qr {
-  width: 120px;
-  height: 120px;
+  width: 80px;
+  height: 80px;
   object-fit: contain;
   background: #fff;
 }
