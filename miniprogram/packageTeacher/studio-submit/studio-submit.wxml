@@ -49,7 +49,7 @@
       </view>
 
       <view class="form-field">
-        <text class="form-field__label">联系工作室微信二维码</text>
+        <text class="form-field__label">联系方式图片</text>
         <view class="contact-image">
           <view wx:if="{{form.contactImage}}" class="contact-image__preview" bindtap="previewContactImage">
             <image src="{{form.contactImage}}" mode="aspectFit" />
@@ -60,7 +60,7 @@
             <text class="contact-image__label">上传图片</text>
           </view>
         </view>
-        <text class="field-hint">上传一张含微信二维码等信息的图片，家长点选「联系工作室」时展示在抽屉的「微信二维码」中</text>
+        <text class="field-hint">上传一张含微信二维码等信息的图片，用户点选「联系工作室」时展示在抽屉的「微信二维码」中</text>
       </view>
 
       <view class="form-field">

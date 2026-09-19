@@ -49,3 +49,6 @@ project.private.config.json
 *.db
 *.sqlite
 .gstack/
+
+# CloudBase CLI local debug config
+.cloudbase/
