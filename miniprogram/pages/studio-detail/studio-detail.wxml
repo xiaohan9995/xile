@@ -266,8 +266,7 @@
               <text class="teacher-drawer__alias" wx:if="{{selectedTeacher.commonName}}">{{selectedTeacher.commonName}}</text>
               <view class="teacher-drawer__meta">
                 <view class="teacher-drawer__level-badge">{{selectedTeacher.tier || 'L'}}</view>
-                <text class="teacher-drawer__sub">{{selectedTeacher.tierName || '—'}}</text>
-                <text class="teacher-drawer__status {{selectedTeacher.certificationStatus === '已过期' ? 'teacher-drawer__status--expired' : selectedTeacher.certificationStatus === '即将到期' ? 'teacher-drawer__status--expiring' : ''}}">{{selectedTeacher.certificationStatus || '未知'}}</text>
+                <text class="teacher-drawer__sub">{{selectedTeacher.tierNameShort || '—'}}</text>
               </view>
             </view>
           </view>

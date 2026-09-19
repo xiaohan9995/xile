@@ -7,6 +7,11 @@ const app = getApp();
 // Dates arrive as "YYYY.MM.DD"; only the year is shown for certification years.
 const yearOf = (value) => (value ? String(value).slice(0, 4) : '');
 
+// 等级名称里括号内常是补充说明（如「喜乐智慧生命教练（喜乐瑜伽高级教师）」），
+// 标题区只展示主名称，去掉全角/半角括号及其内容。
+const stripParenthetical = (value) =>
+  value ? String(value).replace(/[（(][^（）()]*[）)]/g, '').trim() : '';
+
 // 后端下发的头像/证书可能是 API 相对路径（"/uploads/..."），<image> 无法解析，
 // 需要补上 API 域名；微信头像（qlogo.cn）走后端代理，避免小程序域名白名单问题。
 const displayFileUrl = (url) => {
@@ -57,6 +62,7 @@ Page({
       teacher.certificateUrl = displayFileUrl(teacher.certificateUrl);
       // 个人简介是多行文本，统一换行格式：连续空行压缩为段落分隔，行首尾空白去掉。
       teacher.teachingSummary = normalizeMultiline(teacher.teachingSummary);
+      teacher.tierNameShort = stripParenthetical(teacher.tierName);
       this.setData({
         teacher,
         commonName: teacher.alias || teacher.realName || '',
