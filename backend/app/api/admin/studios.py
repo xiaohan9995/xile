@@ -72,6 +72,7 @@ def _pending_draft_payload(s):
         "city": draft.get("city"),
         "district": draft.get("district"),
         "contact": draft.get("contact"),
+        "contactImage": draft.get("contactImage"),
         "tags": [t.strip() for t in (draft.get("tags") or "").split(",") if t.strip()],
         "courseIntro": draft.get("courseIntro"),
         "images": images,
@@ -82,6 +83,12 @@ def _pending_draft_payload(s):
 
 def _studio_payload(s):
     images = [u.strip() for u in (s.images or "").split(",") if u.strip()]
+    # 合并旧字段 owner_teacher_id 指向的教师与多对多关联表，避免历史数据里
+    # 只设置了单一 owner 的教师被遗漏（按 id 去重、保持稳定顺序）。
+    owner_teachers = [t for t in s.teachers if t.status != "hidden"]
+    seen = {t.id for t in owner_teachers}
+    if s.owner and s.owner.status != "hidden" and s.owner.id not in seen:
+        owner_teachers.append(s.owner)
     return {
         "id": s.id,
         "name": s.name,
@@ -96,13 +103,13 @@ def _studio_payload(s):
         "courseIntro": s.course_intro,
         "ownerTeachers": [
             {"id": t.id, "name": t.real_name, "xileName": t.xile_name}
-            for t in s.teachers
-            if t.status != "hidden"
+            for t in owner_teachers
         ],
         "tags": [t.strip() for t in (s.tags or "").split(",") if t.strip()],
         "intro": s.intro,
         "openingHours": s.opening_hours,
         "contactText": s.contact_text,
+        "contactImage": s.contact_image,
         "status": s.status,
         "displayOrder": s.display_order,
         "hasPending": s.status == "pending",
@@ -157,6 +164,7 @@ def create_studio():
         latitude=payload.get("latitude"),
         longitude=payload.get("longitude"),
         contact_text=payload.get("contact", "").strip() or None,
+        contact_image=str(payload.get("contactImage") or "").strip() or None,
         tags=payload.get("tags", "").strip() or None,
         intro=payload.get("intro", "").strip() or None,
         images=",".join(images) or None,
@@ -166,6 +174,8 @@ def create_studio():
     )
     if teacher_ids:
         studio.teachers = Teacher.query.filter(Teacher.id.in_(teacher_ids)).all()
+        # 同步旧字段 owner_teacher_id，保持 legacy owner 与多对多关联一致。
+        studio.owner_teacher_id = teacher_ids[0]
     db.session.add(studio)
     db.session.commit()
 
@@ -209,6 +219,8 @@ def update_studio(studio_id):
         studio.longitude = payload["longitude"]
     if "contact" in payload:
         studio.contact_text = str(payload["contact"] or "").strip() or None
+    if "contactImage" in payload:
+        studio.contact_image = str(payload["contactImage"] or "").strip() or None
     if "tags" in payload:
         tags_error = _validate_tags(payload.get("tags"))
         if tags_error:
@@ -232,7 +244,11 @@ def update_studio(studio_id):
         teacher_ids, teachers_error = _resolve_teacher_ids(payload.get("ownerTeacherIds"))
         if teachers_error:
             return {"error": teachers_error}, 400
-        studio.teachers = Teacher.query.filter(Teacher.id.in_(teacher_ids)).all()
+        teachers = Teacher.query.filter(Teacher.id.in_(teacher_ids)).all()
+        studio.teachers = teachers
+        # 同步旧字段 owner_teacher_id，避免 legacy owner 与多对多关联表不一致，
+        # 导致展示时遗漏第一个主理教师。
+        studio.owner_teacher_id = teacher_ids[0] if teacher_ids else None
 
     db.session.add(AuditLog(admin_id=current_admin_id() or 1, action="update_studio", target_type="studio", target_id=studio.id))
     db.session.commit()
@@ -261,6 +277,9 @@ def _apply_pending_draft(studio, draft):
             studio.longitude = lng
     if "contact" in draft:
         studio.contact_text = draft.get("contact")
+    # 联系工作室图片随草稿一同审批生效。
+    if "contactImage" in draft:
+        studio.contact_image = draft.get("contactImage")
     if "tags" in draft:
         studio.tags = draft.get("tags")
     if "courseIntro" in draft:
@@ -316,7 +335,7 @@ def reject_studio(studio_id):
     # Revert to the previously-published state. If the studio had any formal
     # content published before, it stays open; otherwise it falls back to
     # incomplete so it is not shown publicly.
-    has_published_content = any([studio.city, studio.address, studio.images, studio.course_intro, studio.intro, studio.tags, studio.contact_text])
+    has_published_content = any([studio.city, studio.address, studio.images, studio.course_intro, studio.intro, studio.tags, studio.contact_text, studio.contact_image])
     studio.status = "open" if has_published_content else "incomplete"
     db.session.add(AuditLog(admin_id=current_admin_id() or 1, action="reject_studio", target_type="studio", target_id=studio.id))
     db.session.commit()

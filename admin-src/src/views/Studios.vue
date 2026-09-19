@@ -157,6 +157,17 @@
             </div>
           </div>
         </label>
+        <label>
+          联系工作室图片（可选，含电话、二维码等信息）
+          <input type="file" accept="image/jpeg,image/png,image/webp" @change="uploadContactImage($event, createDraft)" />
+          <span class="field-hint">小程序详情页点选「联系工作室」时直接展示该图片，不再单独展示联系方式文字</span>
+          <div v-if="createDraft.contactImage" class="asset-preview-list">
+            <div class="asset-preview-item">
+              <img class="asset-preview" :src="createDraft.contactImage" alt="联系工作室图片预览" />
+              <button type="button" class="asset-preview-remove" @click="createDraft.contactImage = ''">×</button>
+            </div>
+          </div>
+        </label>
         <div class="modal-actions">
           <button type="button" class="sync-btn" @click="showCreate = false">取消</button>
           <button type="submit" class="primary-btn">确认添加</button>
@@ -252,6 +263,17 @@
             </div>
           </div>
         </label>
+        <label>
+          联系工作室图片（可选，含电话、二维码等信息）
+          <input type="file" accept="image/jpeg,image/png,image/webp" @change="uploadContactImage($event, editDraft)" />
+          <span class="field-hint">小程序详情页点选「联系工作室」时直接展示该图片，不再单独展示联系方式文字</span>
+          <div v-if="editDraft.contactImage" class="asset-preview-list">
+            <div class="asset-preview-item">
+              <img class="asset-preview" :src="editDraft.contactImage" alt="联系工作室图片预览" />
+              <button type="button" class="asset-preview-remove" @click="editDraft.contactImage = ''">×</button>
+            </div>
+          </div>
+        </label>
         <div class="modal-actions">
           <button type="button" class="sync-btn" @click="showEdit = false">取消</button>
           <button type="submit" class="primary-btn">保存修改</button>
@@ -341,6 +363,17 @@
             <span class="approval-diff__field-col">图片</span>
             <div class="approval-diff__cell">{{ approvalStudio && approvalStudio.images ? approvalStudio.images.length + ' 张' : '—' }}</div>
             <div class="approval-diff__cell" :class="{ 'is-changed': pendingChanged('images', 'imagesCount') }">{{ approvalPending && approvalPending.images ? approvalPending.images.length + ' 张' : '—' }}</div>
+          </div>
+          <div class="approval-diff__row">
+            <span class="approval-diff__field-col">联系工作室图片</span>
+            <div class="approval-diff__cell">
+              <img v-if="approvalStudio && approvalStudio.contactImage" class="asset-preview" :src="approvalStudio.contactImage" alt="当前联系工作室图片" />
+              <span v-else>—</span>
+            </div>
+            <div class="approval-diff__cell" :class="{ 'is-changed': pendingChanged('contactImage', 'contactImage') }">
+              <img v-if="approvalPending && approvalPending.contactImage" class="asset-preview" :src="approvalPending.contactImage" alt="待审批联系工作室图片" />
+              <span v-else>—</span>
+            </div>
           </div>
         </div>
         <label class="reject-reason">
@@ -532,6 +565,8 @@ const createDraft = reactive({
   city: '',
   district: '',
   contact: '',
+  // 联系工作室图片：详情页点选后预览，内含电话、二维码等联系方式。
+  contactImage: '',
   tags: [],
   address: '',
   courseIntro: '',
@@ -548,6 +583,7 @@ const editDraft = reactive({
   city: '',
   district: '',
   contact: '',
+  contactImage: '',
   tags: [],
   address: '',
   courseIntro: '',
@@ -807,6 +843,7 @@ function openCreate() {
   createDraft.city = ''
   createDraft.district = ''
   createDraft.contact = ''
+  createDraft.contactImage = ''
   createDraft.tags = []
   createDraft.address = ''
   createDraft.courseIntro = ''
@@ -826,6 +863,7 @@ function openEdit(studio) {
   editDraft.city = studio.city || ''
   editDraft.district = studio.district || ''
   editDraft.contact = studio.contact || ''
+  editDraft.contactImage = studio.contactImage || ''
   editDraft.tags = Array.isArray(studio.tags) ? studio.tags.slice() : String(studio.tags || '').split(',').map((t) => t.trim()).filter(Boolean)
   editDraft.address = studio.address || ''
   editDraft.courseIntro = studio.courseIntro || ''
@@ -860,6 +898,7 @@ async function handleCreate() {
     city: createDraft.city,
     district: createDraft.district,
     contact: createDraft.contact,
+    contactImage: createDraft.contactImage,
     tags: createDraft.tags.join(','),
     address: createDraft.address,
     courseIntro,
@@ -894,6 +933,7 @@ async function handleUpdate() {
     city: editDraft.city,
     district: editDraft.district,
     contact: editDraft.contact,
+    contactImage: editDraft.contactImage,
     tags: editDraft.tags.join(','),
     address: editDraft.address,
     courseIntro,
@@ -1028,6 +1068,28 @@ async function uploadStudioAssets(event, draft) {
 function removeImage(draft, index) {
   draft.images.splice(index, 1)
   draft.coverUrl = draft.images[0] || ''
+}
+
+// 联系工作室图片：单张，使用 studio-contact 资源类型上传（公开可读、稳定 URL）。
+async function uploadContactImage(event, draft) {
+  const file = (event.target.files || [])[0]
+  if (!file) return
+  const ext = (file.name || '').toLowerCase().match(/\.[a-z0-9]+$/)?.[0] || ''
+  if (!['.jpg', '.jpeg', '.png', '.webp'].includes(ext)) {
+    toast('仅支持 JPG、PNG 和 WebP 图片', 'error')
+    event.target.value = ''
+    return
+  }
+  try {
+    const result = await uploadAdminAsset(file, 'studio-contact')
+    draft.contactImage = result.url
+    toast('联系工作室图片已上传')
+  } catch (e) {
+    const message = e?.response?.data?.error || e?.message || '图片上传失败，请检查对象存储配置'
+    toast(message === 'image too large, max 8MB' ? '图片大小不能超过 8MB' : message, 'error')
+  } finally {
+    event.target.value = ''
+  }
 }
 </script>
 

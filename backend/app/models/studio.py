@@ -29,6 +29,9 @@ class Studio(db.Model):
     intro = db.Column(db.Text)
     opening_hours = db.Column(db.String(64))  # legacy, no longer displayed
     contact_text = db.Column(db.String(128))
+    # 联系工作室：主理教师上传的一张图片，内含联系电话、二维码等联系方式。
+    # 详情页点选「联系工作室」时直接预览该图片，不再单独展示电话。
+    contact_image = db.Column(db.String(512))
     status = db.Column(db.String(16), default="open", nullable=False)  # open/hidden/incomplete/pending
     # A lead teacher may submit a full display-info draft that only takes
     # effect after an admin approves it. The public fields above keep serving

@@ -47,3 +47,12 @@
 .image-add { display:flex; flex-direction:column; gap:6rpx; align-items:center; justify-content:center; border:1rpx dashed var(--color-primary); color:var(--color-primary-dark); }
 .image-add__plus { font-size:52rpx; line-height:1; }
 .image-add__label { font-size:22rpx; }
+
+/* 联系工作室图片：单张，含电话/二维码等联系方式，详情页点选后预览 */
+.contact-image { display:flex; }
+.contact-image__preview, .contact-image__add { position:relative; width:280rpx; height:280rpx; border-radius:var(--radius-base); overflow:hidden; }
+.contact-image__preview image { width:100%; height:100%; }
+.contact-image__remove { position:absolute; top:0; right:0; width:48rpx; height:48rpx; line-height:48rpx; text-align:center; background:rgba(0,0,0,0.5); color:#fff; font-size:32rpx; }
+.contact-image__add { display:flex; flex-direction:column; gap:6rpx; align-items:center; justify-content:center; border:1rpx dashed var(--color-primary); color:var(--color-primary-dark); }
+.contact-image__plus { font-size:52rpx; line-height:1; }
+.contact-image__label { font-size:22rpx; }

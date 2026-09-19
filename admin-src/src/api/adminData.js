@@ -45,6 +45,8 @@ export function mapAdminStudio(studio) {
     district: studio.district,
     address: studio.address,
     contact: studio.contactText || '',
+    // 联系工作室图片：详情页点选后预览，内含电话、二维码等联系方式。
+    contactImage: studio.contactImage || '',
     intro: studio.intro || '',
     courseIntro: normalizeMultiline(studio.courseIntro),
     openingHours: studio.openingHours || '',

@@ -13,13 +13,15 @@ MAX_TAG_LENGTH = 6
 MAX_IMAGES = 9
 MAX_COURSE_INTRO_LENGTH = 500
 MAX_CONTACT_LENGTH = 64
+MAX_CONTACT_IMAGE_LENGTH = 512
 
 # Display fields a lead teacher may edit and submit for approval. Only these
 # are editable from the mini program; the studio name, lead teachers, display
 # order, city/district/coordinates/intro stay admin-owned. The editable set is:
-# 轮播图片 (images)、标签 (tags)、地址 (address)、课程介绍 (courseIntro)、联系方式 (contact).
+# 轮播图片 (images)、标签 (tags)、地址 (address)、课程介绍 (courseIntro)、联系方式 (contact)
+# 以及联系工作室图片 (contactImage)。
 _EDITABLE_DRAFT_KEYS = {
-    "address", "city", "district", "contact", "tags", "courseIntro", "images", "latitude", "longitude",
+    "address", "city", "district", "contact", "contactImage", "tags", "courseIntro", "images", "latitude", "longitude",
 }
 
 
@@ -58,6 +60,7 @@ def _draft_to_fields(draft):
         "city": draft.get("city") or "",
         "district": draft.get("district") or "",
         "contact": draft.get("contact") or "",
+        "contactImage": draft.get("contactImage") or "",
         "tags": [t.strip() for t in (draft.get("tags") or "").split(",") if t.strip()],
         "courseIntro": draft.get("courseIntro") or "",
         "images": images,
@@ -80,6 +83,7 @@ def _my_studio_payload(studio):
             "city": studio.city,
             "district": studio.district,
             "contact": studio.contact_text,
+            "contactImage": studio.contact_image,
             "tags": studio.tags,
             "courseIntro": studio.course_intro,
             "images": studio.images,
@@ -157,6 +161,12 @@ def submit_studio(studio_id):
         if contact and len(contact) > MAX_CONTACT_LENGTH:
             return {"error": f"联系方式最多 {MAX_CONTACT_LENGTH} 字"}, 400
         draft["contact"] = contact
+    # 联系工作室图片：主理教师上传的一张图，点选「联系工作室」时预览。
+    if "contactImage" in payload:
+        contact_image = str(payload.get("contactImage") or "").strip() or None
+        if contact_image and len(contact_image) > MAX_CONTACT_IMAGE_LENGTH:
+            return {"error": "联系工作室图片地址过长，请重新上传"}, 400
+        draft["contactImage"] = contact_image
     if "courseIntro" in payload:
         course_intro = str(payload.get("courseIntro") or "").strip() or None
         if course_intro and len(course_intro) > MAX_COURSE_INTRO_LENGTH:
@@ -211,7 +221,7 @@ def withdraw_studio(studio_id):
     # edits: the draft is kept so the form can be re-opened, but the studio is
     # no longer awaiting approval. Rejected submissions already clear the draft,
     # so a withdrawn submission keeps its draft for the teacher to keep editing.
-    has_published_content = any([studio.city, studio.address, studio.images, studio.course_intro, studio.intro, studio.tags, studio.contact_text])
+    has_published_content = any([studio.city, studio.address, studio.images, studio.course_intro, studio.intro, studio.tags, studio.contact_text, studio.contact_image])
     studio.status = "open" if has_published_content else "incomplete"
     db.session.commit()
 

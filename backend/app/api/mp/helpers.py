@@ -135,11 +135,13 @@ def _studio_summary(studio):
     images = [u.strip() for u in (studio.images or "").split(",") if u.strip()]
     # The many-to-many `teachers` list is authoritative, but records seeded
     # before the migration (or via the legacy owner field) may only have the
-    # single `owner` relationship populated — fall back to it so the lead
-    # teacher never renders empty.
+    # single `owner` relationship populated — merge it so the lead teacher never
+    # renders empty, and so a studio set via owner_teacher_id plus additional
+    # many-to-many teachers never drops the legacy owner.
     owner_teachers = [t for t in studio.teachers if t.status != "hidden"]
-    if not owner_teachers and studio.owner and studio.owner.status != "hidden":
-        owner_teachers = [studio.owner]
+    seen = {t.id for t in owner_teachers}
+    if studio.owner and studio.owner.status != "hidden" and studio.owner.id not in seen:
+        owner_teachers.append(studio.owner)
     lead = owner_teachers[0] if owner_teachers else None
     return {
         "id": studio.id,
@@ -156,6 +158,8 @@ def _studio_summary(studio):
         "intro": studio.intro,
         "openingHours": studio.opening_hours,
         "contactText": studio.contact_text,
+        # 联系工作室图片：详情页点选后直接预览，内含电话、二维码等联系方式。
+        "contactImage": _file_url(studio.contact_image),
         "ownerTeachers": [
             {
                 "id": t.id,
@@ -265,4 +269,8 @@ def _is_studio_owner_teacher(user, studio):
     """Check if user's linked teacher is one of the studio's lead teachers."""
     if not user or user.role != "teacher" or not user.teacher_id or not studio:
         return False
-    return any(t.id == user.teacher_id for t in studio.teachers)
+    if any(t.id == user.teacher_id for t in studio.teachers):
+        return True
+    # 兼容旧字段 owner_teacher_id：历史数据可能只在单一 owner 字段里关联教师，
+    # 未同步到多对多关联表，这里也视为主理教师。
+    return studio.owner_teacher_id == user.teacher_id

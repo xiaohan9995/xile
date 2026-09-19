@@ -14,7 +14,12 @@ _ASSET_PREFIXES = {
     "teacher-avatar": "teacher-avatars",
     "teacher-certificate": "teacher-certificates",
     "studio-cover": "studio-covers",
+    "studio-contact": "studio-contacts",
 }
+
+# 需要公开读、且以稳定 COS 地址存库的资源类型（头像/封面/联系工作室图片）。
+# 其余（证书等）返回临时签名地址，仅用于即时预览。
+_PUBLIC_ASSET_TYPES = {"teacher-avatar", "studio-cover", "studio-contact"}
 _IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
 _IMAGE_CONTENT_TYPES = {
     ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp",
@@ -50,7 +55,7 @@ def upload_asset():
             uploaded.stream,
             key,
             _IMAGE_CONTENT_TYPES[ext],
-            public_read=asset_type in {"teacher-avatar", "studio-cover"},
+            public_read=asset_type in _PUBLIC_ASSET_TYPES,
         )
     except StorageNotConfiguredError as error:
         return {"error": str(error)}, 503
@@ -58,5 +63,5 @@ def upload_asset():
     # presigned URL here can exceed the database's legacy 256-char cover/avatar
     # columns and makes a subsequent edit fail with a 500. Private assets use
     # a temporary URL for immediate preview as before.
-    preview_url = url if asset_type in {"teacher-avatar", "studio-cover"} else file_url(url)
+    preview_url = url if asset_type in _PUBLIC_ASSET_TYPES else file_url(url)
     return {"key": key, "url": preview_url}, 201

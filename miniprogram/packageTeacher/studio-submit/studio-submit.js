@@ -61,7 +61,7 @@ Page({
     editingId: '',
     // form holds the editable display fields (mirrors backend `fields`)
     form: {
-      city: '', district: '', address: '', contact: '', tags: [], courseIntro: '', images: [], latitude: null, longitude: null,
+      city: '', district: '', address: '', contact: '', contactImage: '', tags: [], courseIntro: '', images: [], latitude: null, longitude: null,
     },
     tagInput: '',
     maxTags: 8,
@@ -131,6 +131,7 @@ Page({
         district: f.district || '',
         address: f.address || '',
         contact: f.contact || '',
+        contactImage: f.contactImage || '',
         tags: f.tags || [],
         // 课程介绍是多行文本，回填时统一换行格式，避免历史数据里的连续空行在
         // 编辑框里继续累积。
@@ -207,6 +208,43 @@ Page({
     this.setData({ 'form.images': images });
   },
 
+  // 联系工作室图片：单张，含电话/二维码等联系方式，详情页点选后预览。
+  chooseContactImage() {
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album', 'camera'],
+      sizeType: ['compressed'],
+      success: async (res) => {
+        const file = (res.tempFiles || [])[0];
+        if (!file) return;
+        if (file.size > 10 * 1024 * 1024) { wx.showToast({ title: '图片不能超过10MB', icon: 'none' }); return; }
+        const path = file.tempFilePath;
+        const matched = path.match(/[\w-]+\.(jpg|jpeg|png|gif|webp)$/i);
+        const filename = matched ? matched[0] : 'studio-contact.jpg';
+        try {
+          wx.showLoading({ title: '上传图片中' });
+          const result = await uploadFile({ url: '/api/mp/upload/evidence', filePath: path, name: 'file', formData: { filename } });
+          this.setData({ 'form.contactImage': result.url });
+        } catch (error) {
+          wx.showToast({ title: error.message || '图片上传失败', icon: 'none' });
+        } finally {
+          wx.hideLoading();
+        }
+      },
+    });
+  },
+
+  removeContactImage() {
+    this.setData({ 'form.contactImage': '' });
+  },
+
+  previewContactImage() {
+    const url = this.data.form.contactImage;
+    if (!url) return;
+    wx.previewImage({ urls: [url], current: url });
+  },
+
   // 点击工作室卡片跳转到工作室详情页（统一公开展示入口，修改操作在详情页内）
   openStudioDetail(e) {
     const id = e.currentTarget.dataset.id;
@@ -214,7 +252,7 @@ Page({
   },
 
   closeEditor() {
-    this.setData({ editing: null, editingId: '', form: { city: '', district: '', address: '', contact: '', tags: [], courseIntro: '', images: [], latitude: null, longitude: null } });
+    this.setData({ editing: null, editingId: '', form: { city: '', district: '', address: '', contact: '', contactImage: '', tags: [], courseIntro: '', images: [], latitude: null, longitude: null } });
   },
 
   // 用微信内置地图选点，让地图标记与详细地址保持一致。
@@ -255,6 +293,7 @@ Page({
     const data = {
       address: form.address,
       contact: form.contact,
+      contactImage: form.contactImage,
       tags: form.tags.join(','),
       courseIntro,
       images: form.images,

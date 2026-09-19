@@ -216,6 +216,8 @@ Page({
           ownerTeachers,
           courseIntro,
           contactText: studio.contactText || '微信/电话预约',
+          // 联系工作室图片：主理教师上传的一张图（含电话、二维码等），点选后预览。
+          contactImage: displayFileUrl(studio.contactImage) || '',
           tags: studio.tags || [],
           status: studio.status || '开放中',
         },
@@ -352,21 +354,15 @@ Page({
     });
   },
 
-  // 联系方式可能是「微信/电话预约」这类纯文案，只有能解析出手机号时才唤起拨号盘。
-  callStudio() {
+  // 联系工作室：预览主理教师上传的图片（含联系电话、二维码等信息），
+  // 不再单独展示电话，也不走小程序客服。
+  previewContactImage() {
     const studio = this.data.studio;
-    const phone = this.extractPhone(studio && studio.phone) || this.extractPhone(studio && studio.contactText);
-    if (!phone) {
-      wx.showToast({ title: '该工作室暂未配置联系电话', icon: 'none' });
+    const url = studio && studio.contactImage;
+    if (!url) {
+      wx.showToast({ title: '该工作室暂未配置联系图片', icon: 'none' });
       return;
     }
-    wx.makePhoneCall({ phoneNumber: phone });
-  },
-
-  extractPhone(value) {
-    if (!value) return '';
-    const matched = String(value).match(/1[3-9]\d{9}|0\d{2,3}-?\d{7,8}/);
-    if (!matched) return '';
-    return matched[0].replace(/-/g, '');
+    wx.previewImage({ urls: [url], current: url });
   },
 });
