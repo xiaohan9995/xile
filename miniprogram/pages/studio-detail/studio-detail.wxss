@@ -63,39 +63,38 @@
   color: var(--color-muted);
 }
 
-/* Lead Teacher */
+/* Lead Teacher：与下方「工作室介绍」保持同一套卡片样式（复用 .info-grid /
+   .grid-item / .grid-label），仅额外微调教师行的排布。 */
 .lead-teachers {
   margin-top: 24rpx;
-}
-
-.lead-label {
-  display: block;
-  font-size: 20rpx;
-  color: var(--color-muted);
-  margin-bottom: 12rpx;
 }
 
 .lead-teacher-row {
   display: flex;
   align-items: center;
   gap: 16rpx;
-  flex-wrap: nowrap;
-  overflow-x: auto;
+  flex-wrap: wrap;
+  margin-top: 8rpx;
 }
 
+/* 教师条目：轻量胶囊，与卡片内的标签风格统一，不再使用整块浅绿底。 */
 .lead-teacher {
   display: flex;
   align-items: center;
   gap: 12rpx;
-  padding: 12rpx 20rpx;
+  padding: 6rpx 18rpx 6rpx 6rpx;
   background: var(--color-primary-light);
-  border-radius: 999rpx;
+  border-radius: var(--radius-full);
   flex-shrink: 0;
 }
 
+.lead-teacher:active {
+  opacity: 0.7;
+}
+
 .lead-avatar {
-  width: 52rpx;
-  height: 52rpx;
+  width: 48rpx;
+  height: 48rpx;
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -150,14 +149,21 @@
 
 .grid-item {
   display: flex;
-  align-items: center;
+  /* 图标与标题行对齐（而非整块文本居中），保证多行正文时图标不飘到中间 */
+  align-items: flex-start;
   gap: 18rpx;
   padding: 24rpx;
 }
 
+/* 图标：固定行高并与标题行等高，使其中心与「主理教师 / 工作室介绍 / 地址」
+   等标题文本处于同一水平线。 */
 .grid-icon {
-  font-size: 32rpx;
   flex-shrink: 0;
+  font-size: 32rpx;
+  line-height: 1;
+  height: 30rpx;
+  display: flex;
+  align-items: center;
 }
 
 .grid-text {
@@ -193,6 +199,42 @@
   font-size: 34rpx;
   color: var(--color-muted);
   margin-left: 8rpx;
+}
+
+/* 联系工作室按钮：与「我的认证」页的 .logout-button 保持完全一致的视觉
+   （浅绿底 + 细边框 + 深绿字 + 30rpx/500 字重），仅保留页面所需的左右外边距。 */
+.contact-button {
+  margin: 24rpx 28rpx 0;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  height: 96rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1rpx solid rgba(66, 109, 88, 0.28);
+  border-radius: var(--radius-base);
+  background: rgba(66, 109, 88, 0.06);
+  color: var(--color-primary-dark);
+  font-size: 30rpx;
+  font-weight: 500;
+  line-height: 1;
+  text-align: center;
+  box-shadow: none;
+}
+
+.contact-button:active {
+  background: rgba(66, 109, 88, 0.06);
+  opacity: 0.82;
+  transform: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .contact-button {
+    border-color: rgba(119, 154, 132, 0.34);
+    background: rgba(66, 109, 88, 0.14);
+    color: #b9d2c0;
+  }
 }
 
 /* Loading & Error */
@@ -318,6 +360,11 @@
 /* 课程抽屉内容比教师抽屉更长，给到与教师抽屉一致的高度上限 */
 .drawer--course {
   max-height: 78vh;
+}
+
+/* 联系抽屉内容较短，收紧高度上限，避免底部留白过多 */
+.drawer--contact {
+  max-height: 72vh;
 }
 
 @keyframes drawer-up {
@@ -871,6 +918,161 @@
 }
 
 .course-drawer__verify-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 24rpx;
+  color: var(--color-muted);
+  line-height: 1.5;
+}
+
+/* ===== Contact drawer ===== */
+
+/* 区块标题：与教师/课程抽屉同字号字重 */
+.contact-drawer__section {
+  margin-top: 28rpx;
+}
+
+.contact-drawer__section-title {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+  font-size: 28rpx;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.contact-drawer__section-bar {
+  width: 6rpx;
+  height: 26rpx;
+  border-radius: 4rpx;
+  background: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.contact-drawer__section-action {
+  margin-left: auto;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.contact-drawer__section-action:active {
+  opacity: 0.6;
+}
+
+/* 电话卡片：整行可点，右侧「复制」提示 */
+.contact-drawer__card {
+  padding: 28rpx;
+  background: var(--color-card);
+  border-radius: var(--radius-md);
+  border: 1rpx solid var(--color-line);
+}
+
+.contact-drawer__phone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.contact-drawer__phone:active {
+  opacity: 0.85;
+}
+
+/* 左侧号码区：号码 + 「点击拨打」副提示，整体可点即拨号 */
+.contact-drawer__phone-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.contact-drawer__phone-text {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--color-text);
+  word-break: break-all;
+}
+
+.contact-drawer__phone-action {
+  flex-shrink: 0;
+  padding: 10rpx 24rpx;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
+.contact-drawer__phone-action:active {
+  opacity: 0.6;
+}
+
+/* 二维码：白底卡片保证扫码对比度，点选可查看大图 */
+.contact-drawer__qr {
+  padding: 32rpx;
+  background: var(--color-card);
+  border-radius: var(--radius-md);
+  border: 1rpx solid var(--color-line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 420rpx;
+}
+
+.contact-drawer__qr:active {
+  opacity: 0.9;
+}
+
+.contact-drawer__qr-image {
+  width: 420rpx;
+  height: 420rpx;
+  border-radius: var(--radius-base);
+}
+
+.contact-drawer__qr-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14rpx;
+}
+
+.contact-drawer__qr-empty-icon {
+  font-size: 56rpx;
+  line-height: 1;
+}
+
+.contact-drawer__qr-empty-text {
+  font-size: 24rpx;
+  color: var(--color-muted);
+}
+
+.contact-drawer__qr-hint {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+/* 认证背书：与教师详情页 verify-note 一致 */
+.contact-drawer__verify {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-top: 28rpx;
+  padding: 0 8rpx;
+}
+
+.contact-drawer__verify-icon {
+  font-size: 28rpx;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.contact-drawer__verify-text {
   flex: 1;
   min-width: 0;
   font-size: 24rpx;

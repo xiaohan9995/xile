@@ -45,7 +45,7 @@
       <view class="form-field">
         <text class="form-field__label">联系方式（可选）</text>
         <input class="field" placeholder="请输入联系方式" value="{{form.contact}}" bindinput="input" data-field="contact" />
-        <text class="field-hint">该文字仅用于后台核对，详情页不再单独展示电话，统一由下方「联系工作室」图片承载</text>
+        <text class="field-hint">将展示在详情页「联系工作室」抽屉的「联系电话」中，家长可一键复制</text>
       </view>
 
       <view class="form-field">
@@ -60,7 +60,7 @@
             <text class="contact-image__label">上传图片</text>
           </view>
         </view>
-        <text class="field-hint">上传一张含联系电话、二维码等信息的图片，家长点选「联系工作室」时直接展示</text>
+        <text class="field-hint">上传一张含微信二维码等信息的图片，家长点选「联系工作室」时展示在抽屉的「微信二维码」中</text>
       </view>
 
       <view class="form-field">

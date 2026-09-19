@@ -31,17 +31,23 @@
       <view class="info-tags" wx:if="{{studio.tags.length}}">
         <text wx:for="{{studio.tags}}" wx:key="*this" class="info-tag">{{item}}</text>
       </view>
+    </view>
 
-      <!-- Lead Teachers -->
-      <view class="lead-teachers">
-        <text class="lead-label">主理教师</text>
-        <view class="lead-teacher-row">
-          <view class="lead-teacher" wx:for="{{studio.ownerTeachers}}" wx:key="id" bindtap="openTeacherDrawer" data-id="{{item.id}}">
-            <image wx:if="{{item.avatarUrl}}" class="lead-avatar" src="{{item.avatarUrl}}" mode="aspectFill" />
-            <view wx:else class="lead-avatar lead-avatar--placeholder">
-              <text class="lead-avatar-initial">{{item.name ? item.name.slice(0, 1) : '教'}}</text>
+    <!-- 主理教师：与下方「工作室介绍」同款卡片样式，点选进入教师详情抽屉。
+         置于「工作室介绍」正上方，先看人再看介绍。 -->
+    <view class="info-grid lead-teachers">
+      <view class="grid-item soft-card">
+        <text class="grid-icon">👩‍🏫</text>
+        <view class="grid-text">
+          <text class="grid-label">主理教师</text>
+          <view class="lead-teacher-row">
+            <view class="lead-teacher" wx:for="{{studio.ownerTeachers}}" wx:key="id" bindtap="openTeacherDrawer" data-id="{{item.id}}">
+              <image wx:if="{{item.avatarUrl}}" class="lead-avatar" src="{{item.avatarUrl}}" mode="aspectFill" />
+              <view wx:else class="lead-avatar lead-avatar--placeholder">
+                <text class="lead-avatar-initial">{{item.name ? item.name.slice(0, 1) : '教'}}</text>
+              </view>
+              <text class="lead-name">{{item.name || item.xileName}}</text>
             </view>
-            <text class="lead-name">{{item.name || item.xileName}}</text>
           </view>
         </view>
       </view>
@@ -64,17 +70,11 @@
           <text class="grid-value">{{studio.address || '暂无地址信息'}}</text>
         </view>
       </view>
-      <!-- 联系工作室：沿用绿色框点选交互，点选后预览主理教师上传的图片
-           （内含联系电话、二维码等联系方式），不再单独展示电话。 -->
-      <view class="grid-item soft-card" bindtap="previewContactImage">
-        <text class="grid-icon">💬</text>
-        <view class="grid-text">
-          <text class="grid-label">联系工作室</text>
-          <text class="grid-value">电话/微信</text>
-        </view>
-        <text class="grid-arrow">›</text>
-      </view>
     </view>
+
+    <!-- 联系工作室：与「更新信息」按钮同款浅绿描边风格，点选后从底部弹出
+         抽屉，展示联系电话与微信二维码（主理教师上传的联系图片）。 -->
+    <button class="btn-primary contact-button" bindtap="openContactDrawer">联系工作室</button>
 
     <!-- 主理教师管理入口：仅当当前登录用户是该工作室主理教师时显示 -->
     <view wx:if="{{mine}}" class="owner-panel">
@@ -102,6 +102,57 @@
   <!-- Error -->
   <view wx:if="{{error}}" class="error-wrap">
     <text class="error-text">{{error}}</text>
+  </view>
+
+  <!-- Contact drawer：联系电话 + 微信二维码（主理教师上传的联系图片） -->
+  <view wx:if="{{contactDrawerVisible}}" class="drawer-mask" bindtap="closeContactDrawer">
+    <view class="drawer drawer--contact" catchtap="noop">
+      <view class="drawer__grip">
+        <view class="drawer__handle"></view>
+      </view>
+      <view class="drawer__head">
+        <text class="drawer__title">联系工作室</text>
+        <view class="drawer__close" bindtap="closeContactDrawer">✕</view>
+      </view>
+      <scroll-view scroll-y class="drawer__body" enhanced show-scrollbar="{{false}}">
+        <!-- 电话：点选直接调起系统拨号盘，右侧「复制」按钮单独复制号码 -->
+        <view wx:if="{{studio.contactText}}" class="contact-drawer__section">
+          <view class="contact-drawer__section-title">
+            <text class="contact-drawer__section-bar"></text>
+            <text>联系电话</text>
+          </view>
+          <view class="contact-drawer__card contact-drawer__phone" bindtap="callContact">
+            <view class="contact-drawer__phone-main">
+              <text class="contact-drawer__phone-text">{{studio.contactText}}</text>
+            </view>
+            <view class="contact-drawer__phone-action" catchtap="copyContact">复制</view>
+          </view>
+        </view>
+
+        <!-- 微信二维码：主理教师上传的联系图片，点选可查看大图 -->
+        <view class="contact-drawer__section">
+          <view class="contact-drawer__section-title">
+            <text class="contact-drawer__section-bar"></text>
+            <text>微信二维码</text>
+            <text wx:if="{{studio.contactImage}}" class="contact-drawer__section-action" bindtap="previewContactImage">查看大图</text>
+          </view>
+          <view class="contact-drawer__qr" bindtap="previewContactImage">
+            <image wx:if="{{studio.contactImage}}" class="contact-drawer__qr-image" src="{{studio.contactImage}}" mode="aspectFit" show-menu-by-longpress />
+            <view wx:else class="contact-drawer__qr-empty">
+              <text class="contact-drawer__qr-empty-icon">💬</text>
+              <text class="contact-drawer__qr-empty-text">该工作室暂未上传联系图片</text>
+            </view>
+          </view>
+          <text wx:if="{{studio.contactImage}}" class="contact-drawer__qr-hint">长按图片可保存或转发</text>
+        </view>
+
+        <!-- 认证背书：与教师详情页 verify-note 一致 -->
+        <view class="contact-drawer__verify">
+          <text class="contact-drawer__verify-icon">🛡</text>
+          <text class="contact-drawer__verify-text">联系方式由该工作室主理教师提供并经喜乐瑜伽教师管理委员会审核</text>
+        </view>
+      </scroll-view>
+    </view>
   </view>
 
   <!-- Course intro drawer -->

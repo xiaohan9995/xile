@@ -170,6 +170,7 @@ Page({
     mine: null, // { status, rejectReason } when the viewer is a lead teacher
     courses: [],
     courseDrawerVisible: false,
+    contactDrawerVisible: false,
     teacherDrawerVisible: false,
     selectedTeacher: null,
     teacherLoading: false,
@@ -354,8 +355,50 @@ Page({
     });
   },
 
-  // 联系工作室：预览主理教师上传的图片（含联系电话、二维码等信息），
-  // 不再单独展示电话，也不走小程序客服。
+  // 联系工作室：从底部弹出抽屉，展示联系电话与微信二维码（主理教师上传
+  // 的联系图片），不再单独展示电话，也不走小程序客服。
+  openContactDrawer() {
+    if (!this.data.studio) return;
+    this.setData({ contactDrawerVisible: true });
+  },
+
+  closeContactDrawer() {
+    this.setData({ contactDrawerVisible: false });
+  },
+
+  // 电话可能是「13800000000」或「电话：13800000000」等自由文本，拨打/复制时
+  // 只取其中的号码部分，避免把说明文字一起带进去。
+  extractPhone() {
+    const text = (this.data.studio && this.data.studio.contactText) || '';
+    if (!text) return '';
+    const matched = text.match(/[\d\-+()（）\s]{6,}/);
+    return (matched ? matched[0] : text).replace(/[\s\-()（）]/g, '');
+  },
+
+  // 点选电话卡片：直接调起系统拨号盘，号码预填后由用户确认呼出。
+  callContact() {
+    const phone = this.extractPhone();
+    if (!phone) return;
+    wx.makePhoneCall({
+      phoneNumber: phone,
+      fail: (err) => {
+        // 用户主动取消拨号不算异常，静默处理，避免误报。
+        if (err && /cancel/i.test(err.errMsg || '')) return;
+        wx.showToast({ title: '拨号失败，可长按复制号码', icon: 'none' });
+      },
+    });
+  },
+
+  copyContact() {
+    const text = (this.data.studio && this.data.studio.contactText) || '';
+    if (!text) return;
+    const phone = this.extractPhone();
+    wx.setClipboardData({
+      data: phone || text,
+      success: () => wx.showToast({ title: '电话已复制', icon: 'none' }),
+    });
+  },
+
   previewContactImage() {
     const studio = this.data.studio;
     const url = studio && studio.contactImage;
