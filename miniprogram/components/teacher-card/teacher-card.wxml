@@ -6,9 +6,12 @@
       src="{{teacher.avatarUrl}}"
       mode="aspectFill"
     />
-    <view wx:else class="teacher-card__avatar teacher-card__avatar--placeholder">
-      <text class="teacher-card__avatar-initial">{{teacher.name[0] || '?'}}</text>
-    </view>
+    <image
+      wx:else
+      class="teacher-card__avatar"
+      src="/assets/xile-yoga-miniapp-avatar.png"
+      mode="aspectFill"
+    />
     <view class="teacher-card__online" wx:if="{{teacher.certificationStatus === '认证有效'}}"></view>
   </view>
 

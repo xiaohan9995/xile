@@ -298,11 +298,9 @@ Page({
       const teacher = await request({ url: `/api/mp/teachers/${id}/summary` });
       teacher.avatarUrl = displayFileUrl(teacher.avatarUrl);
       teacher.certificateUrl = displayFileUrl(teacher.certificateUrl);
-      const displayName = teacher.xileName || teacher.realName || teacher.name || '';
       this.setData({
         selectedTeacher: {
           ...teacher,
-          teacherInitial: displayName ? displayName.charAt(0) : '?',
           commonName: teacher.alias || teacher.realName || '',
           firstCertifiedYear: yearOf(teacher.certifiedAt),
           currentTierCertifiedYear: yearOf(teacher.currentTierCertifiedOn),

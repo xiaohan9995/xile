@@ -24,19 +24,6 @@
   box-sizing: border-box;
 }
 
-.profile-avatar--placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-primary-light);
-}
-
-.profile-avatar-initial {
-  font-size: 60rpx;
-  font-weight: 700;
-  color: var(--color-primary);
-}
-
 .profile-info {
   display: flex;
   flex-direction: column;

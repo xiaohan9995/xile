@@ -23,7 +23,6 @@ Page({
   data: {
     statusBarHeight: 20,
     teacher: null,
-    teacherInitial: '?',
     commonName: '',
     firstCertifiedYear: '',
     currentTierCertifiedYear: '',
@@ -49,10 +48,8 @@ Page({
       teacher.certificateUrl = displayFileUrl(teacher.certificateUrl);
       // 个人简介是多行文本，统一换行格式：连续空行压缩为段落分隔，行首尾空白去掉。
       teacher.teachingSummary = normalizeMultiline(teacher.teachingSummary);
-      const displayName = teacher.xileName || teacher.realName || teacher.name || '';
       this.setData({
         teacher,
-        teacherInitial: displayName ? displayName.charAt(0) : '?',
         commonName: teacher.alias || teacher.realName || '',
         firstCertifiedYear: yearOf(teacher.certifiedAt),
         currentTierCertifiedYear: yearOf(teacher.currentTierCertifiedOn),

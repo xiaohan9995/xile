@@ -102,22 +102,6 @@
   flex-shrink: 0;
 }
 
-.lead-avatar--placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-primary);
-  color: #fff;
-  font-size: 24rpx;
-  font-weight: 700;
-}
-
-.lead-avatar-initial {
-  color: #fff;
-  font-size: 24rpx;
-  font-weight: 700;
-}
-
 .lead-name {
   font-size: 26rpx;
   font-weight: 700;
@@ -459,19 +443,6 @@
   border: 2rpx solid var(--color-surface);
   box-sizing: border-box;
   flex-shrink: 0;
-}
-
-.teacher-drawer__avatar--placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-primary-light);
-}
-
-.teacher-drawer__avatar--placeholder text {
-  font-size: 52rpx;
-  font-weight: 700;
-  color: var(--color-primary);
 }
 
 .teacher-drawer__head-info {
