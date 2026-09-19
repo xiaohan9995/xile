@@ -50,8 +50,15 @@ Page({
         const filename = matched ? matched[0] : 'evidence.jpg';
         try {
           wx.showLoading({ title: '上传佐证中' });
-          const result = await uploadFile({ url: '/api/mp/upload/evidence', filePath: path, name: 'file', formData: { filename } });
-          this.setData({ 'form.evidenceKey': result.fileKey, 'form.evidenceName': filename });
+          const presign = await request({ url: '/api/mp/upload/presign', method: 'POST', data: { filename } });
+          let fileKey = presign.fileKey;
+          if (presign.uploadUrl === '/api/mp/upload/file') {
+            const result = await uploadFile({ url: '/api/mp/upload/file', filePath: path, name: 'file' });
+            fileKey = result.fileKey || presign.fileKey;
+          } else {
+            await uploadFile({ url: presign.uploadUrl, filePath: path, name: 'file' });
+          }
+          this.setData({ 'form.evidenceKey': fileKey, 'form.evidenceName': filename });
         } catch (error) { wx.showToast({ title: error.message || '佐证上传失败', icon: 'none' }); }
         finally { wx.hideLoading(); }
       },
