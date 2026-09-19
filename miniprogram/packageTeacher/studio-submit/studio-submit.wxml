@@ -50,13 +50,15 @@
               <scroll-view scroll-y class="teacher-dropdown__list">
                 <view wx:if="{{teacherOptionsLoading}}" class="teacher-dropdown__status">加载中…</view>
                 <view wx:elif="{{teacherOptions.length === 0}}" class="teacher-dropdown__status">{{teacherKeyword ? '未找到匹配的教师' : '暂无可添加的教师'}}</view>
-                <view wx:else wx:for="{{teacherOptions}}" wx:key="id" class="teacher-dropdown__item" bindtap="selectTeacherOption" data-id="{{item.id}}">
-                  <view class="teacher-dropdown__info">
-                    <text class="teacher-dropdown__name">{{item.label}}</text>
-                    <text wx:if="{{item.sub}}" class="teacher-dropdown__sub">{{item.sub}}</text>
+                <block wx:else>
+                  <view wx:for="{{teacherOptions}}" wx:key="id" class="teacher-dropdown__item" bindtap="selectTeacherOption" data-id="{{item.id}}">
+                    <view class="teacher-dropdown__info">
+                      <text class="teacher-dropdown__name">{{item.label}}</text>
+                      <text wx:if="{{item.sub}}" class="teacher-dropdown__sub">{{item.sub}}</text>
+                    </view>
+                    <text class="teacher-dropdown__add">添加</text>
                   </view>
-                  <text class="teacher-dropdown__add">添加</text>
-                </view>
+                </block>
               </scroll-view>
             </view>
           </view>

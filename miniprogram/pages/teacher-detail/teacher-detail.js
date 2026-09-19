@@ -29,7 +29,7 @@ Page({
     residencesText: '',
     loading: false,
     error: '',
-    bioDrawerVisible: false,
+    bioExpanded: false,
   },
 
   onLoad(options) {
@@ -75,16 +75,11 @@ Page({
     wx.navigateBack();
   },
 
-  openBioDrawer() {
+  toggleBio() {
     if (!this.data.teacher || !this.data.teacher.teachingSummary) return;
-    this.setData({ bioDrawerVisible: true });
+    this.setData({ bioExpanded: !this.data.bioExpanded });
   },
 
-  closeBioDrawer() {
-    this.setData({ bioDrawerVisible: false });
-  },
-
-  noop() {},
   previewCertificate() {
     const url = this.data.teacher && this.data.teacher.certificateUrl;
     if (!url) {
