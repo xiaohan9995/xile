@@ -4,7 +4,7 @@ from flask import request
 
 from ...extensions import db
 from ...models import AuditLog, Studio, Teacher
-from ...services.studio_service import apply_pending_draft
+from ...services.studio_service import apply_pending_draft, normalize_storage_url
 from ...utils.storage import file_url
 from .helpers import current_admin_id, require_admin_roles, require_admin_token
 from . import admin_bp
@@ -200,6 +200,8 @@ def create_studio():
     if course_intro and len(course_intro) > MAX_COURSE_INTRO_LENGTH:
         return {"error": f"课程介绍最多 {MAX_COURSE_INTRO_LENGTH} 字"}, 400
 
+    images = [normalize_storage_url(u) for u in images]
+    images = [u for u in images if u]
     studio = Studio(
         name=name,
         city=payload.get("city", "").strip() or None,
@@ -208,11 +210,11 @@ def create_studio():
         latitude=payload.get("latitude"),
         longitude=payload.get("longitude"),
         contact_text=payload.get("contact", "").strip() or None,
-        contact_image=str(payload.get("contactImage") or "").strip() or None,
+        contact_image=normalize_storage_url(payload.get("contactImage")),
         tags=payload.get("tags", "").strip() or None,
         intro=payload.get("intro", "").strip() or None,
         images=",".join(images) or None,
-        cover_url=images[0] if images else (payload.get("coverUrl", "").strip() or None),
+        cover_url=images[0] if images else normalize_storage_url(payload.get("coverUrl")),
         course_intro=course_intro,
         status="open",
         manager_teacher_ids=",".join(str(i) for i in manager_ids) if manager_ids else None,
@@ -265,7 +267,7 @@ def update_studio(studio_id):
     if "contact" in payload:
         studio.contact_text = str(payload["contact"] or "").strip() or None
     if "contactImage" in payload:
-        studio.contact_image = str(payload["contactImage"] or "").strip() or None
+        studio.contact_image = normalize_storage_url(payload.get("contactImage"))
     if "tags" in payload:
         tags_error = _validate_tags(payload.get("tags"))
         if tags_error:
@@ -277,6 +279,8 @@ def update_studio(studio_id):
         images, images_error = _validate_images(payload.get("images"))
         if images_error:
             return {"error": images_error}, 400
+        images = [normalize_storage_url(u) for u in images]
+        images = [u for u in images if u]
         studio.images = ",".join(images) or None
         if images:
             studio.cover_url = images[0]
