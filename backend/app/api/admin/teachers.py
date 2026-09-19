@@ -422,7 +422,7 @@ def import_preview():
             elif data["idNumber"] in seen_id_numbers:
                 row_errors.append({"rowNumber": idx, "field": "idNumber", "message": "身份证号在文件中重复"})
             elif data["idNumber"] in existing_id_numbers:
-                row_errors.append({"rowNumber": idx, "field": "idNumber", "message": "身份证号已关联其他教师"})
+                row_errors.append({"rowNumber": idx, "field": "idNumber", "message": "该教师已存在（身份证号已关联），导入时将跳过"})
             else:
                 seen_id_numbers.add(data["idNumber"])
 
@@ -494,8 +494,13 @@ def import_commit():
     existing_nos = set(
         no for (no,) in db.session.query(Teacher.certificate_no).filter(Teacher.certificate_no.isnot(None)).all()
     )
+    # 已存在的身份证号：导入时跳过，避免 teacher_no 唯一约束冲突。
+    existing_id_numbers = set(
+        number for (number,) in db.session.query(Teacher.teacher_no).all()
+    )
     used_nos = set()
     created = 0
+    skipped = 0
 
     for row in rows:
         # Skip empty rows
@@ -503,6 +508,11 @@ def import_commit():
             continue
 
         data = _parse_import_row(row)
+
+        # 身份证号已存在：跳过该教师（不重复导入）。
+        if data["idNumber"] and data["idNumber"] in existing_id_numbers:
+            skipped += 1
+            continue
 
         # Validate required fields — skip invalid rows silently
         if not data["name"]:
@@ -557,6 +567,8 @@ def import_commit():
         if data["phone"]:
             db.session.add(TeacherDetail(teacher_id=teacher.id, phone=data["phone"]))
 
+        if data["idNumber"]:
+            existing_id_numbers.add(data["idNumber"])
         created += 1
 
     batch.status = "committed"
@@ -564,4 +576,4 @@ def import_commit():
     db.session.add(AuditLog(admin_id=1, action="import_teachers", target_type="batch", target_id=batch.id))
     db.session.commit()
 
-    return {"batchId": batch.id, "createdCount": created}
+    return {"batchId": batch.id, "createdCount": created, "skippedCount": skipped}

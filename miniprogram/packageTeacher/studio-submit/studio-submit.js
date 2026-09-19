@@ -1,6 +1,6 @@
 const { request, uploadFile } = require('../../utils/request');
 const auth = require('../../utils/auth');
-const { normalizeMultiline } = require('../../utils/text');
+const { normalizeMultiline, stripParenthetical } = require('../../utils/text');
 const app = getApp();
 
 // 后端下发的图片可能是 API 相对路径（"/uploads/..."），<image> 无法解析，
@@ -339,7 +339,7 @@ Page({
             : (t.teacherNo ? `编号：${t.teacherNo}` : '');
           return {
             id: t.id,
-            label: t.tierName ? `${displayName} · ${t.tierName}` : displayName,
+            label: t.tierName ? `${displayName} · ${stripParenthetical(t.tierName)}` : displayName,
             sub,
           };
         });

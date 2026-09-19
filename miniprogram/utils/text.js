@@ -30,4 +30,9 @@ const normalizeMultiline = (value) => {
     .replace(/^\n+|\n+$/g, '');
 };
 
-module.exports = { normalizeMultiline };
+// 等级名称里括号内常是补充说明（如「喜乐智慧生命教练（喜乐瑜伽高级教师）」），
+// 身份区只展示主名称，去掉全角/半角括号及其内容。
+const stripParenthetical = (value) =>
+  value ? String(value).replace(/[（(][^（）()]*[）)]/g, '').trim() : '';
+
+module.exports = { normalizeMultiline, stripParenthetical };
