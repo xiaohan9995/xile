@@ -1,6 +1,6 @@
 import api from './index.js'
 import { normalizeMultiline } from '../utils/text.js'
-import defaultAvatar from '../assets/avatar-default.png'
+import defaultAvatar from '../assets/avatar-default.jpg'
 
 const DEFAULT_STUDIO = 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=600&auto=format&fit=crop'
 

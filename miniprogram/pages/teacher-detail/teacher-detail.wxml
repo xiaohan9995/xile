@@ -10,7 +10,7 @@
     <!-- Profile head -->
     <view class="profile-head">
       <image wx:if="{{teacher.avatarUrl}}" class="profile-avatar" src="{{teacher.avatarUrl}}" mode="aspectFill" />
-      <image wx:else class="profile-avatar" src="/assets/xile-yoga-miniapp-avatar.png" mode="aspectFill" />
+      <image wx:else class="profile-avatar" src="/assets/xile-yoga-miniapp-avatar.jpg" mode="aspectFill" />
       <view class="profile-info">
         <text class="profile-name">{{teacher.xileName || teacher.realName || teacher.name || '—'}}</text>
         <view class="profile-tier">

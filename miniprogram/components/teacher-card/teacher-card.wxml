@@ -9,7 +9,7 @@
     <image
       wx:else
       class="teacher-card__avatar"
-      src="/assets/xile-yoga-miniapp-avatar.png"
+      src="/assets/xile-yoga-miniapp-avatar.jpg"
       mode="aspectFill"
     />
     <view class="teacher-card__online" wx:if="{{teacher.certificationStatus === '认证有效'}}"></view>

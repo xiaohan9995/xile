@@ -1,7 +1,7 @@
 <view class="login-page">
   <view class="login-shell" wx:if="{{loginReady}}">
     <view class="login-brand">
-      <image class="login-brand__avatar" src="/assets/xile-yoga-miniapp-avatar.png" mode="aspectFill" alt="喜乐瑜伽标志" />
+      <image class="login-brand__avatar" src="/assets/xile-yoga-miniapp-avatar.jpg" mode="aspectFill" alt="喜乐瑜伽标志" />
       <text class="login-brand__eyebrow">JOY YOGA</text>
       <text class="login-brand__name">喜乐瑜伽</text>
       <text class="login-brand__note">教师认证服务</text>

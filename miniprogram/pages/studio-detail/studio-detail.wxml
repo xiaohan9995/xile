@@ -43,7 +43,7 @@
           <view class="lead-teacher-row">
             <view class="lead-teacher" wx:for="{{studio.ownerTeachers}}" wx:key="id" bindtap="openTeacherDrawer" data-id="{{item.id}}">
               <image wx:if="{{item.avatarUrl}}" class="lead-avatar" src="{{item.avatarUrl}}" mode="aspectFill" />
-              <image wx:else class="lead-avatar" src="/assets/xile-yoga-miniapp-avatar.png" mode="aspectFill" />
+              <image wx:else class="lead-avatar" src="/assets/xile-yoga-miniapp-avatar.jpg" mode="aspectFill" />
               <text class="lead-name">{{item.name || item.xileName}}</text>
             </view>
           </view>
@@ -226,7 +226,7 @@
           <!-- 1. 身份区：头像 + 名称 + 等级 + 认证状态 -->
           <view class="teacher-drawer__hero">
             <image wx:if="{{selectedTeacher.avatarUrl}}" class="teacher-drawer__avatar" src="{{selectedTeacher.avatarUrl}}" mode="aspectFill" />
-            <image wx:else class="teacher-drawer__avatar" src="/assets/xile-yoga-miniapp-avatar.png" mode="aspectFill" />
+            <image wx:else class="teacher-drawer__avatar" src="/assets/xile-yoga-miniapp-avatar.jpg" mode="aspectFill" />
 
             <view class="teacher-drawer__head-info">
               <text class="teacher-drawer__name">{{selectedTeacher.xileName || selectedTeacher.realName || selectedTeacher.name || '—'}}</text>
