@@ -23,6 +23,10 @@ flask db upgrade
 echo "[startup] backfilling teacher sort_order"
 python /app/scripts/migrate_teacher_sort_order.py || echo "[startup] teacher sort_order backfill failed (non-fatal)"
 
+# 给缺证书号的教师补齐证书号（幂等，新规则）。失败不阻塞启动。
+echo "[startup] generating missing certificate numbers"
+python /app/scripts/migrate_certificate_nos.py || echo "[startup] certificate number generation failed (non-fatal)"
+
 if [ "${RUN_PRODUCTION_INIT:-}" = "run-once" ]; then
     # Create only required reference data (tiers, system defaults and first admin);
     # no demo data is created.
