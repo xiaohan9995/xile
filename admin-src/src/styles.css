@@ -1012,11 +1012,11 @@ button {
 }
 
 .admin-modal--edit {
-  width: min(680px, calc(100vw - 32px));
+  width: min(800px, calc(100vw - 32px));
 }
 
 .admin-modal.wide {
-  width: min(760px, calc(100vw - 32px));
+  width: min(920px, calc(100vw - 32px));
 }
 
 .modal-head {

@@ -21,7 +21,7 @@
           <tr v-for="record in pagedRecords" :key="record.id">
             <td><strong>{{ record.teacherName }}</strong><br><small>{{ record.xileName || '—' }} · {{ record.certificateNo || '未认证' }}</small></td>
             <td>{{ record.taughtOn }}</td>
-            <td><strong>{{ record.title }}</strong><br><small>{{ record.platform }}</small><br><small v-if="record.description">{{ record.description }}</small></td>
+            <td><strong>{{ record.title }}</strong><br><small>{{ record.platform }}</small><br><small v-if="record.description" class="multiline-text">{{ record.description }}</small></td>
             <td>{{ record.durationHours || '—' }} 小时 / {{ record.participantCount || '—' }} 人</td>
             <td><span class="status-tag" :class="record.status === 'submitted' ? 'status-active' : ''">{{ record.status === 'submitted' ? '已提交' : '草稿' }}</span></td>
             <td><a v-if="record.evidenceUrl" :href="record.evidenceUrl" target="_blank" rel="noopener" class="table-action">查看附件</a><span v-else>—</span></td>
@@ -79,6 +79,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { fetchAdminTeachingRecords, updateTeachingRecord, deleteTeachingRecord } from '../api/adminData'
 import Pagination from '../components/Pagination.vue'
 import { useToast } from '../composables/useToast'
+import { normalizeMultiline } from '../utils/text.js'
 
 const { show: toast } = useToast()
 const records = ref([])
@@ -141,7 +142,7 @@ async function handleUpdate() {
       title: d.title,
       durationHours: d.durationHours === '' ? null : Number(d.durationHours),
       participantCount: d.participantCount === '' ? null : Number(d.participantCount),
-      description: d.description,
+      description: normalizeMultiline(d.description),
       status: d.status,
     })
     showEdit.value = false
@@ -163,3 +164,12 @@ async function handleDelete(record) {
   }
 }
 </script>
+
+<style scoped>
+/* 活动说明是多行文本，保留换行与段落空行 */
+.multiline-text {
+  display: inline-block;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+</style>

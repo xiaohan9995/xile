@@ -74,7 +74,7 @@
 
     <!-- Create Modal -->
     <div v-if="showCreate" class="modal-backdrop" @click.self="showCreate = false">
-      <form class="admin-modal" @submit.prevent="handleCreate">
+      <form class="admin-modal wide" @submit.prevent="handleCreate">
         <div class="modal-head">
           <h2>新增教师</h2>
           <button type="button" @click="showCreate = false">×</button>
@@ -224,6 +224,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import ImagePreview from '../components/ImagePreview.vue'
 import { fetchAdminTeachers, createTeacher, updateTeacher, deleteTeacher, createTeacherAccount, uploadAdminAsset } from '../api/adminData'
 import { useToast } from '../composables/useToast'
+import { normalizeMultiline } from '../utils/text.js'
 
 const { show: toast } = useToast()
 
@@ -373,7 +374,7 @@ async function handleUpdate() {
     city: editDraft.city,
     district: editDraft.district,
     committeeRemark: editDraft.committeeRemark,
-    teachingSummary: editDraft.teachingSummary,
+    teachingSummary: normalizeMultiline(editDraft.teachingSummary),
     avatarUrl: editDraft.avatarUrl,
     certificateUrl: editDraft.certificateUrl,
     residences: editDraft.residencesText.split(/[,，]/).map((item) => item.trim()).filter(Boolean),

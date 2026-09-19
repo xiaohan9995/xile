@@ -9,7 +9,7 @@
     <div class="data-table-wrap roster-wrap"><table class="data-table roster-table">
       <thead><tr><th>教师</th><th>服务日期</th><th>服务类型 / 活动</th><th>地点</th><th>状态</th><th>佐证</th><th>操作</th></tr></thead>
       <tbody><tr v-if="!pagedRecords.length"><td colspan="7" class="empty-cell">暂无符合筛选条件的服务记录</td></tr>
-      <tr v-for="record in pagedRecords" :key="record.id"><td><strong>{{ record.teacherName }}</strong><br><small>{{ record.xileName || '—' }} · {{ record.certificateNo || '未认证' }}</small></td><td>{{ record.servedOn }}</td><td><strong>{{ record.title }}</strong><br><small>{{ record.serviceType }}</small><br><small v-if="record.description">{{ record.description }}</small></td><td>{{ record.location || '—' }}</td><td><span class="status-tag" :class="record.status === 'submitted' ? 'status-active' : ''">{{ record.status === 'submitted' ? '已提交' : '草稿' }}</span></td><td><a v-if="record.evidenceUrl" :href="record.evidenceUrl" target="_blank" rel="noopener" class="table-action">查看附件</a><span v-else>—</span></td><td class="table-actions"><button class="table-action" @click="openEdit(record)">编辑</button><button class="danger-action" @click="handleDelete(record)">删除</button></td></tr></tbody>
+      <tr v-for="record in pagedRecords" :key="record.id"><td><strong>{{ record.teacherName }}</strong><br><small>{{ record.xileName || '—' }} · {{ record.certificateNo || '未认证' }}</small></td><td>{{ record.servedOn }}</td><td><strong>{{ record.title }}</strong><br><small>{{ record.serviceType }}</small><br><small v-if="record.description" class="multiline-text">{{ record.description }}</small></td><td>{{ record.location || '—' }}</td><td><span class="status-tag" :class="record.status === 'submitted' ? 'status-active' : ''">{{ record.status === 'submitted' ? '已提交' : '草稿' }}</span></td><td><a v-if="record.evidenceUrl" :href="record.evidenceUrl" target="_blank" rel="noopener" class="table-action">查看附件</a><span v-else>—</span></td><td class="table-actions"><button class="table-action" @click="openEdit(record)">编辑</button><button class="danger-action" @click="handleDelete(record)">删除</button></td></tr></tbody>
     </table><Pagination v-model:current-page="currentPage" :total-pages="totalPages" :total-items="filteredRecords.length" /></div>
 
     <!-- Edit Modal -->
@@ -44,6 +44,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { fetchAdminServiceRecords, updateServiceRecord, deleteServiceRecord } from '../api/adminData'
 import Pagination from '../components/Pagination.vue'
 import { useToast } from '../composables/useToast'
+import { normalizeMultiline } from '../utils/text.js'
 
 const { show: toast } = useToast()
 const records = ref([])
@@ -98,7 +99,7 @@ async function handleUpdate() {
       serviceType: d.serviceType,
       title: d.title,
       location: d.location,
-      description: d.description,
+      description: normalizeMultiline(d.description),
       status: d.status,
     })
     showEdit.value = false
@@ -120,3 +121,12 @@ async function handleDelete(record) {
   }
 }
 </script>
+
+<style scoped>
+/* 服务说明是多行文本，保留换行与段落空行 */
+.multiline-text {
+  display: inline-block;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+</style>

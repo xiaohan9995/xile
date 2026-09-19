@@ -83,11 +83,11 @@
           </label>
           <label>
             城市
-            <input v-model="createDraft.city" readonly placeholder="请通过地图选点" />
+            <input v-model="createDraft.city" placeholder="请输入城市，或通过地图选点自动填写" />
           </label>
           <label>
             地区
-            <input v-model="createDraft.district" readonly placeholder="请通过地图选点" />
+            <input v-model="createDraft.district" placeholder="请输入区/县，或通过地图选点自动填写" />
           </label>
           <label>
             联系方式
@@ -132,12 +132,14 @@
               <span class="multi-select__arrow">▾</span>
             </div>
             <div v-if="showCreateTeacherDropdown" class="multi-select__panel" @click.stop>
-              <label v-for="t in teacherOptions" :key="t.id" class="multi-select__option">
-                <span class="multi-select__check" :class="{ 'multi-select__check--on': createDraft.ownerTeacherIds.includes(t.id) }">✓</span>
-                <span>{{ t.name }}（{{ t.xileName || '无喜乐名' }}）</span>
+              <div class="multi-select__search">
+                <input v-model="createTeacherSearch" placeholder="搜索姓名 / 喜乐名 / 证书编号" @click.stop />
+              </div>
+              <label v-for="t in filteredCreateTeacherOptions" :key="t.id" class="multi-select__option" @click.stop>
                 <input type="checkbox" class="multi-select__input" :checked="createDraft.ownerTeacherIds.includes(t.id)" @change="toggleCreateTeacher(t.id)" />
+                <span class="multi-select__option-text">{{ t.name }}（{{ t.xileName || '无喜乐名' }}）</span>
               </label>
-              <div v-if="!teacherOptions.length" class="multi-select__empty">暂无教师可选</div>
+              <div v-if="!filteredCreateTeacherOptions.length" class="multi-select__empty">{{ teacherOptions.length ? '未找到匹配的教师' : '暂无教师可选' }}</div>
             </div>
           </div>
         </label>
@@ -176,11 +178,11 @@
           </label>
           <label>
             城市
-            <input v-model="editDraft.city" readonly placeholder="请通过地图选点" />
+            <input v-model="editDraft.city" placeholder="请输入城市，或通过地图选点自动填写" />
           </label>
           <label>
             地区
-            <input v-model="editDraft.district" readonly placeholder="请通过地图选点" />
+            <input v-model="editDraft.district" placeholder="请输入区/县，或通过地图选点自动填写" />
           </label>
           <label>
             联系方式
@@ -225,12 +227,14 @@
               <span class="multi-select__arrow">▾</span>
             </div>
             <div v-if="showEditTeacherDropdown" class="multi-select__panel" @click.stop>
-              <label v-for="t in teacherOptions" :key="t.id" class="multi-select__option">
-                <span class="multi-select__check" :class="{ 'multi-select__check--on': editDraft.ownerTeacherIds.includes(t.id) }">✓</span>
-                <span>{{ t.name }}（{{ t.xileName || '无喜乐名' }}）</span>
+              <div class="multi-select__search">
+                <input v-model="editTeacherSearch" placeholder="搜索姓名 / 喜乐名 / 证书编号" @click.stop />
+              </div>
+              <label v-for="t in filteredEditTeacherOptions" :key="t.id" class="multi-select__option" @click.stop>
                 <input type="checkbox" class="multi-select__input" :checked="editDraft.ownerTeacherIds.includes(t.id)" @change="toggleEditTeacher(t.id)" />
+                <span class="multi-select__option-text">{{ t.name }}（{{ t.xileName || '无喜乐名' }}）</span>
               </label>
-              <div v-if="!teacherOptions.length" class="multi-select__empty">暂无教师可选</div>
+              <div v-if="!filteredEditTeacherOptions.length" class="multi-select__empty">{{ teacherOptions.length ? '未找到匹配的教师' : '暂无教师可选' }}</div>
             </div>
           </div>
         </label>
@@ -359,6 +363,7 @@ import ImagePreview from '../components/ImagePreview.vue'
 import { fetchAdminStudios, fetchAdminTeachers, fetchMapConfig, searchMapPlaces, reverseGeocodeMapLocation, createStudio, updateStudio, deleteStudio, approveStudio, rejectStudio, uploadAdminAsset } from '../api/adminData'
 import { useToast } from '../composables/useToast'
 import Pagination from '../components/Pagination.vue'
+import { normalizeMultiline } from '../utils/text.js'
 
 const { show: toast } = useToast()
 const filters = ref({ name: '', city: '', address: '', tags: '', status: '' })
@@ -562,6 +567,8 @@ const showCreateTeacherDropdown = ref(false)
 const showEditTeacherDropdown = ref(false)
 const createMultiSelect = ref(null)
 const editMultiSelect = ref(null)
+const createTeacherSearch = ref('')
+const editTeacherSearch = ref('')
 
 const createTagInput = ref('')
 const editTagInput = ref('')
@@ -572,6 +579,15 @@ function teacherName(id) {
   const teacher = teacherOptions.value.find((t) => t.id === id)
   return teacher ? teacher.name : `教师#${id}`
 }
+
+function matchTeacher(t, query) {
+  if (!query) return true
+  const q = query.trim().toLowerCase()
+  return [t.name, t.xileName, t.certNo, t.phone].some((field) => String(field || '').toLowerCase().includes(q))
+}
+
+const filteredCreateTeacherOptions = computed(() => teacherOptions.value.filter((t) => matchTeacher(t, createTeacherSearch.value)))
+const filteredEditTeacherOptions = computed(() => teacherOptions.value.filter((t) => matchTeacher(t, editTeacherSearch.value)))
 
 function toggleCreateTeacher(id) {
   const ids = createDraft.ownerTeacherIds
@@ -600,11 +616,13 @@ function removeEditTeacher(id) {
 function openCreateTeacherDropdown() {
   showCreateTeacherDropdown.value = true
   showEditTeacherDropdown.value = false
+  createTeacherSearch.value = ''
 }
 
 function openEditTeacherDropdown() {
   showEditTeacherDropdown.value = true
   showCreateTeacherDropdown.value = false
+  editTeacherSearch.value = ''
 }
 
 function closeTeacherDropdowns() {
@@ -819,7 +837,9 @@ async function handleCreate() {
     toast(tagsError, 'error')
     return
   }
-  if (createDraft.courseIntro.length > MAX_COURSE_INTRO_LENGTH) {
+  // 先规范化换行再校验长度：连续空行会被压缩，避免「看着没超但存进去超了」
+  const courseIntro = normalizeMultiline(createDraft.courseIntro)
+  if (courseIntro.length > MAX_COURSE_INTRO_LENGTH) {
     toast(`课程介绍最多 ${MAX_COURSE_INTRO_LENGTH} 字`, 'error')
     return
   }
@@ -830,7 +850,7 @@ async function handleCreate() {
     contact: createDraft.contact,
     tags: createDraft.tags.join(','),
     address: createDraft.address,
-    courseIntro: createDraft.courseIntro,
+    courseIntro,
     images: createDraft.images,
     ownerTeacherIds: createDraft.ownerTeacherIds,
     coverUrl: createDraft.images[0] || '',
@@ -852,7 +872,8 @@ async function handleUpdate() {
     toast(tagsError, 'error')
     return
   }
-  if (editDraft.courseIntro.length > MAX_COURSE_INTRO_LENGTH) {
+  const courseIntro = normalizeMultiline(editDraft.courseIntro)
+  if (courseIntro.length > MAX_COURSE_INTRO_LENGTH) {
     toast(`课程介绍最多 ${MAX_COURSE_INTRO_LENGTH} 字`, 'error')
     return
   }
@@ -863,7 +884,7 @@ async function handleUpdate() {
     contact: editDraft.contact,
     tags: editDraft.tags.join(','),
     address: editDraft.address,
-    courseIntro: editDraft.courseIntro,
+    courseIntro,
     images: editDraft.images,
     ownerTeacherIds: editDraft.ownerTeacherIds,
     coverUrl: editDraft.images[0] || '',
@@ -1150,33 +1171,43 @@ function removeImage(draft, index) {
   background: #f5f8f5;
 }
 
-.multi-select__input {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.multi-select__check {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  flex: 0 0 18px;
-  border: 1px solid #c6d0c6;
-  border-radius: 4px;
-  color: transparent;
-  font-size: 12px;
-  line-height: 1;
+.multi-select__search {
+  position: sticky;
+  top: 0;
+  padding: 8px;
+  border-bottom: 1px solid #eef2ee;
   background: #fff;
-  transition: background .15s ease, border-color .15s ease, color .15s ease;
 }
 
-.multi-select__check--on {
-  background: #426d58;
+.multi-select__search input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid #d7ddd7;
+  border-radius: 8px;
+  font-size: 13px;
+  outline: none;
+}
+
+.multi-select__search input:focus {
   border-color: #426d58;
-  color: #fff;
+  box-shadow: 0 0 0 3px rgba(66, 109, 88, .12);
+}
+
+.multi-select__input {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.multi-select__option-text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .multi-select__empty {
@@ -1314,7 +1345,9 @@ function removeImage(draft, index) {
 
 .approval-diff__cell {
   color: #1f2521;
-  word-break: break-all;
+  /* 保留换行与连续空格，课程介绍等长文本才能按段落渲染出空行间距 */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   background: #fff;
 }
 

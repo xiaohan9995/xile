@@ -1,5 +1,6 @@
 const { request } = require('../../utils/request');
 const auth = require('../../utils/auth');
+const { normalizeMultiline } = require('../../utils/text');
 
 const app = getApp();
 
@@ -136,7 +137,8 @@ Page({
           tier: t.tier || '',
           tierName: t.tierName || '',
           avatarUrl: displayAvatarUrl(t.avatarUrl),
-          bio: t.bio || '',
+          // 简介是多行文本，统一换行格式后再展示，避免身份卡里出现多余空行。
+          bio: normalizeMultiline(t.bio),
           validUntil: t.validUntil || '--',
           daysLeft: t.daysLeft || 0,
         },

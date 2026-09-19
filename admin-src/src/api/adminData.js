@@ -1,4 +1,5 @@
 import api from './index.js'
+import { normalizeMultiline } from '../utils/text.js'
 
 const DEFAULT_STUDIO = 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=600&auto=format&fit=crop'
 
@@ -31,7 +32,7 @@ export function mapAdminTeacher(teacher) {
     district: teacher.district,
     status: teacher.status,
     committeeRemark: teacher.committeeRemark,
-    teachingSummary: teacher.teachingSummary || '',
+    teachingSummary: normalizeMultiline(teacher.teachingSummary),
   }
 }
 
@@ -45,7 +46,7 @@ export function mapAdminStudio(studio) {
     address: studio.address,
     contact: studio.contactText || '',
     intro: studio.intro || '',
-    courseIntro: studio.courseIntro || '',
+    courseIntro: normalizeMultiline(studio.courseIntro),
     openingHours: studio.openingHours || '',
     images: Array.isArray(studio.images) ? studio.images : [],
     image: studio.coverUrl || DEFAULT_STUDIO,
@@ -56,8 +57,10 @@ export function mapAdminStudio(studio) {
     longitude: studio.longitude ?? null,
     status: studio.status,
     hasPending: Boolean(studio.hasPending),
-    pendingRejectReason: studio.pendingRejectReason || '',
-    pending: studio.pending || null,
+    pendingRejectReason: normalizeMultiline(studio.pendingRejectReason),
+    pending: studio.pending
+      ? { ...studio.pending, courseIntro: normalizeMultiline(studio.pending.courseIntro) }
+      : null,
   }
 }
 

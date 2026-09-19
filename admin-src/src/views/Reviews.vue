@@ -286,6 +286,9 @@ async function applyDecision(status, requireComment = false, isReturn = false) {
   border-radius: 4px;
   font-size: 13px;
   color: #5a4a28;
+  /* 审核意见是多行文本，保留换行与段落空行 */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 .decision-block {
   margin-top: 18px;

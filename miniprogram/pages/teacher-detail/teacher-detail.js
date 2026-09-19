@@ -1,5 +1,6 @@
 const { request } = require('../../utils/request');
 const auth = require('../../utils/auth');
+const { normalizeMultiline } = require('../../utils/text');
 
 const app = getApp();
 
@@ -46,6 +47,8 @@ Page({
       const teacher = await request({ url: `/api/mp/teachers/${id}/summary` });
       teacher.avatarUrl = displayFileUrl(teacher.avatarUrl);
       teacher.certificateUrl = displayFileUrl(teacher.certificateUrl);
+      // 个人简介是多行文本，统一换行格式：连续空行压缩为段落分隔，行首尾空白去掉。
+      teacher.teachingSummary = normalizeMultiline(teacher.teachingSummary);
       const displayName = teacher.xileName || teacher.realName || teacher.name || '';
       this.setData({
         teacher,

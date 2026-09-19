@@ -1,5 +1,6 @@
 const { request } = require('../../utils/request');
 const auth = require('../../utils/auth');
+const { normalizeMultiline } = require('../../utils/text');
 
 const app = getApp();
 
@@ -57,7 +58,9 @@ const matchFieldKey = (label) => {
 };
 
 const parseCourseIntro = (text) => {
-  const raw = String(text || '').trim();
+  // 先规范化换行：连续空行压缩为段落分隔，行首尾空白去掉，避免解析出空行或
+  // 把「多敲的回车」当成新的课程/字段。
+  const raw = normalizeMultiline(text);
   if (!raw) return [];
 
   const courses = [];
@@ -201,7 +204,9 @@ Page({
       ownerTeachers.forEach((teacher) => {
         teacher.avatarUrl = displayFileUrl(teacher.avatarUrl);
       });
-      const courseIntro = studio.courseIntro || '';
+      // 课程介绍是多行文本（教师/管理员在 textarea 里自由输入），统一换行格式后
+      // 再解析，保证抽屉里的段落间距一致、不出现多余空行。
+      const courseIntro = normalizeMultiline(studio.courseIntro);
       this.setData({
         studio: {
           ...studio,
@@ -300,6 +305,8 @@ Page({
           currentTierCertifiedYear: yearOf(teacher.currentTierCertifiedOn),
           residencesText: (teacher.residences || []).join('、'),
           specialtiesText: (teacher.specialties || []).join('、'),
+          // 个人简介是多行文本，统一换行展示，避免多余空行撑开抽屉。
+          teachingSummary: normalizeMultiline(teacher.teachingSummary),
         },
       });
     } catch (err) {

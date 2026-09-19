@@ -137,10 +137,6 @@
 
         <!-- 课程列表：每门课程一张卡片，字段与教师详情页 info-row 一致 -->
         <view wx:for="{{courses}}" wx:key="key" class="course-drawer__section">
-          <view class="course-drawer__section-title">
-            <text class="course-drawer__section-bar"></text>
-            <text>{{item.name}}</text>
-          </view>
           <view class="course-drawer__card">
             <view wx:if="{{item.intro}}" class="course-drawer__row course-drawer__row--block">
               <text class="course-drawer__dt">课程简介</text>

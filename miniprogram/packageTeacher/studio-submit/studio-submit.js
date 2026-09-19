@@ -1,5 +1,6 @@
 const { request, uploadFile } = require('../../utils/request');
 const auth = require('../../utils/auth');
+const { normalizeMultiline } = require('../../utils/text');
 const app = getApp();
 
 const STATUS_LABEL = {
@@ -131,7 +132,9 @@ Page({
         address: f.address || '',
         contact: f.contact || '',
         tags: f.tags || [],
-        courseIntro: f.courseIntro || '',
+        // 课程介绍是多行文本，回填时统一换行格式，避免历史数据里的连续空行在
+        // 编辑框里继续累积。
+        courseIntro: normalizeMultiline(f.courseIntro),
         images: f.images || [],
         latitude: f.latitude != null ? f.latitude : null,
         longitude: f.longitude != null ? f.longitude : null,
@@ -246,11 +249,14 @@ Page({
       wx.showToast({ title: '请填写地址', icon: 'none' });
       return;
     }
+    // 提交前规范化课程介绍的换行：连续空行压缩为段落分隔，避免把「多敲的回车」
+    // 存进后端，导致详情页出现大段空白。
+    const courseIntro = normalizeMultiline(form.courseIntro);
     const data = {
       address: form.address,
       contact: form.contact,
       tags: form.tags.join(','),
-      courseIntro: form.courseIntro,
+      courseIntro,
       images: form.images,
     };
     // 城市/地区随地址一起提交，与地图选点结果保持一致。

@@ -28,7 +28,9 @@ defineProps({
 }
 .diff-field__value {
   color: #1f2521;
-  word-break: break-all;
+  /* 多行文本按段落渲染，保留换行与空行间距 */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 .diff-field--changed .diff-field__value {
   color: #9c7a1a;
