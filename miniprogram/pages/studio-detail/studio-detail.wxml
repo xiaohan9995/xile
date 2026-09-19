@@ -199,15 +199,12 @@
         <view class="drawer__handle"></view>
       </view>
       <view class="drawer__head">
-        <text class="drawer__title">课程介绍</text>
+        <text class="drawer__title">工作室介绍</text>
         <view class="drawer__close" bindtap="closeCourseDrawer">✕</view>
       </view>
       <scroll-view scroll-y class="drawer__body" enhanced show-scrollbar="{{false}}">
         <!-- 课程总览：与教师详情页 profile-head 同构，先给整体印象 -->
         <view class="course-drawer__hero">
-          <view class="course-drawer__hero-mark">
-            <text>课</text>
-          </view>
           <view class="course-drawer__hero-info">
             <text class="course-drawer__hero-title">{{studio.name}}</text>
           </view>
@@ -217,7 +214,6 @@
         <view wx:for="{{courses}}" wx:key="key" class="course-drawer__section">
           <view class="course-drawer__card">
             <view wx:if="{{item.intro}}" class="course-drawer__row course-drawer__row--block">
-              <text class="course-drawer__dt">课程简介</text>
               <text class="course-drawer__dd">{{item.intro}}</text>
             </view>
           </view>
@@ -232,7 +228,7 @@
         <!-- 认证背书：与教师详情页 verify-note 一致 -->
         <view class="course-drawer__verify">
           <text class="course-drawer__verify-icon">🛡</text>
-          <text class="course-drawer__verify-text">课程信息由该工作室主理教师维护并经喜乐瑜伽教师管理委员会审核</text>
+          <text class="course-drawer__verify-text">由该工作室主理教师维护并经喜乐瑜伽教师管理委员会审核</text>
         </view>
       </scroll-view>
     </view>

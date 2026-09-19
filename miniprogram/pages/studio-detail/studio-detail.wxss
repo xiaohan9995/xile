@@ -730,7 +730,7 @@
 /* 课程总览：与教师详情页 profile-head 同构（左侧标识 + 右侧信息） */
 .course-drawer__hero {
   display: grid;
-  grid-template-columns: 128rpx 1fr;
+  grid-template-columns: 1fr;
   gap: 28rpx;
   align-items: center;
   padding: 8rpx 0 4rpx;
@@ -764,6 +764,9 @@
   font-weight: 800;
   color: var(--color-text);
   line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .course-drawer__hero-sub {

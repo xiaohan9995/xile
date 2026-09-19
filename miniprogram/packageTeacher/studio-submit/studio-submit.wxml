@@ -38,13 +38,29 @@
 
         <view class="teacher-mgmt__section">
           <view class="teacher-mgmt__title"><text class="teacher-mgmt__bar"></text><text>添加教师</text></view>
-          <picker mode="selector" range="{{teacherOptions}}" range-key="label" value="{{teacherPickerIndex}}" bindchange="onTeacherPickerChange" disabled="{{teacherOptionsLoading || teacherOptions.length === 0}}">
-            <view class="teacher-picker {{teacherOptions.length === 0 ? 'teacher-picker--empty' : ''}}">
-              <text class="teacher-picker__value {{teacherPickerIndex < 0 ? 'teacher-picker__value--placeholder' : ''}}">{{teacherOptionsLoading ? '教师列表加载中…' : (teacherOptions.length === 0 ? '暂无可添加的教师' : (teacherPickerIndex >= 0 ? teacherOptions[teacherPickerIndex].label : '点击选择要添加的教师'))}}</text>
-              <text class="teacher-picker__arrow">›</text>
+          <view class="teacher-select">
+            <view class="teacher-picker" bindtap="toggleTeacherPicker">
+              <text class="teacher-picker__value teacher-picker__value--placeholder">{{teacherPickerOpen ? '输入姓名或从下方列表选择' : '点击搜索并添加教师'}}</text>
+              <text class="teacher-picker__arrow {{teacherPickerOpen ? 'teacher-picker__arrow--open' : ''}}">▾</text>
             </view>
-          </picker>
-          <text class="field-hint">从下拉列表选择教师后即自动添加为主理教师</text>
+            <view wx:if="{{teacherPickerOpen}}" class="teacher-dropdown">
+              <view class="teacher-dropdown__search">
+                <input class="teacher-dropdown__input" placeholder="按姓名 / 喜乐名 / 证书编号模糊搜索" value="{{teacherKeyword}}" bindinput="onTeacherKeywordInput" focus="{{teacherPickerOpen}}" />
+              </view>
+              <scroll-view scroll-y class="teacher-dropdown__list">
+                <view wx:if="{{teacherOptionsLoading}}" class="teacher-dropdown__status">加载中…</view>
+                <view wx:elif="{{teacherOptions.length === 0}}" class="teacher-dropdown__status">{{teacherKeyword ? '未找到匹配的教师' : '暂无可添加的教师'}}</view>
+                <view wx:else wx:for="{{teacherOptions}}" wx:key="id" class="teacher-dropdown__item" bindtap="selectTeacherOption" data-id="{{item.id}}">
+                  <view class="teacher-dropdown__info">
+                    <text class="teacher-dropdown__name">{{item.label}}</text>
+                    <text wx:if="{{item.sub}}" class="teacher-dropdown__sub">{{item.sub}}</text>
+                  </view>
+                  <text class="teacher-dropdown__add">添加</text>
+                </view>
+              </scroll-view>
+            </view>
+          </view>
+          <text class="field-hint">输入姓名模糊搜索，选中列表中的教师即自动添加为主理教师</text>
         </view>
       </view>
 

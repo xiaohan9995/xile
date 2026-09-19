@@ -74,11 +74,24 @@
 .teacher-row__remove { color:var(--color-danger); background:rgba(192, 57, 43, 0.08); }
 .teacher-row__self { color:var(--color-gold); background:var(--color-gold-light); }
 
+.teacher-select { position:relative; }
 .teacher-picker { display:flex; align-items:center; justify-content:space-between; gap:16rpx; height:80rpx; padding:0 24rpx; border:1rpx solid var(--color-line); border-radius:var(--radius-base); background:var(--color-card); }
-.teacher-picker--empty { opacity:0.6; }
 .teacher-picker__value { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:26rpx; color:var(--color-text); }
 .teacher-picker__value--placeholder { color:var(--color-muted); }
-.teacher-picker__arrow { flex-shrink:0; color:var(--color-muted); font-size:32rpx; line-height:1; }
+.teacher-picker__arrow { flex-shrink:0; color:var(--color-muted); font-size:28rpx; line-height:1; transition:transform 0.15s ease; }
+.teacher-picker__arrow--open { transform:rotate(180deg); }
+
+.teacher-dropdown { position:absolute; left:0; right:0; top:88rpx; z-index:20; border:1rpx solid var(--color-line); border-radius:var(--radius-base); background:var(--color-card); box-shadow:0 12rpx 32rpx rgba(0,0,0,0.10); overflow:hidden; }
+.teacher-dropdown__search { padding:16rpx; border-bottom:1rpx solid var(--color-line); }
+.teacher-dropdown__input { box-sizing:border-box; width:100%; height:64rpx; padding:0 20rpx; border:1rpx solid var(--color-line); border-radius:var(--radius-base); background:var(--color-surface); font-size:26rpx; }
+.teacher-dropdown__list { max-height:420rpx; }
+.teacher-dropdown__status { padding:32rpx 24rpx; text-align:center; color:var(--color-muted); font-size:24rpx; }
+.teacher-dropdown__item { display:flex; align-items:center; gap:16rpx; padding:20rpx 24rpx; border-bottom:1rpx solid var(--color-line); }
+.teacher-dropdown__item:last-child { border-bottom:none; }
+.teacher-dropdown__info { flex:1; min-width:0; display:flex; flex-direction:column; gap:4rpx; }
+.teacher-dropdown__name { font-size:26rpx; font-weight:600; color:var(--color-text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.teacher-dropdown__sub { font-size:22rpx; color:var(--color-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.teacher-dropdown__add { flex-shrink:0; font-size:24rpx; font-weight:600; padding:8rpx 22rpx; border-radius:999rpx; color:var(--color-primary-dark); background:var(--color-primary-light); }
 
 /* 提交审批：浅绿底 + 细边框 + 深绿字，覆盖全局 .btn-primary 的深绿实底 */
 .record-actions .btn-primary {

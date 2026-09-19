@@ -83,7 +83,8 @@ Page({
     myTeacherId: null,
     teacherOptions: [],
     teacherOptionsLoading: false,
-    teacherPickerIndex: -1,
+    teacherPickerOpen: false,
+    teacherKeyword: '',
   },
 
   onLoad(options) {
@@ -301,34 +302,58 @@ Page({
     }
   },
 
-  // 下拉选择候选：教师目录接口按 mode=name 且不带关键词时返回全部未隐藏教师
-  // （按等级排序），过滤掉已添加的教师后作为 picker 的 range。pageSize 上限 50。
-  async loadTeacherOptions() {
+  // 打开/收起教师下拉面板；首次打开时加载全部未隐藏教师作为候选。
+  toggleTeacherPicker() {
+    const open = !this.data.teacherPickerOpen;
+    this.setData({ teacherPickerOpen: open });
+    if (open) {
+      this.loadTeacherOptions();
+    }
+  },
+
+  // 姓名模糊搜索：本地输入防抖后调用后端按姓名/喜乐名/证书编号模糊匹配。
+  onTeacherKeywordInput(e) {
+    const keyword = e.detail.value || '';
+    this.setData({ teacherKeyword: keyword });
+    if (this._teacherSearchTimer) clearTimeout(this._teacherSearchTimer);
+    this._teacherSearchTimer = setTimeout(() => this.loadTeacherOptions(keyword), 300);
+  },
+
+  // 下拉候选：keyword 为空时拉取全部未隐藏教师（按等级排序）；否则按关键词
+  // 模糊搜索（姓名 / 喜乐名 / 证书编号）。过滤掉已添加的教师。pageSize 上限 50。
+  async loadTeacherOptions(keyword) {
+    const kw = (keyword || '').trim();
     this.setData({ teacherOptionsLoading: true });
     try {
-      const result = await request({ url: '/api/mp/teachers/search?mode=name&pageSize=50' });
+      const url = kw
+        ? `/api/mp/teachers/search?mode=name&q=${encodeURIComponent(kw)}&pageSize=50`
+        : '/api/mp/teachers/search?mode=name&pageSize=50';
+      const result = await request({ url });
       const currentIds = new Set((this.data.teachers || []).map((t) => String(t.id)));
       const options = (result.items || [])
         .filter((t) => !currentIds.has(String(t.id)))
         .map((t) => {
           const displayName = t.name || t.xileName || '教师';
+          const sub = t.xileName && t.xileName !== displayName
+            ? `喜乐名：${t.xileName}`
+            : (t.teacherNo ? `编号：${t.teacherNo}` : '');
           return {
             id: t.id,
             label: t.tierName ? `${displayName} · ${t.tierName}` : displayName,
+            sub,
           };
         });
-      this.setData({ teacherOptions: options, teacherPickerIndex: -1, teacherOptionsLoading: false });
+      this.setData({ teacherOptions: options, teacherOptionsLoading: false });
     } catch (error) {
       this.setData({ teacherOptionsLoading: false });
       wx.showToast({ title: error.message || '教师列表加载失败', icon: 'none' });
     }
   },
 
-  onTeacherPickerChange(e) {
-    const index = Number(e.detail.value);
-    const option = this.data.teacherOptions[index];
-    if (!option) return;
-    this.addTeacherById(option.id);
+  selectTeacherOption(e) {
+    const id = e.currentTarget.dataset.id;
+    this.setData({ teacherPickerOpen: false, teacherKeyword: '' });
+    this.addTeacherById(id);
   },
 
   async addTeacherById(id) {
