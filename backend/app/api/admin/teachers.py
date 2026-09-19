@@ -118,6 +118,12 @@ def update_teacher(teacher_id):
     if "residences" in payload:
         residences = payload["residences"]
         teacher.residences = ",".join(str(item).strip() for item in residences if str(item).strip()) if isinstance(residences, list) else None
+    if "certifiedAt" in payload:
+        value = str(payload["certifiedAt"] or "").strip().replace(".", "-")
+        try:
+            teacher.first_certified_on = date.fromisoformat(value) if value else None
+        except ValueError:
+            return {"error": "首次认证日期格式无效（需 YYYY-MM-DD）"}, 400
     if "currentTierCertifiedOn" in payload:
         value = str(payload["currentTierCertifiedOn"] or "").strip().replace(".", "-")
         try:
@@ -184,6 +190,14 @@ def create_teacher():
         except ValueError:
             pass
 
+    certified_on = None
+    certified_at_str = payload.get("certifiedAt")
+    if certified_at_str:
+        try:
+            certified_on = date.fromisoformat(str(certified_at_str).replace(".", "-"))
+        except ValueError:
+            return {"error": "首次认证日期格式无效（需 YYYY-MM-DD）"}, 400
+
     if existing_teacher:
         tier_code = (payload.get("level") or "L1").strip().upper()
         tier = TeacherTier.query.filter_by(code=tier_code).first() or TeacherTier.query.filter_by(code="L1").first()
@@ -195,6 +209,8 @@ def create_teacher():
         existing_teacher.status = "active"
         if valid_until:
             existing_teacher.valid_until = valid_until
+        if certified_on:
+            existing_teacher.first_certified_on = certified_on
         phone = (payload.get("phone") or "").strip()
         if phone:
             if not existing_teacher.detail:
@@ -221,6 +237,7 @@ def create_teacher():
         id_number=id_number,
         certificate_no=(payload.get("certificateNo") or "").strip().upper() or None,
         valid_until=valid_until,
+        certified_on=certified_on,
     )
 
     db.session.add(AuditLog(admin_id=1, action="create_teacher", target_type="teacher", target_id=teacher.id))
@@ -510,7 +527,7 @@ def import_commit():
                 continue
             used_nos.add(certificate_no)
         else:
-            certificate_no = generate_certificate_no()
+            certificate_no = generate_certificate_no(data["tier"], cert_date.year, data["idNumber"])
             # Ensure generated number is tracked to avoid collision within batch
             existing_nos.add(certificate_no)
 

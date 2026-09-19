@@ -254,6 +254,28 @@
   opacity: 0.6;
 }
 
+/* 证书编号：置于证书图片上方，居中 + 等宽字体 */
+.cert-no {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.cert-no__label {
+  font-size: 24rpx;
+  color: var(--color-muted);
+}
+
+.cert-no__value {
+  font-size: 30rpx;
+  font-weight: 800;
+  color: var(--color-text);
+  font-family: "SF Mono", "Menlo", "Consolas", monospace;
+  letter-spacing: 2rpx;
+}
+
 .cert-preview {
   height: 520rpx;
   border-radius: var(--radius-md);

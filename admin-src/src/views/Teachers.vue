@@ -98,7 +98,10 @@
           </label>
           <label>
             证书编号
-            <input v-model="createDraft.certNo" placeholder="未认证教师留空" />
+            <div class="cert-no-row">
+              <input v-model="createDraft.certNo" placeholder="未认证教师留空" />
+              <button type="button" class="cert-no-gen" @click="autoGenerateCertNo(createDraft)">自动生成</button>
+            </div>
           </label>
           <label>
             等级
@@ -109,6 +112,10 @@
               <option value="L4">L4</option>
               <option value="L5">L5</option>
             </select>
+          </label>
+          <label>
+            首次认证日期
+            <input v-model="createDraft.certifiedAt" placeholder="如 2026-01-01" />
           </label>
           <label>
             城市
@@ -156,7 +163,14 @@
           </label>
           <label>
             证书编号
-            <input v-model="editDraft.certNo" placeholder="未认证教师留空" />
+            <div class="cert-no-row">
+              <input v-model="editDraft.certNo" placeholder="未认证教师留空" />
+              <button type="button" class="cert-no-gen" @click="autoGenerateCertNo(editDraft)">自动生成</button>
+            </div>
+          </label>
+          <label>
+            首次认证日期
+            <input v-model="editDraft.certifiedAt" placeholder="如 2026-01-01" />
           </label>
           <label>
             城市
@@ -243,6 +257,7 @@ const createDraft = reactive({
   certNo: '',
   phone: '',
   level: 'L2',
+  certifiedAt: '',
   city: '',
   district: '',
 })
@@ -255,6 +270,8 @@ const editDraft = reactive({
   alias: '',
   idNumber: '',
   phone: '',
+  level: 'L2',
+  certifiedAt: '',
   city: '',
   district: '',
   committeeRemark: '',
@@ -324,9 +341,23 @@ function openCreate() {
   createDraft.certNo = ''
   createDraft.phone = ''
   createDraft.level = 'L2'
+  createDraft.certifiedAt = ''
   createDraft.city = ''
   createDraft.district = ''
   showCreate.value = true
+}
+
+// 按「2050 + 级别 + XL + 首次认证年份 + 身份证后四位」生成证书号填入输入框
+function autoGenerateCertNo(draft) {
+  const level = (draft.level || '').trim().toUpperCase()
+  const year = (draft.certifiedAt || '').trim().slice(0, 4)
+  const idNumber = (draft.idNumber || '').trim()
+  const last4 = idNumber.slice(-4)
+  if (!level || !/^\d{4}$/.test(year) || last4.length < 4) {
+    toast('需先填写等级、首次认证日期（YYYY-MM-DD）和身份证号', 'error')
+    return
+  }
+  draft.certNo = `2050${level}XL${year}${last4}`
 }
 
 function openEdit(teacher) {
@@ -345,6 +376,8 @@ function openEdit(teacher) {
   editDraft.certificateUrl = teacher.certificateUrl || ''
   editDraft.residencesText = Array.isArray(teacher.residences) ? teacher.residences.join(', ') : ''
   editDraft.currentTierCertifiedOn = teacher.currentTierCertifiedOn || ''
+  editDraft.certifiedAt = teacher.certifiedAt || ''
+  editDraft.level = teacher.tier || 'L2'
   showEdit.value = true
 }
 
@@ -356,6 +389,7 @@ async function handleCreate() {
     certificateNo: createDraft.certNo,
     phone: createDraft.phone,
     level: createDraft.level,
+    certifiedAt: createDraft.certifiedAt,
     city: createDraft.city,
     district: createDraft.district,
   })
@@ -378,6 +412,8 @@ async function handleUpdate() {
       idNumber: editDraft.idNumber,
       certificateNo: editDraft.certNo,
       phone: editDraft.phone,
+      level: editDraft.level,
+      certifiedAt: editDraft.certifiedAt,
       city: editDraft.city,
       district: editDraft.district,
       committeeRemark: editDraft.committeeRemark,
@@ -447,6 +483,32 @@ async function uploadTeacherAsset(event, assetType, targetField) {
 </script>
 
 <style scoped>
+.cert-no-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.cert-no-row input {
+  flex: 1;
+  min-width: 0;
+}
+.cert-no-gen {
+  flex-shrink: 0;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--brand-green, #426d58);
+  border-radius: 13px;
+  background: var(--brand-green-light, #edf5ef);
+  color: var(--brand-green, #426d58);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.cert-no-gen:hover {
+  background: #e2efe6;
+}
+
 .teacher-avatar-fallback {
   width: 44px;
   height: 44px;

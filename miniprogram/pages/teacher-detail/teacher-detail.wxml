@@ -66,6 +66,10 @@
         <text class="cert-title">证书展示</text>
         <text class="cert-action">查看大图</text>
       </view>
+      <view wx:if="{{teacher.teacherNo}}" class="cert-no">
+        <text class="cert-no__label">证书编号</text>
+        <text class="cert-no__value">{{teacher.teacherNo}}</text>
+      </view>
       <view class="cert-preview" bindtap="previewCertificate">
         <image wx:if="{{teacher.certificateUrl}}" class="cert-preview-image" src="{{teacher.certificateUrl}}" mode="aspectFit" />
         <text wx:else class="cert-preview-text">喜乐瑜伽教师认证证书</text>
