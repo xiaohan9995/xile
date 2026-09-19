@@ -91,7 +91,10 @@
           </label>
           <label>
             详细地址
-            <input v-model="createDraft.address" placeholder="可手动输入，或通过地图选点自动填写" />
+            <div class="address-row">
+              <input v-model="createDraft.address" placeholder="可手动输入，或通过地图选点自动填写" />
+              <button type="button" class="sync-btn map-pick-btn map-pick-btn--inline" @click="requestMapPicker(createDraft)">地图选点并自动填写地址</button>
+            </div>
           </label>
           <label>
             联系方式
@@ -127,7 +130,6 @@
             </div>
             <span class="field-hint" :class="{ 'field-hint--warn': createTagsCount > MAX_TAGS }">{{ createTagsCount }}/{{ MAX_TAGS }} 个标签，每个最多 6 字</span>
           </label>
-          <button type="button" class="sync-btn map-pick-btn" @click="requestMapPicker(createDraft)">地图选点并自动填写地址</button>
         </div>
         <div class="field">
           <span class="field-label">主理教师（可多选）</span>
@@ -218,7 +220,10 @@
           </label>
           <label>
             详细地址
-            <input v-model="editDraft.address" placeholder="可手动输入，或通过地图选点自动填写" />
+            <div class="address-row">
+              <input v-model="editDraft.address" placeholder="可手动输入，或通过地图选点自动填写" />
+              <button type="button" class="sync-btn map-pick-btn map-pick-btn--inline" @click="requestMapPicker(editDraft)">重新地图选点</button>
+            </div>
           </label>
           <label>
             联系方式
@@ -254,7 +259,6 @@
             </div>
             <span class="field-hint" :class="{ 'field-hint--warn': editTagsCount > MAX_TAGS }">{{ editTagsCount }}/{{ MAX_TAGS }} 个标签，每个最多 6 字</span>
           </label>
-          <button type="button" class="sync-btn map-pick-btn" @click="requestMapPicker(editDraft)">重新地图选点</button>
         </div>
         <div class="field">
           <span class="field-label">主理教师（可多选）</span>
@@ -1265,6 +1269,25 @@ async function uploadContactImage(event, draft) {
   color: #65706a;
   font-size: 12px;
   font-weight: 800;
+}
+
+/* 详细地址输入框 + 地图选点按钮并排 */
+.address-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.address-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.map-pick-btn--inline {
+  flex-shrink: 0;
+  margin: 0;
+  height: 40px;
+  white-space: nowrap;
 }
 
 .multi-select {
