@@ -78,15 +78,52 @@
 
     <!-- 主理教师管理入口：仅当当前登录用户是该工作室主理教师时显示 -->
     <view wx:if="{{mine}}" class="owner-panel">
-      <view wx:if="{{mine.status === 'pending'}}" class="owner-panel__status">
+      <!-- 非管理员：等待审批提示 -->
+      <view wx:if="{{mine.status === 'pending' && !mine.manager}}" class="owner-panel__status">
         <text>该工作室信息正在等待管理员审批</text>
       </view>
+
+      <!-- 管理员：有待审批的提交，内联展示待审批内容并可审批 -->
+      <view wx:if="{{mine.manager && mine.status === 'pending'}}" class="owner-panel__approval">
+        <view class="owner-panel__approval-title">有待审批的提交</view>
+        <view class="approval-fields">
+          <view wx:if="{{mine.pendingFields.address}}" class="approval-field">
+            <text class="approval-field__label">详细地址</text>
+            <text class="approval-field__value">{{mine.pendingFields.address}}</text>
+          </view>
+          <view wx:if="{{mine.pendingFields.contact}}" class="approval-field">
+            <text class="approval-field__label">联系方式</text>
+            <text class="approval-field__value">{{mine.pendingFields.contact}}</text>
+          </view>
+          <view wx:if="{{mine.pendingFields.courseIntro}}" class="approval-field">
+            <text class="approval-field__label">工作室介绍</text>
+            <text class="approval-field__value">{{mine.pendingFields.courseIntro}}</text>
+          </view>
+          <view wx:if="{{mine.pendingFields.tags}}" class="approval-field">
+            <text class="approval-field__label">标签</text>
+            <text class="approval-field__value">{{mine.pendingFields.tags}}</text>
+          </view>
+          <view wx:if="{{mine.pendingFields.images && mine.pendingFields.images.length}}" class="approval-field">
+            <text class="approval-field__label">工作室图片</text>
+            <text class="approval-field__value">{{mine.pendingFields.images.length}} 张</text>
+          </view>
+          <view wx:if="{{mine.pendingFields.contactImage}}" class="approval-field">
+            <text class="approval-field__label">联系方式图片</text>
+            <text class="approval-field__value">已更新</text>
+          </view>
+        </view>
+        <view class="owner-panel__actions">
+          <button class="btn-secondary owner-panel__action" bindtap="reject">驳回</button>
+          <button class="btn-primary owner-panel__action" bindtap="approve">审批通过</button>
+        </view>
+      </view>
+
       <view wx:if="{{mine.rejectReason}}" class="owner-panel__reject">
         <text class="owner-panel__reject-label">驳回原因</text>
         <text>{{mine.rejectReason}}</text>
       </view>
       <view class="owner-panel__actions">
-        <button wx:if="{{mine.status === 'pending'}}" class="btn-secondary owner-panel__action" bindtap="withdraw">撤回提交</button>
+        <button wx:if="{{mine.status === 'pending' && !mine.manager}}" class="btn-secondary owner-panel__action" bindtap="withdraw">撤回提交</button>
         <button class="btn-primary owner-panel__action" bindtap="goEdit">
           {{mine.status === 'pending' ? '查看/修改提交' : (mine.status === 'open' ? '修改工作室信息' : '填写工作室信息')}}
         </button>

@@ -260,6 +260,58 @@ Page({
     });
   },
 
+  // 管理员审批：通过待审批提交
+  approve() {
+    const id = this.data.studio && this.data.studio.id;
+    if (!id) return;
+    wx.showModal({
+      title: '审批通过',
+      content: '确认通过该工作室的待审批提交？通过后提交内容将立即公开展示。',
+      confirmText: '通过',
+      confirmColor: '#2f5140',
+      cancelText: '取消',
+      success: async (result) => {
+        if (!result.confirm) return;
+        try {
+          await request({ url: `/api/mp/teachers/me/studios/${id}/approve`, method: 'POST' });
+          wx.showToast({ title: '已通过', icon: 'none' });
+          this.loadStudio(id);
+        } catch (error) {
+          wx.showToast({ title: error.message || '审批失败，请稍后重试', icon: 'none' });
+        }
+      },
+    });
+  },
+
+  // 管理员审批：驳回待审批提交（需填写原因）
+  reject() {
+    const id = this.data.studio && this.data.studio.id;
+    if (!id) return;
+    wx.showModal({
+      title: '驳回提交',
+      editable: true,
+      placeholderText: '请填写驳回原因',
+      confirmText: '驳回',
+      confirmColor: '#c0392b',
+      cancelText: '取消',
+      success: async (result) => {
+        if (!result.confirm) return;
+        const reason = (result.content || '').trim();
+        if (!reason) {
+          wx.showToast({ title: '请填写驳回原因', icon: 'none' });
+          return;
+        }
+        try {
+          await request({ url: `/api/mp/teachers/me/studios/${id}/reject`, method: 'POST', data: { reason } });
+          wx.showToast({ title: '已驳回', icon: 'none' });
+          this.loadStudio(id);
+        } catch (error) {
+          wx.showToast({ title: error.message || '驳回失败，请稍后重试', icon: 'none' });
+        }
+      },
+    });
+  },
+
   goBack() {
     wx.navigateBack();
   },

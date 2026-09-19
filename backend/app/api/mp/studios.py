@@ -5,6 +5,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 
 from ...extensions import db, limiter
 from ...models import Studio, Teacher, User
+from ...services.studio_service import apply_pending_draft
 from ...utils.storage import file_url as _file_url
 from .helpers import _is_studio_owner_teacher, _is_studio_manager, _studio_summary, escape_like
 from . import mp_bp
@@ -199,6 +200,15 @@ def submit_studio(studio_id):
             existing = {}
     existing.update(draft)
 
+    # 管理员提交直接生效（覆盖任何待审批草稿），无需审批。
+    if _is_studio_manager(user, studio):
+        apply_pending_draft(studio, existing)
+        studio.pending_draft = None
+        studio.pending_reject_reason = None
+        studio.status = "open"
+        db.session.commit()
+        return {"id": studio.id, "status": "open"}
+
     studio.pending_draft = json.dumps(existing, ensure_ascii=False)
     studio.pending_reject_reason = None
     studio.status = "pending"
@@ -295,6 +305,63 @@ def remove_studio_teacher(studio_id, teacher_id):
     return {"id": studio.id, "teacherId": teacher_id}
 
 
+@mp_bp.post("/teachers/me/studios/<int:studio_id>/approve")
+@jwt_required()
+def approve_studio_submission(studio_id):
+    """工作室管理员在小程序端审批通过待审批提交。"""
+    user = db.session.get(User, int(get_jwt_identity()))
+    if not user or not user.teacher_id:
+        return {"error": "仅已关联教师可维护工作室信息"}, 403
+    studio = db.session.get(Studio, studio_id)
+    if studio is None or studio.status == "hidden":
+        return {"error": "not found"}, 404
+    if not _is_studio_manager(user, studio):
+        return {"error": "仅工作室管理员可审批"}, 403
+    if studio.status != "pending" or not studio.pending_draft:
+        return {"error": "该工作室没有待审批的提交"}, 400
+
+    try:
+        draft = json.loads(studio.pending_draft)
+    except (TypeError, ValueError):
+        return {"error": "待审批草稿格式无效"}, 400
+
+    apply_pending_draft(studio, draft)
+    studio.pending_draft = None
+    studio.pending_reject_reason = None
+    studio.status = "open"
+    db.session.commit()
+    return {"id": studio.id, "status": "open"}
+
+
+@mp_bp.post("/teachers/me/studios/<int:studio_id>/reject")
+@jwt_required()
+def reject_studio_submission(studio_id):
+    """工作室管理员在小程序端驳回待审批提交。"""
+    user = db.session.get(User, int(get_jwt_identity()))
+    if not user or not user.teacher_id:
+        return {"error": "仅已关联教师可维护工作室信息"}, 403
+    studio = db.session.get(Studio, studio_id)
+    if studio is None or studio.status == "hidden":
+        return {"error": "not found"}, 404
+    if not _is_studio_manager(user, studio):
+        return {"error": "仅工作室管理员可审批"}, 403
+    if studio.status != "pending":
+        return {"error": "该工作室没有待审批的提交"}, 400
+
+    payload = request.get_json(silent=True) or {}
+    reason = str(payload.get("reason") or "").strip()
+    if not reason:
+        return {"error": "请填写驳回原因"}, 400
+
+    studio.pending_reject_reason = reason[:256]
+    studio.pending_draft = None
+    # 恢复到之前已发布状态；无已发布内容则回到 incomplete（不公开展示）。
+    has_published_content = any([studio.city, studio.address, studio.images, studio.course_intro, studio.intro, studio.tags, studio.contact_text, studio.contact_image])
+    studio.status = "open" if has_published_content else "incomplete"
+    db.session.commit()
+    return {"id": studio.id, "status": studio.status}
+
+
 @mp_bp.get("/studios")
 @jwt_required()
 def list_studios():
@@ -349,9 +416,16 @@ def get_studio(studio_id):
 
     payload = _studio_summary(studio)
     if is_owner:
-        payload["mine"] = {
+        mine = {
             "status": studio.status,
             "rejectReason": studio.pending_reject_reason,
             "manager": _is_studio_manager(user, studio),
         }
+        # 管理员审批：附加待审批内容，供详情页内联展示（只看待审批字段）。
+        if mine["manager"] and studio.status == "pending" and studio.pending_draft:
+            try:
+                mine["pendingFields"] = json.loads(studio.pending_draft)
+            except (TypeError, ValueError):
+                mine["pendingFields"] = {}
+        payload["mine"] = mine
     return payload
