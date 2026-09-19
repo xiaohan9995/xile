@@ -143,6 +143,27 @@
             </div>
           </div>
         </div>
+        <div class="field">
+          <span class="field-label">管理员（可添加/删除其他教师）</span>
+          <div class="multi-select">
+            <div class="multi-select__trigger">
+              <span v-if="createDraft.managerTeacherIds.length" class="multi-select__chips">
+                <span v-for="id in createDraft.managerTeacherIds" :key="id" class="multi-select__chip">
+                  {{ teacherName(id) }}
+                  <button type="button" class="multi-select__chip-remove" @click.stop="removeCreateManager(id)">×</button>
+                </span>
+              </span>
+              <span v-else class="multi-select__placeholder">{{ createDraft.ownerTeacherIds.length ? '从主理教师中选择管理员' : '请先选择主理教师' }}</span>
+            </div>
+            <div v-if="createManagerOptions.length" class="multi-select__panel multi-select__panel--static">
+              <div v-for="t in createManagerOptions" :key="t.id" class="multi-select__option" @click.stop="toggleCreateManager(t.id)">
+                <input type="checkbox" class="multi-select__input" :checked="hasTeacher(createDraft.managerTeacherIds, t.id)" tabindex="-1" />
+                <span class="multi-select__option-text">{{ t.name }}（{{ t.xileName || '无喜乐名' }}）</span>
+              </div>
+            </div>
+          </div>
+          <span class="field-hint">被选中的主理教师可在小程序端添加/删除其他主理教师</span>
+        </div>
         <label>
           课程介绍
           <textarea v-model="createDraft.courseIntro" placeholder="介绍工作室开设的课程（最多500字）"></textarea>
@@ -248,6 +269,27 @@
               <div v-if="!filteredEditTeacherOptions.length" class="multi-select__empty">{{ teacherOptions.length ? '未找到匹配的教师' : '暂无教师可选' }}</div>
             </div>
           </div>
+        </div>
+        <div class="field">
+          <span class="field-label">管理员（可添加/删除其他教师）</span>
+          <div class="multi-select">
+            <div class="multi-select__trigger">
+              <span v-if="editDraft.managerTeacherIds.length" class="multi-select__chips">
+                <span v-for="id in editDraft.managerTeacherIds" :key="id" class="multi-select__chip">
+                  {{ teacherName(id) }}
+                  <button type="button" class="multi-select__chip-remove" @click.stop="removeEditManager(id)">×</button>
+                </span>
+              </span>
+              <span v-else class="multi-select__placeholder">{{ editDraft.ownerTeacherIds.length ? '从主理教师中选择管理员' : '请先选择主理教师' }}</span>
+            </div>
+            <div v-if="editManagerOptions.length" class="multi-select__panel multi-select__panel--static">
+              <div v-for="t in editManagerOptions" :key="t.id" class="multi-select__option" @click.stop="toggleEditManager(t.id)">
+                <input type="checkbox" class="multi-select__input" :checked="hasTeacher(editDraft.managerTeacherIds, t.id)" tabindex="-1" />
+                <span class="multi-select__option-text">{{ t.name }}（{{ t.xileName || '无喜乐名' }}）</span>
+              </div>
+            </div>
+          </div>
+          <span class="field-hint">被选中的主理教师可在小程序端添加/删除其他主理教师</span>
         </div>
         <label>
           课程介绍
@@ -572,6 +614,7 @@ const createDraft = reactive({
   courseIntro: '',
   images: [],
   ownerTeacherIds: [],
+  managerTeacherIds: [],
   coverUrl: '',
   latitude: '',
   longitude: '',
@@ -589,6 +632,7 @@ const editDraft = reactive({
   courseIntro: '',
   images: [],
   ownerTeacherIds: [],
+  managerTeacherIds: [],
   coverUrl: '',
   latitude: '',
   longitude: '',
@@ -629,6 +673,10 @@ function matchTeacher(t, query) {
 const filteredCreateTeacherOptions = computed(() => teacherOptions.value.filter((t) => matchTeacher(t, createTeacherSearch.value)))
 const filteredEditTeacherOptions = computed(() => teacherOptions.value.filter((t) => matchTeacher(t, editTeacherSearch.value)))
 
+// 管理员候选：只能是已选的主理教师
+const createManagerOptions = computed(() => teacherOptions.value.filter((t) => hasTeacher(createDraft.ownerTeacherIds, t.id)))
+const editManagerOptions = computed(() => teacherOptions.value.filter((t) => hasTeacher(editDraft.ownerTeacherIds, t.id)))
+
 function toggleCreateTeacher(id) {
   const ids = createDraft.ownerTeacherIds
   const numericId = Number(id)
@@ -655,6 +703,34 @@ function removeEditTeacher(id) {
   const numericId = Number(id)
   const index = editDraft.ownerTeacherIds.findIndex((item) => Number(item) === numericId)
   if (index !== -1) editDraft.ownerTeacherIds.splice(index, 1)
+}
+
+function toggleCreateManager(id) {
+  const ids = createDraft.managerTeacherIds
+  const numericId = Number(id)
+  const index = ids.findIndex((item) => Number(item) === numericId)
+  if (index === -1) ids.push(numericId)
+  else ids.splice(index, 1)
+}
+
+function removeCreateManager(id) {
+  const numericId = Number(id)
+  const index = createDraft.managerTeacherIds.findIndex((item) => Number(item) === numericId)
+  if (index !== -1) createDraft.managerTeacherIds.splice(index, 1)
+}
+
+function toggleEditManager(id) {
+  const ids = editDraft.managerTeacherIds
+  const numericId = Number(id)
+  const index = ids.findIndex((item) => Number(item) === numericId)
+  if (index === -1) ids.push(numericId)
+  else ids.splice(index, 1)
+}
+
+function removeEditManager(id) {
+  const numericId = Number(id)
+  const index = editDraft.managerTeacherIds.findIndex((item) => Number(item) === numericId)
+  if (index !== -1) editDraft.managerTeacherIds.splice(index, 1)
 }
 
 function openCreateTeacherDropdown() {
@@ -838,6 +914,14 @@ watch(totalPages, (total) => {
   if (total > 0 && currentPage.value > total) currentPage.value = total
 })
 
+// 主理教师变化时，自动剔除不再属于主理教师的管理员
+watch(() => createDraft.ownerTeacherIds, (ids) => {
+  createDraft.managerTeacherIds = createDraft.managerTeacherIds.filter((m) => ids.some((i) => Number(i) === Number(m)))
+}, { deep: true })
+watch(() => editDraft.ownerTeacherIds, (ids) => {
+  editDraft.managerTeacherIds = editDraft.managerTeacherIds.filter((m) => ids.some((i) => Number(i) === Number(m)))
+}, { deep: true })
+
 function openCreate() {
   createDraft.name = ''
   createDraft.city = ''
@@ -849,6 +933,7 @@ function openCreate() {
   createDraft.courseIntro = ''
   createDraft.images = []
   createDraft.ownerTeacherIds = []
+  createDraft.managerTeacherIds = []
   createDraft.coverUrl = ''
   createDraft.latitude = ''
   createDraft.longitude = ''
@@ -869,6 +954,7 @@ function openEdit(studio) {
   editDraft.courseIntro = studio.courseIntro || ''
   editDraft.images = Array.isArray(studio.images) ? studio.images.slice() : []
   editDraft.ownerTeacherIds = Array.isArray(studio.ownerTeachers) ? studio.ownerTeachers.map((t) => Number(t.id)) : []
+  editDraft.managerTeacherIds = Array.isArray(studio.managerTeachers) ? studio.managerTeachers.map((id) => Number(id)) : []
   editDraft.coverUrl = studio.coverUrl || ''
   editDraft.latitude = studio.latitude ?? ''
   editDraft.longitude = studio.longitude ?? ''
@@ -904,6 +990,7 @@ async function handleCreate() {
     courseIntro,
     images: createDraft.images,
     ownerTeacherIds: createDraft.ownerTeacherIds,
+    managerTeacherIds: createDraft.managerTeacherIds,
     coverUrl: createDraft.images[0] || '',
     latitude: createDraft.latitude === '' ? null : Number(createDraft.latitude),
     longitude: createDraft.longitude === '' ? null : Number(createDraft.longitude),
@@ -939,6 +1026,7 @@ async function handleUpdate() {
     courseIntro,
     images: editDraft.images,
     ownerTeacherIds: editDraft.ownerTeacherIds,
+    managerTeacherIds: editDraft.managerTeacherIds,
     coverUrl: editDraft.images[0] || '',
     latitude: editDraft.latitude === '' ? null : Number(editDraft.latitude),
     longitude: editDraft.longitude === '' ? null : Number(editDraft.longitude),
@@ -1246,6 +1334,14 @@ async function uploadContactImage(event, draft) {
   border-radius: 8px;
   background: #fff;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* 管理员多选：候选直接平铺展示，不做下拉浮层 */
+.multi-select__panel--static {
+  position: static;
+  margin-top: 8px;
+  max-height: 180px;
+  box-shadow: none;
 }
 
 .multi-select__option {

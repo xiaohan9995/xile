@@ -54,6 +54,7 @@ export function mapAdminStudio(studio) {
     image: studio.coverUrl || DEFAULT_STUDIO,
     coverUrl: studio.coverUrl || '',
     ownerTeachers: Array.isArray(studio.ownerTeachers) ? studio.ownerTeachers : [],
+    managerTeachers: Array.isArray(studio.managerTeacherIds) ? studio.managerTeacherIds : [],
     ownerTeacherName: studio.ownerTeacherName,
     latitude: studio.latitude ?? null,
     longitude: studio.longitude ?? null,

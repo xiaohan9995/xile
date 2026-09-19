@@ -274,3 +274,25 @@ def _is_studio_owner_teacher(user, studio):
     # 兼容旧字段 owner_teacher_id：历史数据可能只在单一 owner 字段里关联教师，
     # 未同步到多对多关联表，这里也视为主理教师。
     return studio.owner_teacher_id == user.teacher_id
+
+
+def _is_studio_manager(user, studio):
+    """Check if user's linked teacher is a manager of this studio.
+
+    Managers are lead teachers granted the extra right to add/remove other
+    lead teachers from the mini program.
+    """
+    if not _is_studio_owner_teacher(user, studio):
+        return False
+    if not studio.manager_teacher_ids:
+        return False
+    manager_ids = set()
+    for item in str(studio.manager_teacher_ids).split(","):
+        item = item.strip()
+        if not item:
+            continue
+        try:
+            manager_ids.add(int(item))
+        except (TypeError, ValueError):
+            continue
+    return user.teacher_id in manager_ids

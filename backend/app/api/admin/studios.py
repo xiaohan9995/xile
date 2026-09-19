@@ -57,6 +57,41 @@ def _resolve_teacher_ids(value):
     return [i for i in ids if i in existing], None
 
 
+def _resolve_manager_ids(value, owner_ids):
+    """Normalize manager teacher ids; managers must be a subset of owner teachers."""
+    if not isinstance(value, list):
+        return None, "管理员格式无效"
+    ids = []
+    for item in value:
+        try:
+            ids.append(int(item))
+        except (TypeError, ValueError):
+            return None, "管理员格式无效"
+    if not ids:
+        return [], None
+    owner_set = set(owner_ids)
+    invalid = [i for i in ids if i not in owner_set]
+    if invalid:
+        return None, "管理员必须是主理教师"
+    return ids, None
+
+
+def _parse_manager_ids(value):
+    """Parse a comma-separated manager_teacher_ids string into ints."""
+    if not value:
+        return []
+    result = []
+    for item in str(value).split(","):
+        item = item.strip()
+        if not item:
+            continue
+        try:
+            result.append(int(item))
+        except (TypeError, ValueError):
+            continue
+    return result
+
+
 def _pending_draft_payload(s):
     if not s.pending_draft:
         return None
@@ -105,6 +140,7 @@ def _studio_payload(s):
             {"id": t.id, "name": t.real_name, "xileName": t.xile_name}
             for t in owner_teachers
         ],
+        "managerTeacherIds": _parse_manager_ids(s.manager_teacher_ids),
         "tags": [t.strip() for t in (s.tags or "").split(",") if t.strip()],
         "intro": s.intro,
         "openingHours": s.opening_hours,
@@ -152,6 +188,10 @@ def create_studio():
     if teachers_error:
         return {"error": teachers_error}, 400
 
+    manager_ids, manager_error = _resolve_manager_ids(payload.get("managerTeacherIds", []), teacher_ids)
+    if manager_error:
+        return {"error": manager_error}, 400
+
     course_intro = str(payload.get("courseIntro") or "").strip() or None
     if course_intro and len(course_intro) > MAX_COURSE_INTRO_LENGTH:
         return {"error": f"课程介绍最多 {MAX_COURSE_INTRO_LENGTH} 字"}, 400
@@ -171,6 +211,7 @@ def create_studio():
         cover_url=images[0] if images else (payload.get("coverUrl", "").strip() or None),
         course_intro=course_intro,
         status="open",
+        manager_teacher_ids=",".join(str(i) for i in manager_ids) if manager_ids else None,
     )
     if teacher_ids:
         studio.teachers = Teacher.query.filter(Teacher.id.in_(teacher_ids)).all()
@@ -249,6 +290,19 @@ def update_studio(studio_id):
         # 同步旧字段 owner_teacher_id，避免 legacy owner 与多对多关联表不一致，
         # 导致展示时遗漏第一个主理教师。
         studio.owner_teacher_id = teacher_ids[0] if teacher_ids else None
+
+    if "managerTeacherIds" in payload:
+        # 校验时以当前生效的主理教师集合为准：若本次也更新了 ownerTeacherIds，
+        # 用新值；否则回退到 studio.teachers 现有集合。
+        current_owner_ids = (
+            _resolve_teacher_ids(payload.get("ownerTeacherIds"))[0]
+            if "ownerTeacherIds" in payload
+            else [t.id for t in studio.teachers]
+        )
+        manager_ids, manager_error = _resolve_manager_ids(payload.get("managerTeacherIds"), current_owner_ids)
+        if manager_error:
+            return {"error": manager_error}, 400
+        studio.manager_teacher_ids = ",".join(str(i) for i in manager_ids) if manager_ids else None
 
     db.session.add(AuditLog(admin_id=current_admin_id() or 1, action="update_studio", target_type="studio", target_id=studio.id))
     db.session.commit()

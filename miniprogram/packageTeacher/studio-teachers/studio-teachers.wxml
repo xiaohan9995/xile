@@ -1,0 +1,68 @@
+<view class="page-shell studio-teachers-page">
+  <view class="page-header" style="padding-top:{{statusBarHeight}}px;">
+    <view class="page-header__back" bindtap="goBack">‹</view>
+    <text class="page-header__title">管理教师</text>
+    <view class="page-header__right"></view>
+  </view>
+
+  <view class="content">
+    <text class="studio-name">{{studioName || '工作室'}}</text>
+
+    <!-- 当前主理教师 -->
+    <view class="section">
+      <view class="section-title">
+        <text class="section-title__bar"></text>
+        <text>当前主理教师（{{teachers.length}}）</text>
+      </view>
+
+      <view wx:if="{{!loading && teachers.length === 0}}" class="empty">
+        <text>暂无主理教师</text>
+      </view>
+
+      <view wx:for="{{teachers}}" wx:key="id" class="teacher-row">
+        <image wx:if="{{item.avatarUrl}}" class="teacher-row__avatar" src="{{item.avatarUrl}}" mode="aspectFill" />
+        <view wx:else class="teacher-row__avatar teacher-row__avatar--placeholder">
+          <text>{{item.name.slice(0, 1)}}</text>
+        </view>
+        <view class="teacher-row__info">
+          <text class="teacher-row__name">{{item.name}}</text>
+          <text class="teacher-row__sub" wx:if="{{item.xileName}}">喜乐名：{{item.xileName}}</text>
+        </view>
+        <view wx:if="{{String(item.id) !== String(myTeacherId)}}" class="teacher-row__remove" bindtap="removeTeacher" data-id="{{item.id}}">移除</view>
+        <text wx:else class="teacher-row__self">我</text>
+      </view>
+    </view>
+
+    <!-- 添加教师 -->
+    <view class="section">
+      <view class="section-title">
+        <text class="section-title__bar"></text>
+        <text>添加教师</text>
+      </view>
+
+      <view class="search-row">
+        <input class="search-row__input" placeholder="姓名 / 喜乐名 / 证书编号" value="{{keyword}}" bindinput="onKeywordInput" confirm-type="search" bindconfirm="search" />
+        <button class="search-row__btn" bindtap="search" disabled="{{searching}}">{{searching ? '搜索中' : '搜索'}}</button>
+      </view>
+
+      <view wx:if="{{searched && searchResults.length === 0}}" class="empty">
+        <text>未找到匹配的教师</text>
+      </view>
+
+      <view wx:if="{{searchError}}" class="search-error">{{searchError}}</view>
+
+      <view wx:for="{{searchResults}}" wx:key="id" class="teacher-row">
+        <image wx:if="{{item.avatarUrl}}" class="teacher-row__avatar" src="{{item.avatarUrl}}" mode="aspectFill" />
+        <view wx:else class="teacher-row__avatar teacher-row__avatar--placeholder">
+          <text>{{item.name.slice(0, 1)}}</text>
+        </view>
+        <view class="teacher-row__info">
+          <text class="teacher-row__name">{{item.name}}</text>
+          <text class="teacher-row__sub" wx:if="{{item.xileName || item.tierName}}">{{item.xileName || ''}}{{item.xileName && item.tierName ? ' · ' : ''}}{{item.tierName || ''}}</text>
+        </view>
+        <view wx:if="{{item.added}}" class="teacher-row__added">已添加</view>
+        <view wx:else class="teacher-row__add" bindtap="addTeacher" data-id="{{item.id}}">添加</view>
+      </view>
+    </view>
+  </view>
+</view>

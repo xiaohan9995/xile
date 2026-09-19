@@ -4,8 +4,8 @@ from flask import request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 
 from ...extensions import db, limiter
-from ...models import Studio, User
-from .helpers import _is_studio_owner_teacher, _studio_summary, escape_like
+from ...models import Studio, Teacher, User
+from .helpers import _is_studio_owner_teacher, _is_studio_manager, _studio_summary, escape_like
 from . import mp_bp
 
 MAX_TAGS = 8
@@ -228,6 +228,69 @@ def withdraw_studio(studio_id):
     return {"id": studio.id, "status": studio.status}
 
 
+@mp_bp.post("/teachers/me/studios/<int:studio_id>/teachers")
+@jwt_required()
+def add_studio_teacher(studio_id):
+    """Add an existing certified teacher as a lead teacher of the studio."""
+    user = db.session.get(User, int(get_jwt_identity()))
+    if not user or not user.teacher_id:
+        return {"error": "仅已关联教师可维护工作室信息"}, 403
+    studio = db.session.get(Studio, studio_id)
+    if studio is None or studio.status == "hidden":
+        return {"error": "not found"}, 404
+    if not _is_studio_manager(user, studio):
+        return {"error": "仅工作室管理员可添加教师"}, 403
+
+    payload = request.get_json(silent=True) or {}
+    try:
+        teacher_id = int(payload.get("teacherId"))
+    except (TypeError, ValueError):
+        return {"error": "教师参数无效"}, 400
+
+    teacher = db.session.get(Teacher, teacher_id)
+    if teacher is None or teacher.status == "hidden":
+        return {"error": "教师不存在"}, 404
+
+    if teacher in studio.teachers:
+        return {"error": "该教师已是主理教师"}, 400
+
+    studio.teachers.append(teacher)
+    # 同步旧字段 owner_teacher_id，保持 legacy owner 与多对多关联一致。
+    if not studio.owner_teacher_id:
+        studio.owner_teacher_id = teacher.id
+    db.session.commit()
+
+    return {"id": studio.id, "teacherId": teacher.id}
+
+
+@mp_bp.delete("/teachers/me/studios/<int:studio_id>/teachers/<int:teacher_id>")
+@jwt_required()
+def remove_studio_teacher(studio_id, teacher_id):
+    """Remove a lead teacher from the studio."""
+    user = db.session.get(User, int(get_jwt_identity()))
+    if not user or not user.teacher_id:
+        return {"error": "仅已关联教师可维护工作室信息"}, 403
+    studio = db.session.get(Studio, studio_id)
+    if studio is None or studio.status == "hidden":
+        return {"error": "not found"}, 404
+    if not _is_studio_manager(user, studio):
+        return {"error": "仅工作室管理员可删除教师"}, 403
+    if teacher_id == user.teacher_id:
+        return {"error": "不能删除自己"}, 400
+
+    teacher = db.session.get(Teacher, teacher_id)
+    if teacher is None or teacher not in studio.teachers:
+        return {"error": "该教师不是主理教师"}, 404
+
+    studio.teachers.remove(teacher)
+    # 若删除的是 legacy owner，将 owner_teacher_id 指向剩余的第一个主理教师。
+    if studio.owner_teacher_id == teacher_id:
+        studio.owner_teacher_id = studio.teachers[0].id if studio.teachers else None
+    db.session.commit()
+
+    return {"id": studio.id, "teacherId": teacher_id}
+
+
 @mp_bp.get("/studios")
 @jwt_required()
 def list_studios():
@@ -285,5 +348,6 @@ def get_studio(studio_id):
         payload["mine"] = {
             "status": studio.status,
             "rejectReason": studio.pending_reject_reason,
+            "manager": _is_studio_manager(user, studio),
         }
     return payload

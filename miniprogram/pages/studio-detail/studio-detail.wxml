@@ -91,6 +91,9 @@
           {{mine.status === 'pending' ? '查看/修改提交' : (mine.status === 'open' ? '修改工作室信息' : '填写工作室信息')}}
         </button>
       </view>
+      <view wx:if="{{mine.manager}}" class="owner-panel__manage">
+        <button class="btn-secondary owner-panel__action" bindtap="goManageTeachers">管理教师</button>
+      </view>
     </view>
   </view>
 

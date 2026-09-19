@@ -22,6 +22,8 @@ class Studio(db.Model):
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
     owner_teacher_id = db.Column(db.Integer, db.ForeignKey("teachers.id"), index=True)
+    # 逗号分隔的管理员 teacher_id：这些主理教师有权在小程序端添加/删除其他主理教师。
+    manager_teacher_ids = db.Column(db.String(255))
     cover_url = db.Column(db.String(256))
     images = db.Column(db.Text)  # comma-separated gallery URLs (max 9); first is the cover
     course_intro = db.Column(db.Text)  # 课程介绍 (replaces the legacy opening_hours)
