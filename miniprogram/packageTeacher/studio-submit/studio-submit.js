@@ -198,7 +198,7 @@ Page({
           const filename = matched ? matched[0] : 'studio.jpg';
           try {
             wx.showLoading({ title: '上传图片中' });
-            const result = await uploadFile({ url: '/api/mp/upload/evidence', filePath: path, name: 'file', formData: { filename } });
+            const result = await uploadFile({ url: '/api/mp/upload/studio-image', filePath: path, name: 'file', formData: { filename } });
             this.setData({ 'form.images': [...this.data.form.images, displayFileUrl(result.url)] });
           } catch (error) {
             wx.showToast({ title: error.message || '图片上传失败', icon: 'none' });
@@ -233,7 +233,7 @@ Page({
         const filename = matched ? matched[0] : 'studio-contact.jpg';
         try {
           wx.showLoading({ title: '上传图片中' });
-          const result = await uploadFile({ url: '/api/mp/upload/evidence', filePath: path, name: 'file', formData: { filename } });
+          const result = await uploadFile({ url: '/api/mp/upload/studio-image', filePath: path, name: 'file', formData: { filename } });
           this.setData({ 'form.contactImage': displayFileUrl(result.url) });
         } catch (error) {
           wx.showToast({ title: error.message || '图片上传失败', icon: 'none' });

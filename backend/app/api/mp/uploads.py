@@ -106,6 +106,59 @@ def upload_evidence():
     return {"fileKey": key, "url": file_url(key)}
 
 
+@mp_bp.post("/upload/studio-image")
+@limiter.limit("20 per minute")
+@jwt_required()
+def upload_studio_image():
+    """上传工作室公开图片（封面/轮播/联系图片）。
+
+    这些图片需在未登录的小程序端公开展示，因此以 public-read 存到 COS，
+    返回稳定对象 URL（无签名、不过期），供回显与公开详情页直接加载。
+    """
+    user_id = int(get_jwt_identity())
+    user = db.session.get(User, user_id)
+    if not user or not user.teacher_id:
+        return {"error": "仅已关联教师可上传工作室图片"}, 403
+
+    uploaded = request.files.get("file")
+    if not uploaded or not uploaded.filename:
+        return {"error": "file required"}, 400
+    ext = _validate_extension(secure_filename(uploaded.filename))
+    if not ext:
+        return {"error": f"file type not allowed, accepted: {', '.join(sorted(ALLOWED_EXTENSIONS))}"}, 400
+
+    uploaded.seek(0, 2)
+    size = uploaded.tell()
+    uploaded.seek(0)
+    if size > 10 * 1024 * 1024:
+        return {"error": "file too large, max 10MB"}, 413
+
+    key = f"studio-images/{user.teacher_id}/{uuid.uuid4().hex}{ext}"
+    try:
+        url = upload_to_cos(
+            uploaded.stream,
+            key,
+            uploaded.mimetype or "application/octet-stream",
+            public_read=True,
+        )
+    except StorageNotConfiguredError:
+        if not (current_app.debug or current_app.testing):
+            return {"error": "对象存储未配置，无法上传工作室图片"}, 503
+        filename = f"{uuid.uuid4().hex}{ext}"
+        upload_dir = os.path.join(current_app.instance_path, "..", "uploads", "studio-images")
+        os.makedirs(upload_dir, exist_ok=True)
+        uploaded.save(os.path.join(upload_dir, filename))
+        return {"url": f"/uploads/studio-images/{filename}"}
+    return {"url": url}
+
+
+@mp_bp.get("/uploads/studio-images/<path:filename>")
+def serve_studio_image(filename):
+    """本地开发模式下公开访问工作室图片（无需登录）。"""
+    upload_dir = os.path.join(current_app.instance_path, "..", "uploads", "studio-images")
+    return send_from_directory(upload_dir, filename)
+
+
 @mp_bp.post("/upload/file")
 @limiter.limit("10 per minute")
 @jwt_required()
