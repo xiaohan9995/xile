@@ -180,7 +180,7 @@
           </label>
           <label class="field-full">
             个人简介
-            <textarea v-model="editDraft.teachingSummary" maxlength="100" placeholder="100 字以内" class="field-textarea"></textarea>
+            <textarea v-model="editDraft.teachingSummary" placeholder="100 字以内" class="field-textarea"></textarea>
           </label>
           <label>
             教师头像
@@ -365,22 +365,32 @@ async function handleCreate() {
 }
 
 async function handleUpdate() {
-  await updateTeacher(editDraft.id, {
-    name: editDraft.name,
-    xileName: editDraft.xileName,
-    alias: editDraft.alias,
-    idNumber: editDraft.idNumber,
-    certificateNo: editDraft.certNo,
-    phone: editDraft.phone,
-    city: editDraft.city,
-    district: editDraft.district,
-    committeeRemark: editDraft.committeeRemark,
-    teachingSummary: normalizeMultiline(editDraft.teachingSummary),
-    avatarUrl: editDraft.avatarUrl,
-    certificateUrl: editDraft.certificateUrl,
-    residences: editDraft.residencesText.split(/[,，]/).map((item) => item.trim()).filter(Boolean),
-    currentTierCertifiedOn: editDraft.currentTierCertifiedOn,
-  })
+  const summary = normalizeMultiline(editDraft.teachingSummary)
+  if (summary.length > 100) {
+    toast(`个人简介最多 100 字，当前 ${summary.length} 字`, 'error')
+    return
+  }
+  try {
+    await updateTeacher(editDraft.id, {
+      name: editDraft.name,
+      xileName: editDraft.xileName,
+      alias: editDraft.alias,
+      idNumber: editDraft.idNumber,
+      certificateNo: editDraft.certNo,
+      phone: editDraft.phone,
+      city: editDraft.city,
+      district: editDraft.district,
+      committeeRemark: editDraft.committeeRemark,
+      teachingSummary: summary,
+      avatarUrl: editDraft.avatarUrl,
+      certificateUrl: editDraft.certificateUrl,
+      residences: editDraft.residencesText.split(/[,，]/).map((item) => item.trim()).filter(Boolean),
+      currentTierCertifiedOn: editDraft.currentTierCertifiedOn,
+    })
+  } catch (e) {
+    toast(e?.response?.data?.error || '保存失败，请稍后重试', 'error')
+    return
+  }
   showEdit.value = false
   toast('教师信息已更新')
   await loadTeachers()

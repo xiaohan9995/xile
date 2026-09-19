@@ -29,6 +29,7 @@ def review_queue():
             "teacherNo": review.teacher.certificate_no if review.teacher else None,
             "xileName": review.teacher.xile_name if review.teacher else None,
             "tier": review.teacher.tier.code if review.teacher and review.teacher.tier else None,
+            "tierName": review.teacher.tier.name if review.teacher and review.teacher.tier else None,
             "city": review.teacher.city if review.teacher else None,
             "avatarUrl": _file_url(review.teacher.avatar_url) if review.teacher else None,
             "reviewYear": review.review_year,

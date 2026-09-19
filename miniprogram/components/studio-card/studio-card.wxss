@@ -23,6 +23,22 @@
   border: 1rpx solid var(--color-line);
 }
 
+/* 无封面图时用品牌色块 + 首字占位，不依赖任何图片资源 */
+.studio-card__cover--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  border: 0;
+}
+
+.studio-card__cover-initial {
+  font-family: "Noto Serif SC", serif;
+  font-size: 64rpx;
+  font-weight: 700;
+  color: #ffffff;
+}
+
 /* Body */
 .studio-card__body {
   flex: 1;

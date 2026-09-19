@@ -2,7 +2,7 @@ from flask import request
 from sqlalchemy import or_
 
 from ...extensions import db
-from ...models import TeachingRecord
+from ...models import Teacher, TeachingRecord
 from ...utils.storage import file_url as _file_url
 from ..mp.helpers import _parse_record_date
 from .helpers import _date_text, _datetime_text, require_admin_roles, require_admin_token
@@ -38,8 +38,9 @@ def teaching_record_list():
     platform = (request.args.get("platform") or "").strip()
     status = (request.args.get("status") or "").strip()
     if teacher_name:
+        like = f"%{teacher_name}%"
         query = query.join(TeachingRecord.teacher).filter(
-            or_(TeachingRecord.teacher.has(real_name=teacher_name), TeachingRecord.teacher.has(xile_name=teacher_name))
+            or_(Teacher.real_name.like(like), Teacher.xile_name.like(like))
         )
     if platform:
         query = query.filter(TeachingRecord.platform.like(f"%{platform}%"))

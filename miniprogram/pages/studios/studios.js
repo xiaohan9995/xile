@@ -50,8 +50,9 @@ Page({
   _mapItems(items) {
     return (items || []).map((studio) => ({
       ...studio,
-      coverImage: (Array.isArray(studio.images) && studio.images[0]) || studio.imageUrl || studio.coverUrl || 'https://images.unsplash.com/photo-1593810450967-f9c42742e326?auto=format&fit=crop&w=400&q=80',
-      tags: studio.tags && studio.tags.length ? studio.tags : ['静心冥想', '小班授课'],
+      // 无封面图时交给 studio-card 组件用本地默认图兜底，不再硬编码外部占位图。
+      coverImage: (Array.isArray(studio.images) && studio.images[0]) || studio.coverUrl || '',
+      tags: Array.isArray(studio.tags) ? studio.tags : [],
     }));
   },
 

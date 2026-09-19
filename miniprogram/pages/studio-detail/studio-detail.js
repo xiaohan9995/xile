@@ -197,7 +197,7 @@ Page({
       const studio = await request({ url: `/api/mp/studios/${id}` });
       const images = Array.isArray(studio.images) && studio.images.length
         ? studio.images
-        : (studio.coverUrl ? [studio.coverUrl] : ['https://images.unsplash.com/photo-1593810450967-f9c42742e326?auto=format&fit=crop&w=720&q=86']);
+        : (studio.coverUrl ? [studio.coverUrl] : []);
       const ownerTeachers = (Array.isArray(studio.ownerTeachers) && studio.ownerTeachers.length)
         ? studio.ownerTeachers
         : (studio.ownerTeacherName ? [{ name: studio.ownerTeacherName, realName: studio.ownerTeacherRealName || '' }] : []);
@@ -215,7 +215,7 @@ Page({
           coverImage: images[0],
           ownerTeachers,
           courseIntro,
-          contactText: studio.contactText || '微信/电话预约',
+          contactText: studio.contactText || '',
           // 联系工作室图片：主理教师上传的一张图（含电话、二维码等），点选后预览。
           contactImage: displayFileUrl(studio.contactImage) || '',
           tags: studio.tags || [],

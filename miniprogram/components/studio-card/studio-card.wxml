@@ -1,9 +1,13 @@
 <view class="studio-card" bindtap="onTap">
   <image
+    wx:if="{{coverImage}}"
     class="studio-card__cover"
-    src="{{(studio.images && studio.images[0]) || studio.coverUrl || studio.coverImage || '/assets/default-studio.png'}}"
+    src="{{coverImage}}"
     mode="aspectFill"
   />
+  <view wx:else class="studio-card__cover studio-card__cover--placeholder">
+    <text class="studio-card__cover-initial">{{coverInitial}}</text>
+  </view>
 
   <view class="studio-card__body">
     <text class="studio-card__name">{{studio.name}}</text>

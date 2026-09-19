@@ -67,7 +67,8 @@ def dashboard_stats():
         "teacherCount": Teacher.query.filter(Teacher.status != "hidden").count(),
         "activeTeacherCount": Teacher.query.filter_by(status="active").count(),
         "pendingReviewCount": AnnualReview.query.filter_by(status="submitted").count(),
-        "openStudioCount": Studio.query.filter_by(status="open").count(),
+        # 审批中的工作室也已在小程序公开展示，统计口径与小程序保持一致。
+        "openStudioCount": Studio.query.filter(Studio.status.in_(("open", "pending"))).count(),
         "expiringCount": Teacher.query.filter(
             Teacher.status == "active",
             Teacher.valid_until <= expiring_deadline,

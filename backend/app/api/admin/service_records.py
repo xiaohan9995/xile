@@ -2,7 +2,7 @@ from flask import request
 from sqlalchemy import or_
 
 from ...extensions import db
-from ...models import ServiceRecord
+from ...models import ServiceRecord, Teacher
 from ...utils.storage import file_url as _file_url
 from ..mp.helpers import _parse_record_date
 from .helpers import _date_text, _datetime_text, require_admin_roles, require_admin_token
@@ -32,8 +32,9 @@ def service_record_list():
     service_type = (request.args.get("serviceType") or "").strip()
     status = (request.args.get("status") or "").strip()
     if teacher_name:
+        like = f"%{teacher_name}%"
         query = query.join(ServiceRecord.teacher).filter(
-            or_(ServiceRecord.teacher.has(real_name=teacher_name), ServiceRecord.teacher.has(xile_name=teacher_name))
+            or_(Teacher.real_name.like(like), Teacher.xile_name.like(like))
         )
     if service_type:
         query = query.filter(ServiceRecord.service_type.like(f"%{service_type}%"))

@@ -70,7 +70,7 @@
         <text class="grid-icon">💬</text>
         <view class="grid-text">
           <text class="grid-label">联系工作室</text>
-          <text class="grid-value">电话 / 微信 / 二维码</text>
+          <text class="grid-value">电话/微信</text>
         </view>
         <text class="grid-arrow">›</text>
       </view>
