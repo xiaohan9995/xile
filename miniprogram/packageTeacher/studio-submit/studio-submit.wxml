@@ -19,6 +19,35 @@
       <view class="form-card__head"><text class="form-card__title">{{editing.name}}</text><view wx:if="{{!directEdit}}" class="form-card__close" bindtap="closeEditor">×</view></view>
       <text class="form-card__hint">名称、主理教师由管理员设定</text>
 
+      <!-- 管理教师：管理员在当前表单页直接维护主理教师，位于详细地址上方 -->
+      <view wx:if="{{editing.manager}}" class="teacher-mgmt">
+        <view class="teacher-mgmt__section">
+          <view class="teacher-mgmt__title"><text class="teacher-mgmt__bar"></text><text>当前主理教师（{{teachers.length}}）</text></view>
+          <view wx:if="{{!teachersLoading && teachers.length === 0}}" class="teacher-mgmt__empty"><text>暂无主理教师</text></view>
+          <view wx:for="{{teachers}}" wx:key="id" class="teacher-row">
+            <image wx:if="{{item.avatarUrl}}" class="teacher-row__avatar" src="{{item.avatarUrl}}" mode="aspectFill" />
+            <view wx:else class="teacher-row__avatar teacher-row__avatar--placeholder"><text>{{item.name.slice(0, 1)}}</text></view>
+            <view class="teacher-row__info">
+              <text class="teacher-row__name">{{item.name}}</text>
+              <text class="teacher-row__sub" wx:if="{{item.xileName}}">喜乐名：{{item.xileName}}</text>
+            </view>
+            <view wx:if="{{!item.isMe}}" class="teacher-row__remove" bindtap="removeTeacher" data-id="{{item.id}}">移除</view>
+            <text wx:else class="teacher-row__self">我</text>
+          </view>
+        </view>
+
+        <view class="teacher-mgmt__section">
+          <view class="teacher-mgmt__title"><text class="teacher-mgmt__bar"></text><text>添加教师</text></view>
+          <picker mode="selector" range="{{teacherOptions}}" range-key="label" value="{{teacherPickerIndex}}" bindchange="onTeacherPickerChange" disabled="{{teacherOptionsLoading || teacherOptions.length === 0}}">
+            <view class="teacher-picker {{teacherOptions.length === 0 ? 'teacher-picker--empty' : ''}}">
+              <text class="teacher-picker__value {{teacherPickerIndex < 0 ? 'teacher-picker__value--placeholder' : ''}}">{{teacherOptionsLoading ? '教师列表加载中…' : (teacherOptions.length === 0 ? '暂无可添加的教师' : (teacherPickerIndex >= 0 ? teacherOptions[teacherPickerIndex].label : '点击选择要添加的教师'))}}</text>
+              <text class="teacher-picker__arrow">›</text>
+            </view>
+          </picker>
+          <text class="field-hint">从下拉列表选择教师后即自动添加为主理教师</text>
+        </view>
+      </view>
+
       <view class="form-field">
         <text class="form-field__label">详细地址</text>
         <view class="field field--picker" bindtap="chooseLocation">
@@ -90,10 +119,6 @@
       </view>
 
       <view class="record-actions"><button class="btn-primary" bindtap="submit" loading="{{saving}}">提交审批</button></view>
-
-      <view wx:if="{{editing.manager}}" class="manage-entry">
-        <button class="btn-secondary" bindtap="goManageTeachers">管理教师</button>
-      </view>
     </view>
   </view>
 

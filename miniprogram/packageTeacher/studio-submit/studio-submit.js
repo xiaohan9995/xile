@@ -77,6 +77,13 @@ Page({
     maxImages: 9,
     uploading: false,
     directEdit: false, // 从详情页「修改」按钮直接进入编辑模式
+    // 管理教师（管理员）：内嵌在当前表单页维护主理教师
+    teachers: [],
+    teachersLoading: false,
+    myTeacherId: null,
+    teacherOptions: [],
+    teacherOptionsLoading: false,
+    teacherPickerIndex: -1,
   },
 
   onLoad(options) {
@@ -150,6 +157,8 @@ Page({
         longitude: f.longitude != null ? f.longitude : null,
       },
     });
+    // 管理员模式下加载主理教师列表（含头像），内嵌在当前表单页维护。
+    this.loadTeachers();
   },
 
   statusLabel(status) {
@@ -260,12 +269,103 @@ Page({
     wx.navigateTo({ url: `/pages/studio-detail/studio-detail?id=${id}` });
   },
 
-  // 管理教师：仅在当前用户是工作室管理员（manager）时展示入口，跳转到
-  // 独立的教师管理页，页面内部会再次校验权限。
-  goManageTeachers() {
-    const id = this.data.editing && this.data.editing.id;
+  // 管理教师：内嵌在当前表单页，仅工作室管理员（manager）可见并操作。
+  // 主理教师数据来自工作室详情接口（含头像），与独立教师管理页保持一致。
+  async loadTeachers() {
+    const id = this.data.editingId;
     if (!id) return;
-    wx.navigateTo({ url: `/packageTeacher/studio-teachers/studio-teachers?id=${id}` });
+    this.setData({ teachersLoading: true, myTeacherId: auth.getTeacherId() });
+    try {
+      const studio = await request({ url: `/api/mp/studios/${id}` });
+      const myId = String(this.data.myTeacherId);
+      const teachers = (studio.ownerTeachers || []).map((t) => ({
+        id: t.id,
+        name: t.name || t.xileName || t.realName || '教师',
+        xileName: t.xileName || '',
+        avatarUrl: t.avatarUrl || '',
+        isMe: String(t.id) === myId,
+      }));
+      this.setData({ teachers, teachersLoading: false });
+      this.loadTeacherOptions();
+    } catch (error) {
+      this.setData({ teachersLoading: false });
+      wx.showToast({ title: error.message || '主理教师加载失败', icon: 'none' });
+    }
+  },
+
+  // 下拉选择候选：教师目录接口按 mode=name 且不带关键词时返回全部未隐藏教师
+  // （按等级排序），过滤掉已添加的教师后作为 picker 的 range。pageSize 上限 50。
+  async loadTeacherOptions() {
+    this.setData({ teacherOptionsLoading: true });
+    try {
+      const result = await request({ url: '/api/mp/teachers/search?mode=name&pageSize=50' });
+      const currentIds = new Set((this.data.teachers || []).map((t) => String(t.id)));
+      const options = (result.items || [])
+        .filter((t) => !currentIds.has(String(t.id)))
+        .map((t) => {
+          const displayName = t.name || t.xileName || '教师';
+          return {
+            id: t.id,
+            label: t.tierName ? `${displayName} · ${t.tierName}` : displayName,
+          };
+        });
+      this.setData({ teacherOptions: options, teacherPickerIndex: -1, teacherOptionsLoading: false });
+    } catch (error) {
+      this.setData({ teacherOptionsLoading: false });
+      wx.showToast({ title: error.message || '教师列表加载失败', icon: 'none' });
+    }
+  },
+
+  onTeacherPickerChange(e) {
+    const index = Number(e.detail.value);
+    const option = this.data.teacherOptions[index];
+    if (!option) return;
+    this.addTeacherById(option.id);
+  },
+
+  async addTeacherById(id) {
+    if (!id) return;
+    try {
+      await request({
+        url: `/api/mp/teachers/me/studios/${this.data.editingId}/teachers`,
+        method: 'POST',
+        data: { teacherId: id },
+      });
+      wx.showToast({ title: '已添加', icon: 'none' });
+      this.loadTeachers();
+    } catch (error) {
+      wx.showToast({ title: error.message || '添加失败', icon: 'none' });
+    }
+  },
+
+  removeTeacher(e) {
+    const id = e.currentTarget.dataset.id;
+    const teacher = (this.data.teachers || []).find((t) => String(t.id) === String(id));
+    if (!teacher) return;
+    if (String(id) === String(this.data.myTeacherId)) {
+      wx.showToast({ title: '不能删除自己', icon: 'none' });
+      return;
+    }
+    wx.showModal({
+      title: '删除教师',
+      content: `确认将「${teacher.name}」从主理教师中移除？`,
+      confirmText: '删除',
+      confirmColor: '#c0392b',
+      cancelText: '取消',
+      success: async (result) => {
+        if (!result.confirm) return;
+        try {
+          await request({
+            url: `/api/mp/teachers/me/studios/${this.data.editingId}/teachers/${id}`,
+            method: 'DELETE',
+          });
+          wx.showToast({ title: '已删除', icon: 'none' });
+          this.loadTeachers();
+        } catch (error) {
+          wx.showToast({ title: error.message || '删除失败', icon: 'none' });
+        }
+      },
+    });
   },
 
   closeEditor() {
