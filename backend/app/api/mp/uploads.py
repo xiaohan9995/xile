@@ -39,7 +39,10 @@ def get_upload_presign():
     ext = _validate_extension(filename)
     if not ext:
         return {"error": f"file type not allowed, accepted: {', '.join(sorted(ALLOWED_EXTENSIONS))}"}, 400
-    key = f"reviews/{user.teacher_id}/{uuid.uuid4().hex}{ext}"
+    prefix = (payload.get("prefix") or "reviews").strip()
+    if prefix not in ("reviews", "studio-images"):
+        return {"error": "invalid prefix"}, 400
+    key = f"{prefix}/{user.teacher_id}/{uuid.uuid4().hex}{ext}"
 
     if cos_is_configured():
         from qcloud_cos import CosConfig, CosS3Client
@@ -50,19 +53,23 @@ def get_upload_presign():
             Method="PUT", Bucket=cos_bucket, Key=key, Expired=600,
             Headers={"Content-Length-Range": "1,10485760"},
         )
+        download_url = client.get_presigned_url(
+            Method="GET", Bucket=cos_bucket, Key=key, Expired=3600,
+        )
         return {
             "uploadUrl": presigned_url,
             "fileKey": key,
             "maxSize": 10485760,
             "publicUrl": object_url(key),
+            "downloadUrl": download_url,
         }
     if current_app.debug or current_app.testing:
         return {
             "uploadUrl": "/api/mp/upload/file",
             "fileKey": key,
-            "publicUrl": f"/uploads/reviews/{key.split('/')[-1]}",
+            "publicUrl": f"/uploads/{prefix}/{key.split('/')[-1]}",
         }
-    return {"error": "对象存储未配置，无法上传年审材料"}, 503
+    return {"error": "对象存储未配置，无法上传文件"}, 503
 
 
 @mp_bp.post("/upload/evidence")

@@ -199,6 +199,24 @@ Page({
     this.setData({ 'form.tags': tags });
   },
 
+  // 工作室图片上传：预签名直传 COS，绕开未备案的 API 公网域名（无法作为
+  // uploadFile 合法域名）。返回可预览的下载地址（GET 签名，1 小时有效）。
+  async uploadStudioImage(path, filename) {
+    const presign = await request({
+      url: '/api/mp/upload/presign',
+      method: 'POST',
+      data: { filename, prefix: 'studio-images' },
+    });
+    if (presign.uploadUrl === '/api/mp/upload/file') {
+      // 本地 dev：走 upload/file 中转
+      const result = await uploadFile({ url: '/api/mp/upload/file', filePath: path, name: 'file' });
+      return result.url || result.fileKey;
+    }
+    // 生产：直传 COS 预签名 URL
+    await uploadFile({ url: presign.uploadUrl, filePath: path, name: 'file' });
+    return presign.downloadUrl || presign.publicUrl;
+  },
+
   chooseImages() {
     const remaining = this.data.maxImages - this.data.form.images.length;
     if (remaining <= 0) { wx.showToast({ title: `图片最多 ${this.data.maxImages} 张`, icon: 'none' }); return; }
@@ -216,8 +234,8 @@ Page({
           const filename = matched ? matched[0] : 'studio.jpg';
           try {
             wx.showLoading({ title: '上传图片中' });
-            const result = await uploadFile({ url: '/api/mp/upload/studio-image', filePath: path, name: 'file', formData: { filename } });
-            this.setData({ 'form.images': [...this.data.form.images, displayFileUrl(result.url)] });
+            const url = await this.uploadStudioImage(path, filename);
+            this.setData({ 'form.images': [...this.data.form.images, displayFileUrl(url)] });
           } catch (error) {
             wx.showToast({ title: error.message || '图片上传失败', icon: 'none' });
           } finally {
@@ -251,8 +269,8 @@ Page({
         const filename = matched ? matched[0] : 'studio-contact.jpg';
         try {
           wx.showLoading({ title: '上传图片中' });
-          const result = await uploadFile({ url: '/api/mp/upload/studio-image', filePath: path, name: 'file', formData: { filename } });
-          this.setData({ 'form.contactImage': displayFileUrl(result.url) });
+          const url = await this.uploadStudioImage(path, filename);
+          this.setData({ 'form.contactImage': displayFileUrl(url) });
         } catch (error) {
           wx.showToast({ title: error.message || '图片上传失败', icon: 'none' });
         } finally {
