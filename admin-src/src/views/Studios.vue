@@ -136,7 +136,7 @@
                 <input v-model="createTeacherSearch" placeholder="搜索姓名 / 喜乐名 / 证书编号" @click.stop />
               </div>
               <label v-for="t in filteredCreateTeacherOptions" :key="t.id" class="multi-select__option" @click.stop>
-                <input type="checkbox" class="multi-select__input" :checked="createDraft.ownerTeacherIds.includes(t.id)" @change="toggleCreateTeacher(t.id)" />
+                <input type="checkbox" class="multi-select__input" :checked="hasTeacher(createDraft.ownerTeacherIds, t.id)" @change="toggleCreateTeacher(t.id)" />
                 <span class="multi-select__option-text">{{ t.name }}（{{ t.xileName || '无喜乐名' }}）</span>
               </label>
               <div v-if="!filteredCreateTeacherOptions.length" class="multi-select__empty">{{ teacherOptions.length ? '未找到匹配的教师' : '暂无教师可选' }}</div>
@@ -231,7 +231,7 @@
                 <input v-model="editTeacherSearch" placeholder="搜索姓名 / 喜乐名 / 证书编号" @click.stop />
               </div>
               <label v-for="t in filteredEditTeacherOptions" :key="t.id" class="multi-select__option" @click.stop>
-                <input type="checkbox" class="multi-select__input" :checked="editDraft.ownerTeacherIds.includes(t.id)" @change="toggleEditTeacher(t.id)" />
+                <input type="checkbox" class="multi-select__input" :checked="hasTeacher(editDraft.ownerTeacherIds, t.id)" @change="toggleEditTeacher(t.id)" />
                 <span class="multi-select__option-text">{{ t.name }}（{{ t.xileName || '无喜乐名' }}）</span>
               </label>
               <div v-if="!filteredEditTeacherOptions.length" class="multi-select__empty">{{ teacherOptions.length ? '未找到匹配的教师' : '暂无教师可选' }}</div>
@@ -576,8 +576,12 @@ const createTagFocus = ref(false)
 const editTagFocus = ref(false)
 
 function teacherName(id) {
-  const teacher = teacherOptions.value.find((t) => t.id === id)
+  const teacher = teacherOptions.value.find((t) => Number(t.id) === Number(id))
   return teacher ? teacher.name : `教师#${id}`
+}
+
+function hasTeacher(list, id) {
+  return list.some((item) => Number(item) === Number(id))
 }
 
 function matchTeacher(t, query) {
@@ -591,25 +595,29 @@ const filteredEditTeacherOptions = computed(() => teacherOptions.value.filter((t
 
 function toggleCreateTeacher(id) {
   const ids = createDraft.ownerTeacherIds
-  const index = ids.indexOf(id)
-  if (index === -1) ids.push(id)
+  const numericId = Number(id)
+  const index = ids.findIndex((item) => Number(item) === numericId)
+  if (index === -1) ids.push(numericId)
   else ids.splice(index, 1)
 }
 
 function removeCreateTeacher(id) {
-  const index = createDraft.ownerTeacherIds.indexOf(id)
+  const numericId = Number(id)
+  const index = createDraft.ownerTeacherIds.findIndex((item) => Number(item) === numericId)
   if (index !== -1) createDraft.ownerTeacherIds.splice(index, 1)
 }
 
 function toggleEditTeacher(id) {
   const ids = editDraft.ownerTeacherIds
-  const index = ids.indexOf(id)
-  if (index === -1) ids.push(id)
+  const numericId = Number(id)
+  const index = ids.findIndex((item) => Number(item) === numericId)
+  if (index === -1) ids.push(numericId)
   else ids.splice(index, 1)
 }
 
 function removeEditTeacher(id) {
-  const index = editDraft.ownerTeacherIds.indexOf(id)
+  const numericId = Number(id)
+  const index = editDraft.ownerTeacherIds.findIndex((item) => Number(item) === numericId)
   if (index !== -1) editDraft.ownerTeacherIds.splice(index, 1)
 }
 
@@ -634,7 +642,9 @@ function closeTeacherDropdowns() {
 function handleDocumentClick(event) {
   const createEl = createMultiSelect.value
   const editEl = editMultiSelect.value
-  if (createEl && !createEl.contains(event.target) && editEl && !editEl.contains(event.target)) {
+  const insideCreate = createEl && createEl.contains(event.target)
+  const insideEdit = editEl && editEl.contains(event.target)
+  if (!insideCreate && !insideEdit) {
     closeTeacherDropdowns()
   }
 }
@@ -818,7 +828,7 @@ function openEdit(studio) {
   editDraft.address = studio.address || ''
   editDraft.courseIntro = studio.courseIntro || ''
   editDraft.images = Array.isArray(studio.images) ? studio.images.slice() : []
-  editDraft.ownerTeacherIds = Array.isArray(studio.ownerTeachers) ? studio.ownerTeachers.map((t) => t.id) : []
+  editDraft.ownerTeacherIds = Array.isArray(studio.ownerTeachers) ? studio.ownerTeachers.map((t) => Number(t.id)) : []
   editDraft.coverUrl = studio.coverUrl || ''
   editDraft.latitude = studio.latitude ?? ''
   editDraft.longitude = studio.longitude ?? ''
