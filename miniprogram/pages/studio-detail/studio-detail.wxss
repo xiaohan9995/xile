@@ -64,10 +64,8 @@
 }
 
 /* Lead Teacher：与下方「工作室介绍」保持同一套卡片样式（复用 .info-grid /
-   .grid-item / .grid-label），仅额外微调教师行的排布。 */
-.lead-teachers {
-  margin-top: 24rpx;
-}
+   .grid-item / .grid-label），仅额外微调教师行的排布。
+   （顶部间距由 .info-grid 的 margin-top:24rpx 统一控制） */
 
 .lead-teacher-row {
   display: flex;
@@ -141,6 +139,7 @@
 
 /* Info Grid */
 .info-grid {
+  margin-top: 24rpx;
   padding: 0 28rpx;
   display: flex;
   flex-direction: column;
