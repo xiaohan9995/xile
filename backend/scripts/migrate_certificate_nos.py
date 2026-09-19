@@ -6,7 +6,11 @@
 用法（在 backend/ 目录下运行）：
     python scripts/migrate_certificate_nos.py
 """
+import os
 import sys
+
+# 脚本位于 scripts/ 子目录，把上级目录加入模块搜索路径，使 from app 可导入。
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import create_app
 from app.extensions import db

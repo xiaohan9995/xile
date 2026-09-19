@@ -7,6 +7,13 @@ docss/喜乐瑜伽教师信息表-部分.xlsx「教师名单汇总」sheet 第 4
 用法（在 backend/ 目录下运行）：
     python scripts/migrate_teacher_sort_order.py
 """
+import os
+import sys
+
+# 脚本位于 scripts/ 子目录，把上级目录（backend/ 或生产容器 /app）加入模块
+# 搜索路径，使 `from app import ...` 能找到 app 包。
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from app import create_app
 from app.extensions import db
 from app.models import Teacher
