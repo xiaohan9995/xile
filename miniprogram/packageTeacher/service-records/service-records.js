@@ -20,6 +20,9 @@ Page({
     }
     this.loadRecords();
   },
+  onPullDownRefresh() {
+    this.loadRecords().then(() => wx.stopPullDownRefresh());
+  },
   async loadRecords() {
     this.setData({ loading: true });
     try { const data = await request({ url: '/api/mp/service-records' }); this.setData({ records: data.items || [] }); }

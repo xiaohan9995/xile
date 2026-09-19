@@ -87,6 +87,15 @@ Page({
     this.refresh();
   },
 
+  onPullDownRefresh() {
+    this.refresh();
+    if (auth.isLoggedIn() && auth.isTeacher()) {
+      this.loadProfile().then(() => wx.stopPullDownRefresh());
+    } else {
+      wx.stopPullDownRefresh();
+    }
+  },
+
   refresh() {
     this.setData({
       'user.avatarUrl': displayAvatarUrl(auth.getAvatarUrl()),

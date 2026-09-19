@@ -108,6 +108,14 @@ Page({
     this.loadStudios();
   },
 
+  onPullDownRefresh() {
+    if (this.data.editingId) {
+      this.loadStudioForEdit(this.data.editingId).then(() => wx.stopPullDownRefresh());
+    } else {
+      this.loadStudios().then(() => wx.stopPullDownRefresh());
+    }
+  },
+
   async loadStudios() {
     this.setData({ loading: true });
     try {

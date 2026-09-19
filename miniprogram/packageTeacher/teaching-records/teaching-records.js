@@ -19,6 +19,9 @@ Page({
     }
     this.loadRecords();
   },
+  onPullDownRefresh() {
+    this.loadRecords().then(() => wx.stopPullDownRefresh());
+  },
   async loadRecords() {
     this.setData({ loading: true });
     try { const suffix = this.data.month ? `?month=${this.data.month}` : ''; const data = await request({ url: `/api/mp/teaching-records${suffix}` }); this.setData({ records: data.items || [] }); }

@@ -192,6 +192,15 @@ Page({
     }
   },
 
+  onPullDownRefresh() {
+    const id = this.data.studio && this.data.studio.id;
+    if (!id) {
+      wx.stopPullDownRefresh();
+      return;
+    }
+    this.loadStudio(id).then(() => wx.stopPullDownRefresh());
+  },
+
   async loadStudio(id) {
     this.setData({ loading: true, error: '' });
     try {

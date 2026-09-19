@@ -40,6 +40,15 @@ Page({
     }
   },
 
+  onPullDownRefresh() {
+    const id = this.data.teacher && this.data.teacher.id;
+    if (!id) {
+      wx.stopPullDownRefresh();
+      return;
+    }
+    this.loadTeacher(id).then(() => wx.stopPullDownRefresh());
+  },
+
   async loadTeacher(id) {
     this.setData({ loading: true, error: '' });
     try {

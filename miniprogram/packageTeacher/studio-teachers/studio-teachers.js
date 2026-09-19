@@ -31,6 +31,10 @@ Page({
     this.loadStudio();
   },
 
+  onPullDownRefresh() {
+    this.loadStudio().then(() => wx.stopPullDownRefresh());
+  },
+
   async loadStudio() {
     this.setData({ loading: true });
     try {
