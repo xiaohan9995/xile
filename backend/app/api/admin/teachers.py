@@ -271,7 +271,7 @@ VALID_TIERS = {"L1", "L2", "L3", "L4", "L5"}
 
 # Expected column order:
 # A: name, B: phone, C: tier, D: city, E: district,
-# F: certifiedAt, G: validUntil, H: xileName, I: teacherNo
+# F: certifiedAt, G: validUntil, H: xileName, I: idNumber
 
 
 def _cell_str(row, idx):
@@ -317,8 +317,7 @@ def _parse_import_row(row):
         "certifiedAt": _cell_str(row, 5),
         "validUntil": _cell_str(row, 6),
         "xileName": _cell_str(row, 7),
-        "teacherNo": _cell_str(row, 8),
-        "idNumber": _cell_str(row, 9).upper(),
+        "idNumber": _cell_str(row, 8).upper(),
     }
 
 
@@ -332,12 +331,12 @@ def import_template():
         workbook = openpyxl.Workbook()
         sheet = workbook.active
         sheet.title = "教师资料"
-        headers = ["姓名", "手机号", "认证等级", "城市", "地区", "首次认证日期", "有效期至", "喜乐名", "教师编号", "身份证号"]
+        headers = ["姓名", "手机号", "认证等级", "城市", "地区", "首次认证日期", "有效期至", "喜乐名", "身份证号"]
         sheet.append(headers)
-        sheet.append(["张三", "13800000000", "L1", "上海", "浦东新区", "2024-01-01", "2026-12-31", "张三老师", "", "310101199001011234"])
+        sheet.append(["张三", "13800000000", "L1", "上海", "浦东新区", "2024-01-01", "2026-12-31", "张三老师", "310101199001011234"])
         for cell in sheet[1]:
             cell.font = Font(bold=True)
-        for index, width in enumerate([16, 16, 12, 14, 16, 18, 16, 16, 16, 22], start=1):
+        for index, width in enumerate([16, 16, 12, 14, 16, 18, 16, 16, 22], start=1):
             sheet.column_dimensions[openpyxl.utils.get_column_letter(index)].width = width
         output = BytesIO()
         workbook.save(output)
@@ -367,12 +366,7 @@ def import_preview():
 
     errors = []
     parsed_rows = []
-    seen_certificate_nos = set()
 
-    # Certificate numbers are optional; identity credentials are not.
-    existing_nos = set(
-        no for (no,) in db.session.query(Teacher.certificate_no).filter(Teacher.certificate_no.isnot(None)).all()
-    )
     existing_id_numbers = set(
         number for (number,) in db.session.query(Teacher.teacher_no).all()
     )
@@ -406,15 +400,6 @@ def import_preview():
             valid_until = _parse_date(data["validUntil"])
             if valid_until is None:
                 row_errors.append({"rowNumber": idx, "field": "validUntil", "message": "有效期格式无效（需YYYY-MM-DD）"})
-
-        # Optional: teacherNo (check duplicates)
-        if data["teacherNo"]:
-            if data["teacherNo"] in seen_certificate_nos:
-                row_errors.append({"rowNumber": idx, "field": "teacherNo", "message": "编号在文件中重复"})
-            elif data["teacherNo"] in existing_nos:
-                row_errors.append({"rowNumber": idx, "field": "teacherNo", "message": "编号已存在于系统中"})
-            else:
-                seen_certificate_nos.add(data["teacherNo"])
 
         if data["idNumber"]:
             if len(data["idNumber"]) < 6:
@@ -490,7 +475,7 @@ def import_commit():
     rows = list(ws.iter_rows(min_row=2, values_only=True))
     wb.close()
 
-    # Collect existing certificate numbers for duplicate check during commit
+    # 已存在的证书号：自动生成时检查冲突（同年同级别同身份证后四位可能撞号）。
     existing_nos = set(
         no for (no,) in db.session.query(Teacher.certificate_no).filter(Teacher.certificate_no.isnot(None)).all()
     )
@@ -498,7 +483,6 @@ def import_commit():
     existing_id_numbers = set(
         number for (number,) in db.session.query(Teacher.teacher_no).all()
     )
-    used_nos = set()
     created = 0
     skipped = 0
 
@@ -528,18 +512,13 @@ def import_commit():
         if not tier:
             continue
 
-        # Certificate number is optional. Imported certified teachers receive
-        # one when the file does not provide it.
-        certificate_no = data["teacherNo"]
-        if certificate_no:
-            # Skip if duplicate
-            if certificate_no in existing_nos or certificate_no in used_nos:
-                continue
-            used_nos.add(certificate_no)
-        else:
-            certificate_no = generate_certificate_no(data["tier"], cert_date.year, data["idNumber"])
-            # Ensure generated number is tracked to avoid collision within batch
-            existing_nos.add(certificate_no)
+        # 证书号按新规则自动生成（2050+级别+XL+首次认证年份+身份证后四位）。
+        certificate_no = generate_certificate_no(data["tier"], cert_date.year, data["idNumber"])
+        if certificate_no in existing_nos:
+            # 撞号（同年同级别同身份证后四位）：跳过该行，交由管理员手动处理。
+            skipped += 1
+            continue
+        existing_nos.add(certificate_no)
 
         # Determine validUntil: use provided date or calculate from tier cycle
         valid_until = _parse_date(data["validUntil"])
