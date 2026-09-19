@@ -17,6 +17,12 @@
       <input v-model="filters.xileName" placeholder="喜乐名" />
       <input v-model="filters.certNo" placeholder="证书编号" />
       <input v-model="filters.city" placeholder="城市" />
+      <select v-model="filters.expiry">
+        <option value="">全部有效期</option>
+        <option value="active">有效</option>
+        <option value="expiring">即将到期（90天内）</option>
+        <option value="expired">已过期</option>
+      </select>
     </div>
 
     <div class="data-table-wrap">
@@ -49,7 +55,9 @@
             <td><span class="level-text">{{ teacher.level }}</span></td>
             <td><strong class="mono-cert">{{ teacher.certNo }}</strong></td>
             <td>{{ teacher.city || '—' }}</td>
-            <td>{{ teacher.expiryDate }}</td>
+            <td>
+              <span :class="['expiry-text', `expiry-text--${expiryStatus(teacher)}`]">{{ teacher.expiryDate }}</span>
+            </td>
             <td class="table-actions">
               <button class="table-action" @click="openEdit(teacher)">编辑</button>
               <button class="table-action" @click="openAccount(teacher)">设置密码</button>
@@ -250,12 +258,28 @@ import { normalizeMultiline } from '../utils/text.js'
 
 const { show: toast } = useToast()
 
-const filters = ref({ name: '', xileName: '', certNo: '', city: '' })
+const filters = ref({ name: '', xileName: '', certNo: '', city: '', expiry: '' })
 const showCreate = ref(false)
 const showEdit = ref(false)
 const teachers = ref([])
 const currentPage = ref(1)
 const pageSize = 15
+
+// 有效期状态：expired 已过期 / expiring 90 天内到期 / active 有效 / unknown 待确认
+function expiryStatus(teacher) {
+  const exp = teacher.expiryDate
+  if (!exp || exp === '待确认') return 'unknown'
+  const d = new Date(String(exp).replace(/\./g, '-'))
+  if (Number.isNaN(d.getTime())) return 'unknown'
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const daysLeft = Math.ceil((d - today) / (1000 * 60 * 60 * 24))
+  if (daysLeft < 0) return 'expired'
+  if (daysLeft <= 90) return 'expiring'
+  return 'active'
+}
+
+const EXPIRY_LABELS = { expired: '已过期', expiring: '即将到期', active: '有效' }
 
 const createDraft = reactive({
   name: '',
@@ -320,7 +344,15 @@ const filteredList = computed(() => {
   const xileName = filters.value.xileName.trim().toLowerCase()
   const certNo = filters.value.certNo.trim().toLowerCase()
   const city = filters.value.city.trim().toLowerCase()
-  return teachers.value.filter((t) => matches(t.name, name) && matches(t.xileName, xileName) && matches(t.certNo, certNo) && matches(t.city, city))
+  const expiry = filters.value.expiry
+  return teachers.value.filter((t) => {
+    if (!matches(t.name, name)) return false
+    if (!matches(t.xileName, xileName)) return false
+    if (!matches(t.certNo, certNo)) return false
+    if (!matches(t.city, city)) return false
+    if (expiry && expiryStatus(t) !== expiry) return false
+    return true
+  })
 })
 
 const hasFilters = computed(() => Object.values(filters.value).some((value) => value.trim()))
@@ -503,6 +535,23 @@ async function uploadTeacherAsset(event, assetType, targetField) {
 </script>
 
 <style scoped>
+/* 有效期状态颜色标记 */
+.expiry-text {
+  font-weight: 600;
+}
+.expiry-text--expired {
+  color: #c0392b;
+}
+.expiry-text--expiring {
+  color: #c28a1a;
+}
+.expiry-text--active {
+  color: #34445c;
+}
+.expiry-text--unknown {
+  color: #8a948d;
+}
+
 .cert-no-row {
   display: flex;
   gap: 8px;
