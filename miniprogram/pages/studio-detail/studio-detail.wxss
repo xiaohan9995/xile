@@ -203,11 +203,12 @@
 
 /* 联系工作室按钮：与「修改工作室信息」按钮（.owner-panel__actions .btn-primary.owner-panel__action）
    保持完全一致的视觉与尺寸——浅绿底 + 细边框 + 深绿字，覆盖全局 .btn-primary 的深绿实底。
-   左右各 52rpx 内边距对齐 .owner-panel 的盒模型（外层 28rpx + 内层 24rpx），
-   使按钮左右边缘与「修改工作室信息」按钮严格对齐。 */
+   左右各 52rpx 外边距对齐 .owner-panel 的盒模型（外层 28rpx + 内层 24rpx），
+   配合 width:auto 让按钮自动填满两个外边距之间，与「修改工作室信息」
+   按钮（flex:1 自动填满）左右边缘严格一致。 */
 .contact-button {
   margin: 24rpx 52rpx 0;
-  width: calc(100% - 104rpx);
+  width: auto;
   min-width: 0;
   max-width: none;
   box-sizing: border-box;
