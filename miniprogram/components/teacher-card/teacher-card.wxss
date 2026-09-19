@@ -121,6 +121,14 @@
   white-space: nowrap;
 }
 
+.teacher-card__cert-no {
+  flex-shrink: 0;
+  font-size: 20rpx;
+  color: var(--color-muted);
+  font-family: "SF Mono", "Menlo", "Consolas", monospace;
+  letter-spacing: 1rpx;
+}
+
 /* Arrow */
 .teacher-card__arrow {
   flex-shrink: 0;

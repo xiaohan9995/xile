@@ -26,6 +26,7 @@
     <text class="teacher-card__real-name" wx:if="{{realName}}">{{realName}}</text>
     <view class="teacher-card__meta-row">
       <text class="teacher-card__location">{{location || '—'}}</text>
+      <text wx:if="{{teacher.teacherNo}}" class="teacher-card__cert-no">{{teacher.teacherNo}}</text>
     </view>
   </view>
 
