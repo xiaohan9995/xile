@@ -397,7 +397,7 @@
             <div class="approval-diff__cell" :class="{ 'is-changed': pendingChanged('tags', 'tagsText') }">{{ approvalPending && approvalPending.tags && approvalPending.tags.join('、') || '—' }}</div>
           </div>
           <div class="approval-diff__row">
-            <span class="approval-diff__field-col">课程介绍</span>
+            <span class="approval-diff__field-col">工作室介绍</span>
             <div class="approval-diff__cell">{{ approvalStudio && approvalStudio.courseIntro || '—' }}</div>
             <div class="approval-diff__cell" :class="{ 'is-changed': pendingChanged('courseIntro', 'courseIntro') }">{{ approvalPending && approvalPending.courseIntro || '—' }}</div>
           </div>
