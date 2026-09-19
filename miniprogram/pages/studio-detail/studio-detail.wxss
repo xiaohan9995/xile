@@ -201,22 +201,20 @@
   margin-left: 8rpx;
 }
 
-/* 联系工作室按钮容器：与 .owner-panel 完全相同的盒模型（28rpx 外边距 +
-   24rpx 内边距），使内部按钮左右边缘与「修改工作室信息」按钮严格对齐。 */
-.contact-panel {
-  display: flex;
+/* 联系工作室按钮容器：控制左右外边距，与 .owner-panel 卡片外框对齐（28rpx）。 */
+.contact-button-wrap {
   margin: 24rpx 28rpx 0;
-  padding: 0 24rpx;
-  box-sizing: border-box;
 }
 
-/* 联系工作室按钮：与「修改工作室信息」按钮（.owner-panel__actions .btn-primary.owner-panel__action）
-   保持完全一致的视觉——浅绿底 + 细边框 + 深绿字，覆盖全局 .btn-primary 的深绿实底。
-   靠 flex:1 撑满容器，避免任何 width 算式带来的对齐偏差。 */
-.contact-panel .contact-button {
-  flex: 1;
-  margin: 0;
+/* 联系工作室按钮：与「修改工作室信息」按钮同款浅绿描边视觉，并复用「我的」页
+   .logout-button 经过验证的撑满写法——width:100% + min-width:100% + max-width:none，
+   因为 <button> 是 inline-block，仅 width:100% 不总能撑满，必须加 min-width。 */
+.contact-button {
+  width: 100%;
+  min-width: 100%;
+  max-width: none;
   height: 96rpx;
+  margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -226,18 +224,14 @@
   color: var(--color-primary-dark);
   font-size: 30rpx;
   font-weight: 500;
+  line-height: 1;
   text-align: center;
-  box-shadow: none;
 }
 
-.contact-panel .contact-button:active {
-  background: rgba(66, 109, 88, 0.06);
-  opacity: 0.82;
-  transform: none;
-}
+.contact-button:active { opacity: 0.82; }
 
 @media (prefers-color-scheme: dark) {
-  .contact-panel .contact-button {
+  .contact-button {
     border-color: rgba(119, 154, 132, 0.34);
     background: rgba(66, 109, 88, 0.14);
     color: #b9d2c0;

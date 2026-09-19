@@ -74,10 +74,9 @@
 
     <!-- 联系工作室：与「修改工作室信息」按钮同款浅绿描边风格，点选后从底部
          弹出抽屉，展示联系电话与微信二维码（主理教师上传的联系图片）。
-         用与 .owner-panel 相同的容器盒模型（28rpx 外边距 + 24rpx 内边距），
-         按钮以 flex:1 撑满，保证与「修改工作室信息」按钮左右边缘严格对齐。 -->
-    <view class="contact-panel">
-      <button class="btn-primary contact-button" bindtap="openContactDrawer">联系工作室</button>
+         容器控制左右边距，按钮 width:100% 撑满（与「我的」页退出登录按钮同构）。 -->
+    <view class="contact-button-wrap">
+      <button class="contact-button" bindtap="openContactDrawer">联系工作室</button>
     </view>
 
     <!-- 主理教师管理入口：仅当当前登录用户是该工作室主理教师时显示 -->
