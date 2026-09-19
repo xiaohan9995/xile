@@ -118,8 +118,8 @@
           </label>
           <button type="button" class="sync-btn map-pick-btn" @click="requestMapPicker(createDraft)">地图选点并自动填写地址</button>
         </div>
-        <label>
-          主理教师（可多选）
+        <div class="field">
+          <span class="field-label">主理教师（可多选）</span>
           <div ref="createMultiSelect" class="multi-select" @click.stop="openCreateTeacherDropdown">
             <div class="multi-select__trigger">
               <span v-if="createDraft.ownerTeacherIds.length" class="multi-select__chips">
@@ -142,7 +142,7 @@
               <div v-if="!filteredCreateTeacherOptions.length" class="multi-select__empty">{{ teacherOptions.length ? '未找到匹配的教师' : '暂无教师可选' }}</div>
             </div>
           </div>
-        </label>
+        </div>
         <label>
           课程介绍
           <textarea v-model="createDraft.courseIntro" placeholder="介绍工作室开设的课程（最多500字）"></textarea>
@@ -224,8 +224,8 @@
           </label>
           <button type="button" class="sync-btn map-pick-btn" @click="requestMapPicker(editDraft)">重新地图选点</button>
         </div>
-        <label>
-          主理教师（可多选）
+        <div class="field">
+          <span class="field-label">主理教师（可多选）</span>
           <div ref="editMultiSelect" class="multi-select" @click.stop="openEditTeacherDropdown">
             <div class="multi-select__trigger">
               <span v-if="editDraft.ownerTeacherIds.length" class="multi-select__chips">
@@ -248,7 +248,7 @@
               <div v-if="!filteredEditTeacherOptions.length" class="multi-select__empty">{{ teacherOptions.length ? '未找到匹配的教师' : '暂无教师可选' }}</div>
             </div>
           </div>
-        </label>
+        </div>
         <label>
           课程介绍
           <textarea v-model="editDraft.courseIntro" placeholder="介绍工作室开设的课程（最多500字）"></textarea>
@@ -1160,6 +1160,15 @@ async function uploadContactImage(event, draft) {
 
 .field-hint--warn {
   color: #c84b45;
+}
+
+.field {
+  display: grid;
+  gap: 7px;
+  margin-bottom: 14px;
+  color: #65706a;
+  font-size: 12px;
+  font-weight: 800;
 }
 
 .multi-select {
