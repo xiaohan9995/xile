@@ -135,10 +135,10 @@
               <div class="multi-select__search">
                 <input v-model="createTeacherSearch" placeholder="搜索姓名 / 喜乐名 / 证书编号" @click.stop />
               </div>
-              <label v-for="t in filteredCreateTeacherOptions" :key="t.id" class="multi-select__option" @click.stop>
-                <input type="checkbox" class="multi-select__input" :checked="hasTeacher(createDraft.ownerTeacherIds, t.id)" @change="toggleCreateTeacher(t.id)" />
+              <div v-for="t in filteredCreateTeacherOptions" :key="t.id" class="multi-select__option" @click.stop="toggleCreateTeacher(t.id)">
+                <input type="checkbox" class="multi-select__input" :checked="hasTeacher(createDraft.ownerTeacherIds, t.id)" tabindex="-1" />
                 <span class="multi-select__option-text">{{ t.name }}（{{ t.xileName || '无喜乐名' }}）</span>
-              </label>
+              </div>
               <div v-if="!filteredCreateTeacherOptions.length" class="multi-select__empty">{{ teacherOptions.length ? '未找到匹配的教师' : '暂无教师可选' }}</div>
             </div>
           </div>
@@ -230,10 +230,10 @@
               <div class="multi-select__search">
                 <input v-model="editTeacherSearch" placeholder="搜索姓名 / 喜乐名 / 证书编号" @click.stop />
               </div>
-              <label v-for="t in filteredEditTeacherOptions" :key="t.id" class="multi-select__option" @click.stop>
-                <input type="checkbox" class="multi-select__input" :checked="hasTeacher(editDraft.ownerTeacherIds, t.id)" @change="toggleEditTeacher(t.id)" />
+              <div v-for="t in filteredEditTeacherOptions" :key="t.id" class="multi-select__option" @click.stop="toggleEditTeacher(t.id)">
+                <input type="checkbox" class="multi-select__input" :checked="hasTeacher(editDraft.ownerTeacherIds, t.id)" tabindex="-1" />
                 <span class="multi-select__option-text">{{ t.name }}（{{ t.xileName || '无喜乐名' }}）</span>
-              </label>
+              </div>
               <div v-if="!filteredEditTeacherOptions.length" class="multi-select__empty">{{ teacherOptions.length ? '未找到匹配的教师' : '暂无教师可选' }}</div>
             </div>
           </div>
@@ -1213,6 +1213,7 @@ function removeImage(draft, index) {
   height: 16px;
   margin: 0;
   cursor: pointer;
+  pointer-events: none;
 }
 
 .multi-select__option-text {
