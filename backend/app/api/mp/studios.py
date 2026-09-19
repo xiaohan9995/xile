@@ -5,6 +5,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 
 from ...extensions import db, limiter
 from ...models import Studio, Teacher, User
+from ...utils.storage import file_url as _file_url
 from .helpers import _is_studio_owner_teacher, _is_studio_manager, _studio_summary, escape_like
 from . import mp_bp
 
@@ -60,10 +61,12 @@ def _draft_to_fields(draft):
         "city": draft.get("city") or "",
         "district": draft.get("district") or "",
         "contact": draft.get("contact") or "",
-        "contactImage": draft.get("contactImage") or "",
+        # 图片统一经 file_url 归一化：COS 签名 URL 会重新签名（避免回显过期），
+        # 本地模式返回相对路径，由小程序端补全域名。
+        "contactImage": _file_url(draft.get("contactImage")) or "",
         "tags": [t.strip() for t in (draft.get("tags") or "").split(",") if t.strip()],
         "courseIntro": draft.get("courseIntro") or "",
-        "images": images,
+        "images": [_file_url(u) for u in images],
         "latitude": draft.get("latitude"),
         "longitude": draft.get("longitude"),
     }

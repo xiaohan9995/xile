@@ -4,6 +4,7 @@ from flask import request
 
 from ...extensions import db
 from ...models import AuditLog, Studio, Teacher
+from ...utils.storage import file_url
 from .helpers import current_admin_id, require_admin_roles, require_admin_token
 from . import admin_bp
 
@@ -107,10 +108,10 @@ def _pending_draft_payload(s):
         "city": draft.get("city"),
         "district": draft.get("district"),
         "contact": draft.get("contact"),
-        "contactImage": draft.get("contactImage"),
+        "contactImage": file_url(draft.get("contactImage")),
         "tags": [t.strip() for t in (draft.get("tags") or "").split(",") if t.strip()],
         "courseIntro": draft.get("courseIntro"),
-        "images": images,
+        "images": [file_url(u) for u in images],
         "latitude": draft.get("latitude"),
         "longitude": draft.get("longitude"),
     }
@@ -133,8 +134,8 @@ def _studio_payload(s):
         "latitude": s.latitude,
         "longitude": s.longitude,
         "ownerTeacherName": s.owner.real_name if s.owner else None,
-        "coverUrl": images[0] if images else s.cover_url,
-        "images": images,
+        "coverUrl": file_url(images[0]) if images else file_url(s.cover_url),
+        "images": [file_url(u) for u in images],
         "courseIntro": s.course_intro,
         "ownerTeachers": [
             {"id": t.id, "name": t.real_name, "xileName": t.xile_name}
@@ -145,7 +146,9 @@ def _studio_payload(s):
         "intro": s.intro,
         "openingHours": s.opening_hours,
         "contactText": s.contact_text,
-        "contactImage": s.contact_image,
+        # 统一经 file_url 归一化：过期的签名 URL 重新签名，本地相对路径保持，
+        # 由前端补全域名。
+        "contactImage": file_url(s.contact_image),
         "status": s.status,
         "displayOrder": s.display_order,
         "hasPending": s.status == "pending",

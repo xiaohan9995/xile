@@ -3,6 +3,15 @@ const auth = require('../../utils/auth');
 const { normalizeMultiline } = require('../../utils/text');
 const app = getApp();
 
+// 后端下发的图片可能是 API 相对路径（"/uploads/..."），<image> 无法解析，
+// 需要补上 API 域名；已是完整 http(s) 地址则直接使用。
+const displayFileUrl = (url) => {
+  if (!url) return '';
+  const baseUrl = (app && app.globalData && app.globalData.apiBaseUrl) || '';
+  if (/^https?:\/\//i.test(url)) return url;
+  return baseUrl ? `${baseUrl}${url}` : url;
+};
+
 const STATUS_LABEL = {
   open: '已公开',
   pending: '待审批',
@@ -131,12 +140,12 @@ Page({
         district: f.district || '',
         address: f.address || '',
         contact: f.contact || '',
-        contactImage: f.contactImage || '',
+        contactImage: displayFileUrl(f.contactImage),
         tags: f.tags || [],
         // 课程介绍是多行文本，回填时统一换行格式，避免历史数据里的连续空行在
         // 编辑框里继续累积。
         courseIntro: normalizeMultiline(f.courseIntro),
-        images: f.images || [],
+        images: (f.images || []).map(displayFileUrl),
         latitude: f.latitude != null ? f.latitude : null,
         longitude: f.longitude != null ? f.longitude : null,
       },
@@ -190,7 +199,7 @@ Page({
           try {
             wx.showLoading({ title: '上传图片中' });
             const result = await uploadFile({ url: '/api/mp/upload/evidence', filePath: path, name: 'file', formData: { filename } });
-            this.setData({ 'form.images': [...this.data.form.images, result.url] });
+            this.setData({ 'form.images': [...this.data.form.images, displayFileUrl(result.url)] });
           } catch (error) {
             wx.showToast({ title: error.message || '图片上传失败', icon: 'none' });
           } finally {
@@ -225,7 +234,7 @@ Page({
         try {
           wx.showLoading({ title: '上传图片中' });
           const result = await uploadFile({ url: '/api/mp/upload/evidence', filePath: path, name: 'file', formData: { filename } });
-          this.setData({ 'form.contactImage': result.url });
+          this.setData({ 'form.contactImage': displayFileUrl(result.url) });
         } catch (error) {
           wx.showToast({ title: error.message || '图片上传失败', icon: 'none' });
         } finally {
