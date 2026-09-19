@@ -201,10 +201,16 @@
   margin-left: 8rpx;
 }
 
-/* 联系工作室按钮容器：控制左右外边距，与 .owner-panel 卡片内部「修改工作室信息」
-   按钮精确对齐（卡片 28rpx 外边距 + 1rpx 边框 + 24rpx 内边距 = 53rpx）。 */
-.contact-button-wrap {
-  margin: 24rpx 53rpx 0;
+/* 联系工作室卡片容器：与 .owner-panel 完全相同的盒模型与视觉（28rpx 外边距 +
+   1rpx 边框 + 24rpx 内边距 + 卡片背景/阴影），仅底部外边距改为 48rpx 与
+   上方信息卡片区隔。 */
+.contact-panel {
+  margin: 24rpx 28rpx 48rpx;
+  padding: 24rpx;
+  border: 1rpx solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-card);
+  box-shadow: var(--shadow-card);
 }
 
 /* 联系工作室按钮：与「修改工作室信息」按钮同款浅绿描边视觉，并复用「我的」页

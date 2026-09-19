@@ -72,10 +72,9 @@
       </view>
     </view>
 
-    <!-- 联系工作室：与「修改工作室信息」按钮同款浅绿描边风格，点选后从底部
-         弹出抽屉，展示联系电话与微信二维码（主理教师上传的联系图片）。
-         容器控制左右边距，按钮 width:100% 撑满（与「我的」页退出登录按钮同构）。 -->
-    <view class="contact-button-wrap">
+    <!-- 联系工作室：与「修改工作室信息」所在卡片同款卡片容器，点选后从底部
+         弹出抽屉，展示联系电话与微信二维码（主理教师上传的联系图片）。 -->
+    <view class="contact-panel">
       <button class="contact-button" bindtap="openContactDrawer">联系工作室</button>
     </view>
 
