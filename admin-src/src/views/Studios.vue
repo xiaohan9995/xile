@@ -712,6 +712,7 @@ async function loadStudios() {
     studios.value = await fetchAdminStudios()
   } catch (e) {
     console.warn('获取工作室列表失败', e)
+    toast('工作室列表加载失败，请稍后重试', 'error')
   }
 }
 
@@ -720,6 +721,7 @@ async function loadTeachers() {
     teacherOptions.value = await fetchAdminTeachers()
   } catch (e) {
     console.warn('获取教师列表失败', e)
+    toast('教师列表加载失败，主理教师可能无法选择', 'error')
   }
 }
 

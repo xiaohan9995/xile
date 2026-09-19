@@ -93,7 +93,10 @@ def update_teacher(teacher_id):
     payload = request.get_json(silent=True) or {}
 
     if "name" in payload:
-        teacher.real_name = str(payload["name"] or "").strip()
+        name = str(payload["name"] or "").strip()
+        if not name:
+            return {"error": "姓名不能为空"}, 400
+        teacher.real_name = name
     if "xileName" in payload:
         teacher.xile_name = str(payload["xileName"] or "").strip() or None
     if "alias" in payload:

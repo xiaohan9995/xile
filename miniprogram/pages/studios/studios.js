@@ -10,16 +10,7 @@ Page({
     studios: [],
     keyword: '',
     activeCity: 'all',
-    cityOptions: [
-      { label: '全部', value: 'all' },
-      { label: '北京', value: '北京' },
-      { label: '广州', value: '广州' },
-      { label: '东莞', value: '东莞' },
-      { label: '济南', value: '济南' },
-      { label: '福州', value: '福州' },
-      { label: '温哥华', value: '温哥华' },
-      { label: '吉隆坡', value: '吉隆坡' },
-    ],
+    cityOptions: [{ label: '全部', value: 'all' }],
     loading: false,
     loadingMore: false,
     page: 1,
@@ -68,8 +59,20 @@ Page({
     this.setData({ loading: true });
     try {
       const payload = await request({ url: this._buildUrl(1) });
+      // 城市筛选项随数据动态更新，保证工作室设置任意城市后都能被筛选到。
+      const cities = (payload.cities || []).filter(Boolean);
+      const cityOptions = [
+        { label: '全部', value: 'all' },
+        ...cities.map((city) => ({ label: city, value: city })),
+      ];
+      // 若当前选中城市已不在可用列表中，回退到「全部」。
+      const activeCity = this.data.activeCity !== 'all' && !cities.includes(this.data.activeCity)
+        ? 'all'
+        : this.data.activeCity;
       this.setData({
         studios: this._mapItems(payload.items),
+        cityOptions,
+        activeCity,
         page: 1,
         hasMore: payload.hasMore || false,
       });

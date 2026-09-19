@@ -241,7 +241,16 @@ def list_studios():
     query = query.order_by(Studio.display_order.desc(), Studio.id.asc())
     total = query.count()
     studios = query.offset((page - 1) * page_size).limit(page_size).all()
-    return {"items": [_studio_summary(s) for s in studios], "total": total, "page": page, "pageSize": page_size, "hasMore": page * page_size < total}
+    # 城市筛选项动态来自已公开工作室，避免工作室设置了非预设城市时无法筛选。
+    cities = [
+        row[0]
+        for row in db.session.query(Studio.city)
+        .filter(Studio.status == "open", Studio.city.isnot(None), Studio.city != "")
+        .distinct()
+        .order_by(Studio.city.asc())
+        .all()
+    ]
+    return {"items": [_studio_summary(s) for s in studios], "cities": cities, "total": total, "page": page, "pageSize": page_size, "hasMore": page * page_size < total}
 
 
 @mp_bp.get("/studios/<int:studio_id>")

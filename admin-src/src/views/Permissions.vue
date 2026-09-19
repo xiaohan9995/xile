@@ -13,6 +13,8 @@
       </div>
     </div>
 
+    <div v-if="loadError" class="load-banner load-banner--error" role="alert">{{ loadError }}</div>
+
     <!-- Admin accounts -->
     <h2 class="section-title">管理员账号</h2>
     <div class="toolbar compact-toolbar">
@@ -234,6 +236,8 @@ watch(userFilters, () => { userPage.value = 1 }, { deep: true })
 watch(memberTotalPages, (total) => { if (memberPage.value > total) memberPage.value = Math.max(1, total) })
 watch(userTotalPages, (total) => { if (userPage.value > total) userPage.value = Math.max(1, total) })
 
+const loadError = ref('')
+
 onMounted(async () => {
   await Promise.all([loadMembers(), loadUsers(), loadTeachers()])
 })
@@ -241,25 +245,32 @@ onMounted(async () => {
 async function loadMembers() {
   try {
     members.value = await fetchPermissions()
-  } catch (e) { /* fallback */ }
+  } catch (e) {
+    loadError.value = '管理员账号加载失败，请稍后重试'
+  }
 }
 
 async function loadUsers() {
   try {
     users.value = await fetchUsers()
-  } catch (e) { /* fallback */ }
+  } catch (e) {
+    loadError.value = '小程序用户加载失败，请稍后重试'
+  }
 }
 
 async function loadTeachers() {
   try {
     const teachers = await fetchAdminTeachers()
     teacherOptions.value = teachers.map(t => ({ id: t.id, name: t.name, teacherNo: t.certNo }))
-  } catch (e) { /* fallback */ }
+  } catch (e) {
+    loadError.value = '教师列表加载失败，设置角色时可能无法选择教师'
+  }
 }
 
 const refreshing = ref(false)
 async function refresh() {
   refreshing.value = true
+  loadError.value = ''
   try { await Promise.all([loadMembers(), loadUsers(), loadTeachers()]) } finally { refreshing.value = false }
 }
 
@@ -417,5 +428,15 @@ async function handleInvite() {
 .status-pill.gray {
   background: #f0f0f0;
   color: #666;
+}
+
+.load-banner {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #fef2f2;
+  color: #b54c4c;
+  font-size: 13px;
+  font-weight: 600;
 }
 </style>

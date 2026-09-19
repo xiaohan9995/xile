@@ -12,6 +12,9 @@
       </div>
     </div>
 
+    <div v-if="loadError" class="load-banner load-banner--error" role="alert">{{ loadError }}</div>
+    <div v-if="isLoading" class="load-banner">数据加载中…</div>
+
     <div class="kpi-grid" style="margin-bottom: 24px">
       <div class="kpi-card">
         <span>认证教师总数</span>
@@ -85,13 +88,21 @@ import { ref, computed, onMounted } from 'vue'
 import { fetchAnalytics } from '../api/adminData'
 
 const analytics = ref({})
+const isLoading = ref(true)
+const loadError = ref('')
 
 onMounted(load)
 
 async function load() {
+  isLoading.value = true
+  loadError.value = ''
   try {
     analytics.value = await fetchAnalytics()
-  } catch (e) { /* fallback to empty */ }
+  } catch (e) {
+    loadError.value = '数据加载失败，请稍后重试'
+  } finally {
+    isLoading.value = false
+  }
 }
 
 const refreshing = ref(false)
@@ -120,4 +131,18 @@ const areaPoints = computed(() => {
 </script>
 
 <style scoped>
+.load-banner {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #f0f5f1;
+  color: #426d58;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.load-banner--error {
+  background: #fef2f2;
+  color: #b54c4c;
+}
 </style>

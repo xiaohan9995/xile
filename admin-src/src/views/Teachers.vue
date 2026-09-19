@@ -270,6 +270,7 @@ async function loadTeachers() {
     teachers.value = await fetchAdminTeachers()
   } catch (e) {
     console.warn('获取教师列表失败', e)
+    toast('教师列表加载失败，请稍后重试', 'error')
   }
 }
 
