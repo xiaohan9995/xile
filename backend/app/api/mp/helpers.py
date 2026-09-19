@@ -151,8 +151,9 @@ def _studio_summary(studio):
         "address": studio.address,
         "latitude": studio.latitude,
         "longitude": studio.longitude,
-        "coverUrl": images[0] if images else studio.cover_url,
-        "images": images,
+        # 封面/轮播图统一经 file_url 签名（私有桶下稳定 URL 无法直接访问）。
+        "coverUrl": _file_url(images[0]) if images else _file_url(studio.cover_url),
+        "images": [_file_url(u) for u in images],
         "courseIntro": studio.course_intro,
         "tags": tags,
         "intro": studio.intro,
