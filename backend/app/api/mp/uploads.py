@@ -135,11 +135,13 @@ def upload_studio_image():
 
     key = f"studio-images/{user.teacher_id}/{uuid.uuid4().hex}{ext}"
     try:
+        # 私有上传，避免对「私有读写」存储桶设置 public-read ACL 失败。
+        # 返回稳定对象 URL；回显时后端 file_url 会重新签发临时签名地址。
         url = upload_to_cos(
             uploaded.stream,
             key,
             uploaded.mimetype or "application/octet-stream",
-            public_read=True,
+            public_read=False,
         )
     except StorageNotConfiguredError:
         if not (current_app.debug or current_app.testing):
@@ -149,7 +151,12 @@ def upload_studio_image():
         os.makedirs(upload_dir, exist_ok=True)
         uploaded.save(os.path.join(upload_dir, filename))
         return {"url": f"/uploads/studio-images/{filename}"}
-    return {"url": url}
+    except Exception as exc:
+        current_app.logger.exception("upload_studio_image failed")
+        return {"error": f"图片上传失败：{exc}"}, 500
+    # 私有存储桶下，稳定对象 URL 无法直接访问；返回签名 URL 供前端即时预览。
+    # 提交后 apply_pending_draft 会归一化为稳定 URL 存库，回显时再重新签名。
+    return {"url": file_url(url)}
 
 
 @mp_bp.get("/uploads/studio-images/<path:filename>")
