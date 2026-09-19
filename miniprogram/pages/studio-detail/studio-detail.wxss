@@ -3,6 +3,11 @@
   padding-top: 0;
 }
 
+/* 页面内容统一底部留白，卡片间间距由各容器 24rpx margin 控制 */
+.detail-content {
+  padding-bottom: 48rpx;
+}
+
 /* Cover */
 .cover-section {
   position: relative;
@@ -137,13 +142,13 @@
   font-weight: 600;
 }
 
-/* Info Grid */
+/* Info Grid：内部卡片间距 gap 与页面其他卡片间距统一为 24rpx */
 .info-grid {
   margin-top: 24rpx;
   padding: 0 28rpx;
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  gap: 24rpx;
 }
 
 .grid-item {
@@ -201,10 +206,9 @@
 }
 
 /* 联系工作室卡片容器：与 .owner-panel 完全相同的盒模型与视觉（28rpx 外边距 +
-   1rpx 边框 + 24rpx 内边距 + 卡片背景/阴影），仅底部外边距改为 48rpx 与
-   上方信息卡片区隔。 */
+   1rpx 边框 + 24rpx 内边距 + 卡片背景/阴影）。上下间距与其他卡片统一 24rpx。 */
 .contact-panel {
-  margin: 24rpx 28rpx 48rpx;
+  margin: 24rpx 28rpx;
   padding: 24rpx;
   border: 1rpx solid var(--color-line);
   border-radius: var(--radius-md);
@@ -262,7 +266,7 @@
 
 /* 主理教师管理入口 */
 .owner-panel {
-  margin: 24rpx 28rpx 48rpx;
+  margin: 24rpx 28rpx;
   padding: 24rpx;
   border: 1rpx solid var(--color-line);
   border-radius: var(--radius-md);
