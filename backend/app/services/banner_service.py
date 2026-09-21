@@ -5,18 +5,17 @@
 """
 from ..extensions import db
 from ..models import SystemConfig
-from ..utils.storage import storage_reference
+from ..utils.storage import file_url as _file_url, storage_reference
 
 BANNER_KEYS = ("home_banner_url", "studio_banner_url")
 
 
 def get_banners():
-    # 存库时已归一化为稳定对象 URL，且 banner 为 public-read，直接返回稳定地址，
-    # 前端 <image> 按 URL 缓存，避免每次刷新重新签名导致重新下载闪烁。
+    # 私有桶下稳定对象 URL 无法直接访问，必须经 file_url 重新签发临时签名地址。
     configs = {c.key: c.value for c in SystemConfig.query.filter(SystemConfig.key.in_(BANNER_KEYS)).all()}
     return {
-        "home": configs.get("home_banner_url"),
-        "studio": configs.get("studio_banner_url"),
+        "home": _file_url(configs.get("home_banner_url")),
+        "studio": _file_url(configs.get("studio_banner_url")),
     }
 
 
