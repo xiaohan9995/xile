@@ -14,11 +14,6 @@
     </view>
   </view>
 
-  <!-- Badge -->
-  <view class="studio-hero__badge">
-    <text class="studio-hero__badge-text">已收录 {{studios.length || 36}} 家喜乐瑜伽认证工作室</text>
-  </view>
-
   <!-- Search Box -->
   <view class="search-box">
     <view class="search-box__inner">
@@ -35,6 +30,11 @@
         <view class="search-box__btn-icon"></view>
       </view>
     </view>
+  </view>
+
+  <!-- Badge -->
+  <view class="studio-hero__badge">
+    <text class="studio-hero__badge-text">已收录 {{studios.length || 36}} 家喜乐瑜伽认证工作室</text>
   </view>
 
   <!-- Filter Row -->
