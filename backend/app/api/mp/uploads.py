@@ -1,5 +1,11 @@
+import base64
+import hashlib
+import hmac
+import json
 import os
+import time
 import uuid
+from datetime import datetime
 
 from flask import current_app, request, send_from_directory
 from flask_jwt_extended import get_jwt_identity, jwt_required
@@ -18,6 +24,43 @@ def _validate_extension(filename):
     if ext not in ALLOWED_EXTENSIONS:
         return None
     return ext
+
+
+def _post_object_form(secret_id, secret_key, key, max_bytes, expires=600):
+    """构造 COS POST Object 表单直传字段（永久密钥，V5 签名）。
+
+    wx.uploadFile 只能发 POST（multipart/form-data），不能发 PUT，因此用
+    PUT 预签名 URL 会得到 MalformedPOSTRequest。这里按 COS POST Object
+    规范生成 policy + q-signature，前端用 wx.uploadFile 直传存储桶。
+    """
+    now = int(time.time())
+    key_time = f"{now};{now + expires}"
+    sign_key = hmac.new(secret_key.encode("utf-8"), key_time.encode("utf-8"), hashlib.sha1).hexdigest()
+
+    expiration = datetime.utcfromtimestamp(now + expires).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    policy = {
+        "expiration": expiration,
+        "conditions": [
+            {"key": key},
+            ["content-length-range", 1, max_bytes],
+            {"q-sign-algorithm": "sha1"},
+            {"q-ak": secret_id},
+            {"q-sign-time": key_time},
+        ],
+    }
+    policy_text = json.dumps(policy, separators=(",", ":"), ensure_ascii=False)
+    policy_b64 = base64.b64encode(policy_text.encode("utf-8")).decode("utf-8")
+    string_to_sign = hashlib.sha1(policy_text.encode("utf-8")).hexdigest()
+    q_signature = hmac.new(sign_key.encode("utf-8"), string_to_sign.encode("utf-8"), hashlib.sha1).hexdigest()
+
+    return {
+        "key": key,
+        "policy": policy_b64,
+        "q-sign-algorithm": "sha1",
+        "q-ak": secret_id,
+        "q-key-time": key_time,
+        "q-signature": q_signature,
+    }
 
 
 @mp_bp.post("/upload/presign")
@@ -45,23 +88,15 @@ def get_upload_presign():
     key = f"{prefix}/{user.teacher_id}/{uuid.uuid4().hex}{ext}"
 
     if cos_is_configured():
-        from qcloud_cos import CosConfig, CosS3Client
-
-        config = CosConfig(Region=cos_region, SecretId=cos_secret_id, SecretKey=cos_secret_key)
-        client = CosS3Client(config)
-        presigned_url = client.get_presigned_url(
-            Method="PUT", Bucket=cos_bucket, Key=key, Expired=600,
-            Headers={"Content-Length-Range": "1,10485760"},
-        )
-        download_url = client.get_presigned_url(
-            Method="GET", Bucket=cos_bucket, Key=key, Expired=3600,
-        )
+        form = _post_object_form(cos_secret_id, cos_secret_key, key, 10485760)
         return {
-            "uploadUrl": presigned_url,
+            # POST Object 直传的目标是存储桶根地址，key 放在 formData 里。
+            "uploadUrl": f"https://{cos_bucket}.cos.{cos_region}.myqcloud.com/",
+            "formData": form,
             "fileKey": key,
             "maxSize": 10485760,
             "publicUrl": object_url(key),
-            "downloadUrl": download_url,
+            "downloadUrl": file_url(key),
         }
     if current_app.debug or current_app.testing:
         return {

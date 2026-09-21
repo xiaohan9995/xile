@@ -1,4 +1,4 @@
-const { request, uploadFile } = require('../../utils/request');
+const { request, presignUpload } = require('../../utils/request');
 const auth = require('../../utils/auth');
 const app = getApp();
 
@@ -50,17 +50,8 @@ Page({
         const filename = matched ? matched[0] : 'evidence.jpg';
         try {
           wx.showLoading({ title: '上传佐证中' });
-          const presign = await request({ url: '/api/mp/upload/presign', method: 'POST', data: { filename } });
-          let fileKey = presign.fileKey;
-          let evidenceUrl = presign.downloadUrl || presign.publicUrl || '';
-          if (presign.uploadUrl === '/api/mp/upload/file') {
-            const result = await uploadFile({ url: '/api/mp/upload/file', filePath: path, name: 'file' });
-            fileKey = result.fileKey || presign.fileKey;
-            evidenceUrl = result.url || evidenceUrl;
-          } else {
-            await uploadFile({ url: presign.uploadUrl, filePath: path, name: 'file' });
-          }
-          this.setData({ 'form.evidenceKey': fileKey, 'form.evidenceName': filename, 'form.evidenceUrl': evidenceUrl });
+          const { fileKey, url } = await presignUpload(path, filename);
+          this.setData({ 'form.evidenceKey': fileKey, 'form.evidenceName': filename, 'form.evidenceUrl': url });
         } catch (error) { wx.showToast({ title: error.message || '佐证上传失败', icon: 'none' }); }
         finally { wx.hideLoading(); }
       },

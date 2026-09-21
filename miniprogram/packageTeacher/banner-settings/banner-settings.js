@@ -1,4 +1,4 @@
-const { request, uploadFile } = require('../../utils/request');
+const { request, presignUpload } = require('../../utils/request');
 const auth = require('../../utils/auth');
 const app = getApp();
 
@@ -42,17 +42,8 @@ Page({
 
   // 预签名直传 COS，绕开未备案 API 域名；返回可预览的下载地址。
   async uploadBannerImage(path, filename) {
-    const presign = await request({
-      url: '/api/mp/upload/presign',
-      method: 'POST',
-      data: { filename, prefix: 'banners' },
-    });
-    if (presign.uploadUrl === '/api/mp/upload/file') {
-      const result = await uploadFile({ url: '/api/mp/upload/file', filePath: path, name: 'file' });
-      return result.url || result.fileKey;
-    }
-    await uploadFile({ url: presign.uploadUrl, filePath: path, name: 'file' });
-    return presign.downloadUrl || presign.publicUrl;
+    const { url } = await presignUpload(path, filename, 'banners');
+    return url;
   },
 
   chooseImage(e) {
@@ -86,6 +77,10 @@ Page({
   },
 
   async save() {
+    if (!this.data.homeUrl && !this.data.studioUrl) {
+      wx.showToast({ title: '请上传图片', icon: 'none' });
+      return;
+    }
     this.setData({ saving: true });
     try {
       const result = await request({

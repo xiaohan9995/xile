@@ -240,4 +240,21 @@ const uploadFile = (options) => new Promise((resolve, reject) => {
   });
 });
 
-module.exports = { request, uploadFile, RequestError, normalizeUserMessage };
+// 预签名直传 COS：后端返回 POST Object 表单字段（key/policy/q-signature 等），
+// 前端用 wx.uploadFile 直传存储桶根地址，绕开未备案的 API 域名。
+// 返回 { fileKey, url }，其中 url 为可预览的下载地址（签名 GET）。
+const presignUpload = async (filePath, filename, prefix) => {
+  const presign = await request({
+    url: '/api/mp/upload/presign',
+    method: 'POST',
+    data: prefix ? { filename, prefix } : { filename },
+  });
+  if (presign.uploadUrl === '/api/mp/upload/file') {
+    const result = await uploadFile({ url: '/api/mp/upload/file', filePath, name: 'file' });
+    return { fileKey: result.fileKey || presign.fileKey, url: result.url || presign.publicUrl };
+  }
+  await uploadFile({ url: presign.uploadUrl, filePath, name: 'file', formData: presign.formData });
+  return { fileKey: presign.fileKey, url: presign.downloadUrl || presign.publicUrl };
+};
+
+module.exports = { request, uploadFile, presignUpload, RequestError, normalizeUserMessage };

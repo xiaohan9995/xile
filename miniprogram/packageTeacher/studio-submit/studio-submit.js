@@ -1,4 +1,4 @@
-const { request, uploadFile } = require('../../utils/request');
+const { request, presignUpload } = require('../../utils/request');
 const auth = require('../../utils/auth');
 const { normalizeMultiline, stripParenthetical } = require('../../utils/text');
 const app = getApp();
@@ -202,19 +202,8 @@ Page({
   // 工作室图片上传：预签名直传 COS，绕开未备案的 API 公网域名（无法作为
   // uploadFile 合法域名）。返回可预览的下载地址（GET 签名，1 小时有效）。
   async uploadStudioImage(path, filename) {
-    const presign = await request({
-      url: '/api/mp/upload/presign',
-      method: 'POST',
-      data: { filename, prefix: 'studio-images' },
-    });
-    if (presign.uploadUrl === '/api/mp/upload/file') {
-      // 本地 dev：走 upload/file 中转
-      const result = await uploadFile({ url: '/api/mp/upload/file', filePath: path, name: 'file' });
-      return result.url || result.fileKey;
-    }
-    // 生产：直传 COS 预签名 URL
-    await uploadFile({ url: presign.uploadUrl, filePath: path, name: 'file' });
-    return presign.downloadUrl || presign.publicUrl;
+    const { url } = await presignUpload(path, filename, 'studio-images');
+    return url;
   },
 
   chooseImages() {
