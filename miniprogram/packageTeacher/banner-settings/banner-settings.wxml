@@ -1,0 +1,37 @@
+<view class="page-shell banner-page">
+  <view class="page-header" style="padding-top:{{statusBarHeight}}px;">
+    <view class="page-header__back" bindtap="goBack">‹</view>
+    <text class="page-header__title">横幅设置</text>
+    <view class="page-header__right"></view>
+  </view>
+
+  <view class="banner-body">
+    <view class="banner-intro">
+      <text class="banner-intro__eyebrow">PAGE BANNERS</text>
+      <text class="banner-intro__title">首页与工作室横幅</text>
+      <text class="banner-intro__description">设置小程序首页与工作室列表页的顶部横幅图，保存后立即生效</text>
+    </view>
+
+    <view class="banner-group">
+      <view class="banner-field">
+        <text class="banner-field__label">首页横幅</text>
+        <view class="banner-preview" bindtap="chooseImage" data-slot="home">
+          <image wx:if="{{homeUrl}}" class="banner-preview__img" src="{{homeUrl}}" mode="aspectFill" />
+          <view wx:else class="banner-preview__empty"><text class="banner-preview__plus">＋</text><text>上传首页横幅</text></view>
+          <view class="banner-preview__mask">{{uploadingHome ? '上传中…' : '更换图片'}}</view>
+        </view>
+      </view>
+
+      <view class="banner-field">
+        <text class="banner-field__label">工作室页横幅</text>
+        <view class="banner-preview" bindtap="chooseImage" data-slot="studio">
+          <image wx:if="{{studioUrl}}" class="banner-preview__img" src="{{studioUrl}}" mode="aspectFill" />
+          <view wx:else class="banner-preview__empty"><text class="banner-preview__plus">＋</text><text>上传工作室横幅</text></view>
+          <view class="banner-preview__mask">{{uploadingStudio ? '上传中…' : '更换图片'}}</view>
+        </view>
+      </view>
+    </view>
+
+    <button class="btn-primary" bindtap="save" loading="{{saving}}" disabled="{{saving}}">保存</button>
+  </view>
+</view>

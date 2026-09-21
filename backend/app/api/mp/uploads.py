@@ -40,7 +40,7 @@ def get_upload_presign():
     if not ext:
         return {"error": f"file type not allowed, accepted: {', '.join(sorted(ALLOWED_EXTENSIONS))}"}, 400
     prefix = (payload.get("prefix") or "reviews").strip()
-    if prefix not in ("reviews", "studio-images"):
+    if prefix not in ("reviews", "studio-images", "banners"):
         return {"error": "invalid prefix"}, 400
     key = f"{prefix}/{user.teacher_id}/{uuid.uuid4().hex}{ext}"
 

@@ -22,6 +22,7 @@
         "service-records/service-records",
         "studio-submit/studio-submit",
         "studio-teachers/studio-teachers",
+        "banner-settings/banner-settings",
         "usage-guide/usage-guide",
         "submission-success/submission-success"
       ]

@@ -48,6 +48,7 @@
                 <div v-else class="teacher-avatar-fallback">{{ (teacher.name || '教').slice(0, 1) }}</div>
                 <div>
                   <strong>{{ teacher.name }}</strong>
+                  <span v-if="teacher.canManageBanner" class="banner-badge">横幅</span>
                   <span>{{ teacher.xileName || '—' }}</span>
                 </div>
               </div>
@@ -212,6 +213,13 @@
             个人简介
             <textarea v-model="editDraft.teachingSummary" placeholder="100 字以内" class="field-textarea"></textarea>
           </label>
+          <label class="field-full">
+            <span class="field-label">横幅管理权限</span>
+            <label class="checkbox-line">
+              <input type="checkbox" v-model="editDraft.canManageBanner" />
+              <span>允许该教师在小程序设置首页与工作室页横幅图</span>
+            </label>
+          </label>
           <label>
             教师头像
             <input type="file" accept="image/jpeg,image/png,image/webp" @change="uploadTeacherAsset($event, 'teacher-avatar', 'avatarUrl')" />
@@ -314,6 +322,7 @@ const editDraft = reactive({
   certificateUrl: '',
   residencesText: '',
   currentTierCertifiedOn: '',
+  canManageBanner: false,
 })
 
 async function loadTeachers() {
@@ -424,6 +433,7 @@ function openEdit(teacher) {
   editDraft.certifiedAt = teacher.certifiedAt || ''
   editDraft.expiryDate = teacher.expiryDate === '待确认' ? '' : (teacher.expiryDate || '')
   editDraft.level = teacher.tier || 'L2'
+  editDraft.canManageBanner = Boolean(teacher.canManageBanner)
   showEdit.value = true
 }
 
@@ -470,6 +480,7 @@ async function handleUpdate() {
       certificateUrl: editDraft.certificateUrl,
       residences: editDraft.residencesText.split(/[,，]/).map((item) => item.trim()).filter(Boolean),
       currentTierCertifiedOn: editDraft.currentTierCertifiedOn,
+      canManageBanner: editDraft.canManageBanner,
     })
   } catch (e) {
     toast(e?.response?.data?.error || '保存失败，请稍后重试', 'error')
@@ -609,5 +620,25 @@ async function uploadTeacherAsset(event, assetType, targetField) {
 .asset-preview--certificate {
   width: 96px;
   object-fit: contain;
+}
+
+.checkbox-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #34445c;
+  cursor: pointer;
+}
+
+.banner-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--brand-green-light, #edf5ef);
+  color: var(--brand-green, #426d58);
+  font-size: 11px;
+  font-weight: 600;
 }
 </style>

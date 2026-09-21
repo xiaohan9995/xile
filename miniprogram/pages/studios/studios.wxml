@@ -8,7 +8,7 @@
 
   <!-- Studio Hero Section -->
   <view class="studio-hero">
-    <image class="studio-hero__bg" src="https://images.unsplash.com/photo-1593810450967-f9c42742e326?auto=format&fit=crop&w=760&q=84" mode="aspectFill" />
+    <image class="studio-hero__bg" src="{{studioBanner || 'https://images.unsplash.com/photo-1593810450967-f9c42742e326?auto=format&fit=crop&w=760&q=84'}}" mode="aspectFill" />
     <view class="studio-hero__overlay"></view>
     <view class="studio-hero__content">
       <text class="studio-hero__eyebrow">认证场馆</text>

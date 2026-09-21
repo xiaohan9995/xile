@@ -15,12 +15,14 @@ Page({
     loadingMore: false,
     page: 1,
     hasMore: true,
+    studioBanner: '',
   },
 
   onLoad() {
     if (!auth.requireLogin('/pages/studios/studios')) return;
     this.setData({ statusBarHeight: app.globalData.statusBarHeight });
     this.loadStudios();
+    this.loadBanners();
   },
 
   onPullDownRefresh() {
@@ -32,6 +34,17 @@ Page({
   onReachBottom() {
     if (this.data.hasMore && !this.data.loadingMore) {
       this.loadMore();
+    }
+  },
+
+  async loadBanners() {
+    try {
+      const payload = await request({ url: '/api/mp/banners', silent: true });
+      if (payload && payload.studio) {
+        this.setData({ studioBanner: payload.studio });
+      }
+    } catch (e) {
+      console.warn('load banners failed', e.code || e.message);
     }
   },
 

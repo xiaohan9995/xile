@@ -1,0 +1,116 @@
+.banner-page {
+  min-height: 100vh;
+  background: var(--color-bg);
+}
+
+.banner-body {
+  padding: 28rpx 28rpx calc(64rpx + env(safe-area-inset-bottom));
+}
+
+.banner-intro {
+  padding: 18rpx 4rpx 30rpx;
+}
+
+.banner-intro__eyebrow {
+  display: block;
+  color: var(--color-gold);
+  font-size: 20rpx;
+  font-weight: 700;
+  letter-spacing: 3rpx;
+}
+
+.banner-intro__title {
+  display: block;
+  margin-top: 8rpx;
+  color: var(--color-text);
+  font-size: 42rpx;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.banner-intro__description {
+  display: block;
+  margin-top: 10rpx;
+  color: var(--color-muted);
+  font-size: 24rpx;
+  line-height: 1.55;
+}
+
+.banner-group {
+  overflow: hidden;
+  padding: 0 28rpx 28rpx;
+  border: 1rpx solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-card);
+}
+
+.banner-field {
+  padding-top: 26rpx;
+}
+
+.banner-field__label {
+  display: block;
+  margin-bottom: 13rpx;
+  color: var(--color-text);
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.banner-preview {
+  position: relative;
+  height: 320rpx;
+  border-radius: var(--radius-base);
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.banner-preview__img {
+  width: 100%;
+  height: 100%;
+}
+
+.banner-preview__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10rpx;
+  height: 100%;
+  color: var(--color-muted);
+  font-size: 24rpx;
+}
+
+.banner-preview__plus {
+  color: var(--color-primary-dark);
+  font-size: 52rpx;
+  font-weight: 700;
+}
+
+.banner-preview__mask {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 12rpx 0;
+  text-align: center;
+  color: #fff;
+  background: rgba(23, 32, 25, 0.45);
+  font-size: 22rpx;
+}
+
+.banner-group .btn-primary {
+  margin-top: 26rpx;
+}
+
+.banner-group .btn-primary:active {
+  opacity: 0.82;
+}
+
+@media (prefers-color-scheme: dark) {
+  .banner-page { background: #172019; }
+  .banner-intro__title,
+  .banner-field__label { color: #f1f5f1; }
+  .banner-intro__description { color: #b9c5bb; }
+  .banner-group { border-color: #405445; background: #202b22; }
+  .banner-preview { background: #18231b; }
+}

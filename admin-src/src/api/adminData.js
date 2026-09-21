@@ -31,6 +31,7 @@ export function mapAdminTeacher(teacher) {
     city: teacher.city,
     district: teacher.district,
     status: teacher.status,
+    canManageBanner: Boolean(teacher.canManageBanner),
     committeeRemark: teacher.committeeRemark,
     teachingSummary: normalizeMultiline(teacher.teachingSummary),
   }

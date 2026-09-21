@@ -187,6 +187,7 @@ def _certification_payload(teacher, include_reviews=True):
             "certificateUrl": file_url(teacher.certificate_url),
             "teachingSummary": teacher.detail.teaching_summary if teacher.detail else None,
             "phone": teacher.detail.phone if teacher.detail else None,
+            "canManageBanner": bool(teacher.can_manage_banner),
         },
         "reviewWindow": {
             "isOpen": bool(review_cycle and review_cycle.start_date <= today <= review_cycle.submission_deadline),

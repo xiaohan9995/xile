@@ -1,7 +1,7 @@
 <view class="home-page">
   <!-- Hero visual -->
   <view class="home-visual">
-    <image class="home-visual__img" src="https://images.unsplash.com/photo-1545389336-cf090694435e?auto=format&fit=crop&w=640&q=80" mode="aspectFill" alt="" />
+    <image class="home-visual__img" src="{{homeBanner || 'https://images.unsplash.com/photo-1545389336-cf090694435e?auto=format&fit=crop&w=640&q=80'}}" mode="aspectFill" alt="" />
     <view class="home-visual__overlay"></view>
     <view class="home-visual__text">
       <text class="home-visual__eyebrow">JOY YOGA · TEACHER CERTIFICATION</text>

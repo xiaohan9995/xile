@@ -15,6 +15,7 @@ Page({
     featuredLoading: false,
     homepageLoading: true,
     homepageLoadError: false,
+    homeBanner: '',
   },
 
   onLoad() {
@@ -23,6 +24,7 @@ Page({
     this.loadStats();
     this.loadHomepage();
     this.loadFeaturedTeachers();
+    this.loadBanners();
   },
 
   async loadStats() {
@@ -58,6 +60,17 @@ Page({
     }
   },
 
+  async loadBanners() {
+    try {
+      const payload = await request({ url: '/api/mp/banners', silent: true });
+      if (payload && payload.home) {
+        this.setData({ homeBanner: payload.home });
+      }
+    } catch (e) {
+      console.warn('load banners failed', e.code || e.message);
+    }
+  },
+
   async loadFeaturedTeachers() {
     if (this.data.featuredLoading) return;
     this.setData({ featuredLoading: true });
@@ -82,6 +95,7 @@ Page({
       this.loadStats(),
       this.loadHomepage(),
       this.loadFeaturedTeachers(),
+      this.loadBanners(),
     ]).finally(() => wx.stopPullDownRefresh());
   },
 

@@ -21,13 +21,20 @@ const displayAvatarUrl = (url) => {
 // 我的认证 page looks the same in both states. Only 关联教师身份 is reachable
 // for a guest — every other entry is a second-level page and gets intercepted.
 // 咨询服务 is rendered separately in the wxml as an open-type="contact" button.
-const teacherMenuItems = (teacherId) => [
-  { icon: '我', title: '我的信息', subtitle: '查看对外公开显示的师资页面', url: `/pages/teacher-detail/teacher-detail?id=${teacherId || ''}` },
-  { icon: '教', title: '教学记录', subtitle: '请定期提交你的教学传播活动记录', url: '/packageTeacher/teaching-records/teaching-records' },
-  { icon: '服', title: '服务记录', subtitle: '请定期提交你的服务推广活动记录', url: '/packageTeacher/service-records/service-records' },
-  { icon: '年', title: '年审信息', subtitle: '查看年审进度及提交申请', url: '/packageTeacher/review-records/review-records' },
-  { icon: '设', title: '个人设置', subtitle: '更新头像、密码及对外显示信息', url: '/packageTeacher/settings/settings' },
-];
+const teacherMenuItems = (teacherId, canManageBanner) => {
+  const items = [
+    { icon: '我', title: '我的信息', subtitle: '查看对外公开显示的师资页面', url: `/pages/teacher-detail/teacher-detail?id=${teacherId || ''}` },
+    { icon: '教', title: '教学记录', subtitle: '请定期提交你的教学传播活动记录', url: '/packageTeacher/teaching-records/teaching-records' },
+    { icon: '服', title: '服务记录', subtitle: '请定期提交你的服务推广活动记录', url: '/packageTeacher/service-records/service-records' },
+    { icon: '年', title: '年审信息', subtitle: '查看年审进度及提交申请', url: '/packageTeacher/review-records/review-records' },
+    { icon: '设', title: '个人设置', subtitle: '更新头像、密码及对外显示信息', url: '/packageTeacher/settings/settings' },
+  ];
+  // 仅授权教师可见：guest 调用 teacherMenuItems(null) 时不会带上此入口。
+  if (canManageBanner) {
+    items.push({ icon: '图', title: '横幅设置', subtitle: '设置首页与工作室页面横幅图', url: '/packageTeacher/banner-settings/banner-settings' });
+  }
+  return items;
+};
 
 // 关联教师身份 stays open to guests; it is the only second-level entry a
 // guest may enter, so it keeps its normal arrow instead of the lock hint.
@@ -152,7 +159,7 @@ Page({
           daysLeft: t.daysLeft || 0,
         },
         primaryAction: {},
-        menuItems: teacherMenuItems(t.id),
+        menuItems: teacherMenuItems(t.id, t.canManageBanner),
       });
     } catch (err) {
       // Logged in but no teacher record is linked yet. Keep the 讲师服务 list

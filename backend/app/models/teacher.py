@@ -16,6 +16,8 @@ class Teacher(db.Model):
     status = db.Column(db.String(16), default="active", nullable=False)  # active/expiring/expired/hidden
     # 列表排序号：按导入文件顺序递增；0 表示未排序，排在最末。
     sort_order = db.Column(db.Integer, default=0, nullable=False)
+    # 是否可维护小程序首页/工作室页横幅图（管理后台授权）。
+    can_manage_banner = db.Column(db.Boolean, default=False, nullable=False)
     first_certified_on = db.Column(db.Date)
     valid_until = db.Column(db.Date, index=True)
     current_tier_certified_on = db.Column(db.Date)

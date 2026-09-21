@@ -39,6 +39,7 @@ def teacher_list():
             "city": t.city,
             "district": t.district,
             "status": t.status,
+            "canManageBanner": bool(t.can_manage_banner),
             "validUntil": _date_text(t.valid_until),
             "certifiedAt": _date_text(t.first_certified_on),
             "currentTierCertifiedOn": _date_text(t.current_tier_certified_on),
@@ -76,6 +77,7 @@ def get_teacher_detail(teacher_id):
         "city": teacher.city,
         "district": teacher.district,
         "status": teacher.status,
+        "canManageBanner": bool(teacher.can_manage_banner),
         "validUntil": _date_text(teacher.valid_until),
         "certifiedAt": _date_text(teacher.first_certified_on),
         "currentTierCertifiedOn": _date_text(teacher.current_tier_certified_on),
@@ -157,6 +159,8 @@ def update_teacher(teacher_id):
         teacher.avatar_url = storage_reference((payload["avatarUrl"] or "").strip())
     if "certificateUrl" in payload:
         teacher.certificate_url = storage_reference((payload["certificateUrl"] or "").strip())
+    if "canManageBanner" in payload:
+        teacher.can_manage_banner = bool(payload["canManageBanner"])
 
     if "committeeRemark" in payload or "phone" in payload or "specialties" in payload or "teachingSummary" in payload:
         if not teacher.detail:
