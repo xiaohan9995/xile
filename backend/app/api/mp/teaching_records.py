@@ -3,6 +3,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 
 from ...extensions import db
 from ...models import TeachingRecord, User
+from ...utils.storage import file_url as _file_url
 from . import mp_bp
 from .helpers import _parse_record_date
 
@@ -17,7 +18,7 @@ def _payload(record):
         "id": record.id, "taughtOn": record.taught_on.strftime("%Y-%m"), "platform": record.platform,
         "title": record.title, "durationHours": float(record.duration_hours) if record.duration_hours is not None else None,
         "participantCount": record.participant_count, "description": record.description,
-        "evidenceKey": record.evidence_key, "status": record.status,
+        "evidenceKey": record.evidence_key, "evidenceUrl": _file_url(record.evidence_key), "status": record.status,
     }
 
 

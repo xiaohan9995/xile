@@ -6,7 +6,7 @@ Page({
   data: {
     statusBarHeight: 20, loading: false, saving: false, records: [], showForm: false, editingId: '',
     types: ['公益服务', '活动推广', '社群服务', '行政支持', '其他'], typeIndex: 0,
-    form: { servedOn: '', title: '', location: '', description: '', evidenceKey: '', evidenceName: '' },
+    form: { servedOn: '', title: '', location: '', description: '', evidenceKey: '', evidenceName: '', evidenceUrl: '' },
   },
   onLoad() {
     if (!auth.requireAuth('/packageTeacher/service-records/service-records')) return;
@@ -52,13 +52,15 @@ Page({
           wx.showLoading({ title: '上传佐证中' });
           const presign = await request({ url: '/api/mp/upload/presign', method: 'POST', data: { filename } });
           let fileKey = presign.fileKey;
+          let evidenceUrl = presign.downloadUrl || presign.publicUrl || '';
           if (presign.uploadUrl === '/api/mp/upload/file') {
             const result = await uploadFile({ url: '/api/mp/upload/file', filePath: path, name: 'file' });
             fileKey = result.fileKey || presign.fileKey;
+            evidenceUrl = result.url || evidenceUrl;
           } else {
             await uploadFile({ url: presign.uploadUrl, filePath: path, name: 'file' });
           }
-          this.setData({ 'form.evidenceKey': fileKey, 'form.evidenceName': filename });
+          this.setData({ 'form.evidenceKey': fileKey, 'form.evidenceName': filename, 'form.evidenceUrl': evidenceUrl });
         } catch (error) { wx.showToast({ title: error.message || '佐证上传失败', icon: 'none' }); }
         finally { wx.hideLoading(); }
       },
@@ -75,9 +77,16 @@ Page({
       showForm: true,
       form: {
         servedOn: record.servedOn || '', title: record.title || '', location: record.location || '',
-        description: record.description || '', evidenceKey: record.evidenceKey || '', evidenceName: '',
+        description: record.description || '', evidenceKey: record.evidenceKey || '',
+        evidenceName: record.evidenceKey ? (record.evidenceKey.split('/').pop() || '已上传附件') : '',
+        evidenceUrl: record.evidenceUrl || '',
       },
     });
+  },
+  previewEvidence() {
+    const url = this.data.form.evidenceUrl;
+    if (!url) return;
+    wx.previewImage({ urls: [url], current: url });
   },
   async submit(status = 'submitted') {
     const { form, types, typeIndex, editingId } = this.data;
@@ -90,7 +99,7 @@ Page({
       } else {
         await request({ url: '/api/mp/service-records', method: 'POST', data });
       }
-      this.setData({ showForm: false, editingId: '', typeIndex: 0, form: { servedOn: '', title: '', location: '', description: '', evidenceKey: '', evidenceName: '' } });
+      this.setData({ showForm: false, editingId: '', typeIndex: 0, form: { servedOn: '', title: '', location: '', description: '', evidenceKey: '', evidenceName: '', evidenceUrl: '' } });
       await this.loadRecords();
       wx.showToast({ title: status === 'draft' ? '草稿已保存' : (editingId ? '草稿已提交' : '服务记录已提交'), icon: 'none' });
     } catch (error) { wx.showToast({ title: error.message || '提交失败，请稍后重试', icon: 'none' }); }

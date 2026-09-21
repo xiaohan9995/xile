@@ -9,7 +9,7 @@
       <input class="field" placeholder="服务活动名称" value="{{form.title}}" bindinput="input" data-field="title" />
       <input class="field" placeholder="服务地点或对象（可选）" value="{{form.location}}" bindinput="input" data-field="location" />
       <textarea class="field field--area" placeholder="服务内容说明（可选）" value="{{form.description}}" bindinput="input" data-field="description" />
-      <view class="evidence-row" bindtap="chooseEvidence"><text>添加佐证附件（可选）</text><text wx:if="{{form.evidenceName}}">{{form.evidenceName}}</text></view>
+      <view class="evidence-row" bindtap="chooseEvidence"><text>{{form.evidenceKey ? '更换佐证附件' : '添加佐证附件（可选）'}}</text><image wx:if="{{form.evidenceUrl}}" class="evidence-thumb" src="{{form.evidenceUrl}}" mode="aspectFill" catchtap="previewEvidence" /><text wx:elif="{{form.evidenceName}}" class="evidence-name">{{form.evidenceName}}</text></view>
       <view class="record-actions"><button class="btn-secondary" bindtap="saveDraft" loading="{{saving}}">保存草稿</button><button class="btn-primary" bindtap="submitRecord" loading="{{saving}}">提交记录</button></view>
     </view>
     <view wx:if="{{!loading && records.length === 0}}" class="empty"><text class="empty__mark">01</text><text>暂无服务记录</text><text>第一条服务记录可成为年审材料的一部分。</text></view>

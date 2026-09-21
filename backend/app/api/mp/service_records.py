@@ -3,6 +3,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 
 from ...extensions import db
 from ...models import ServiceRecord, User
+from ...utils.storage import file_url as _file_url
 from . import mp_bp
 from .helpers import _parse_record_date
 
@@ -21,6 +22,7 @@ def _payload(record):
         "location": record.location,
         "description": record.description,
         "evidenceKey": record.evidence_key,
+        "evidenceUrl": _file_url(record.evidence_key),
         "status": record.status,
     }
 

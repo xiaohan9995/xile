@@ -10,7 +10,9 @@
 .field--area { min-height:160rpx; }
 .record-actions { display:flex; gap:16rpx; }
 .record-actions button { flex:1; }
-.evidence-row { display:flex; justify-content:space-between; gap:20rpx; margin-bottom:18rpx; padding:18rpx; color:var(--color-primary-dark); border:1rpx dashed var(--color-primary); border-radius:var(--radius-base); font-size:24rpx; }
+.evidence-row { display:flex; align-items:center; justify-content:space-between; gap:20rpx; margin-bottom:18rpx; padding:18rpx; color:var(--color-primary-dark); border:1rpx dashed var(--color-primary); border-radius:var(--radius-base); font-size:24rpx; }
+.evidence-thumb { flex-shrink:0; width:120rpx; height:120rpx; border-radius:var(--radius-base); border:1rpx solid var(--color-line); }
+.evidence-name { max-width:300rpx; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--color-muted); font-size:22rpx; }
 .record-card { position:relative; overflow:hidden; }
 .record-card::before { content:""; position:absolute; top:0; bottom:0; left:0; width:6rpx; background:linear-gradient(var(--color-primary),var(--color-gold)); }
 .record-index { display:block; margin-bottom:12rpx; color:var(--color-gold); font:700 19rpx "SF Mono", monospace; letter-spacing:2rpx; }
