@@ -51,8 +51,8 @@
         value="{{form.idNumber}}"
         data-field="idNumber"
         bindinput="onFieldInput"
-        placeholder="请输入18位身份证号"
-        maxlength="18"
+        placeholder="请输入身份证号（至少6位）"
+        maxlength="32"
       />
     </view>
 

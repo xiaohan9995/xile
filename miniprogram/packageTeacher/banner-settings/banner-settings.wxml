@@ -32,6 +32,10 @@
       </view>
     </view>
 
-    <button class="btn-primary" bindtap="save" loading="{{saving}}" disabled="{{saving}}">保存</button>
+    <button class="save-button" bindtap="save" loading="{{saving}}" disabled="{{saving}}">
+      <view class="save-button__icon"></view>
+      <text>保存</text>
+    </button>
+    <text class="save-note">保存后立即生效</text>
   </view>
 </view>

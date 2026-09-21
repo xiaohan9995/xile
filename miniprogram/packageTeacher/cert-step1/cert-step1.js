@@ -62,8 +62,8 @@ Page({
       return;
     }
 
-    if (!idNumber || idNumber.length !== 18) {
-      this.setData({ error: '请输入18位身份证号' });
+    if (!idNumber || idNumber.length < 6) {
+      this.setData({ error: '请输入身份证号（至少6位）' });
       return;
     }
 
