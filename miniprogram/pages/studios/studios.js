@@ -20,7 +20,11 @@ Page({
 
   onLoad() {
     if (!auth.requireLogin('/pages/studios/studios')) return;
-    this.setData({ statusBarHeight: app.globalData.statusBarHeight });
+    this.setData({
+      statusBarHeight: app.globalData.statusBarHeight,
+      // 先用上次缓存的稳定 URL 同步渲染，避免进入页面先闪一下兜底图。
+      studioBanner: wx.getStorageSync('studio_banner_url') || '',
+    });
     this.loadStudios();
     this.loadBanners();
   },
@@ -40,9 +44,11 @@ Page({
   async loadBanners() {
     try {
       const payload = await request({ url: '/api/mp/banners', silent: true });
-      if (payload && payload.studio) {
-        this.setData({ studioBanner: payload.studio });
-      }
+      if (!payload) return;
+      const studio = payload.studio || '';
+      this.setData({ studioBanner: studio });
+      if (studio) wx.setStorageSync('studio_banner_url', studio);
+      else wx.removeStorageSync('studio_banner_url');
     } catch (e) {
       console.warn('load banners failed', e.code || e.message);
     }

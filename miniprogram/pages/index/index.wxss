@@ -31,7 +31,7 @@
   right: 0;
   left: 40rpx;
   right: 40rpx;
-  bottom: 56rpx;
+  bottom: 24rpx;
   text-align: left;
   z-index: 2;
 }

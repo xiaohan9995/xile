@@ -29,9 +29,16 @@ const teacherMenuItems = (teacherId, canManageBanner) => {
     { icon: '年', title: '年审信息', subtitle: '查看年审进度及提交申请', url: '/packageTeacher/review-records/review-records' },
     { icon: '设', title: '个人设置', subtitle: '更新头像、密码及对外显示信息', url: '/packageTeacher/settings/settings' },
   ];
-  // 仅授权教师可见：guest 调用 teacherMenuItems(null) 时不会带上此入口。
-  if (canManageBanner) {
-    items.push({ icon: '图', title: '横幅设置', subtitle: '设置首页与工作室页面横幅图', url: '/packageTeacher/banner-settings/banner-settings' });
+  // 横幅设置仅对教师可见：guest 调用 teacherMenuItems(null) 时不会带上此入口；
+  // 有 canManageBanner 权限才能进入，否则点击提示无权限。
+  if (teacherId) {
+    items.push({
+      icon: '图',
+      title: '首图设置',
+      subtitle: '设置首页与工作室页面首图',
+      url: '/packageTeacher/banner-settings/banner-settings',
+      bannerLocked: !canManageBanner,
+    });
   }
   return items;
 };
@@ -183,6 +190,7 @@ Page({
   onMenuTap(e) {
     const url = e.currentTarget.dataset.url;
     const action = e.currentTarget.dataset.action;
+    const bannerLocked = e.currentTarget.dataset.bannerLocked;
     if (this.data.isGuest) {
       // 关联教师身份 is open to guests; everything else just shows a hint
       // instead of opening a page that would bounce them.
@@ -191,6 +199,10 @@ Page({
         return;
       }
       wx.showToast({ title: '仅对教师开放', icon: 'none' });
+      return;
+    }
+    if (bannerLocked) {
+      wx.showToast({ title: '无权限', icon: 'none' });
       return;
     }
     if (action === 'submit-review' && !this.data.canSubmitReview) {

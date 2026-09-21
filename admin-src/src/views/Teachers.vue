@@ -48,7 +48,6 @@
                 <div v-else class="teacher-avatar-fallback">{{ (teacher.name || '教').slice(0, 1) }}</div>
                 <div>
                   <strong>{{ teacher.name }}</strong>
-                  <span v-if="teacher.canManageBanner" class="banner-badge">横幅</span>
                   <span>{{ teacher.xileName || '—' }}</span>
                 </div>
               </div>
@@ -642,14 +641,4 @@ async function uploadTeacherAsset(event, assetType, targetField) {
   accent-color: var(--brand-green, #426d58);
 }
 
-.banner-badge {
-  display: inline-block;
-  margin-left: 6px;
-  padding: 1px 6px;
-  border-radius: 4px;
-  background: var(--brand-green-light, #edf5ef);
-  color: var(--brand-green, #426d58);
-  font-size: 11px;
-  font-weight: 600;
-}
 </style>

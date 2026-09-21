@@ -9,14 +9,14 @@
   <!-- Studio Hero Section -->
   <view class="studio-hero">
     <image class="studio-hero__bg" src="{{studioBanner || 'https://images.unsplash.com/photo-1593810450967-f9c42742e326?auto=format&fit=crop&w=760&q=84'}}" mode="aspectFill" />
-    <view class="studio-hero__overlay"></view>
     <view class="studio-hero__content">
-      <text class="studio-hero__eyebrow">认证场馆</text>
       <text class="studio-hero__heading">心对心，眼对眼，呼吸对呼吸</text>
-      <view class="studio-hero__badge">
-        <text class="studio-hero__badge-text">已收录 {{studios.length || 36}} 家喜乐瑜伽认证工作室</text>
-      </view>
     </view>
+  </view>
+
+  <!-- Badge -->
+  <view class="studio-hero__badge">
+    <text class="studio-hero__badge-text">已收录 {{studios.length || 36}} 家喜乐瑜伽认证工作室</text>
   </view>
 
   <!-- Search Box -->
@@ -32,7 +32,7 @@
         bindconfirm="loadStudios"
       />
       <view class="search-box__btn" bindtap="loadStudios">
-        <text class="search-box__btn-icon">⌕</text>
+        <view class="search-box__btn-icon"></view>
       </view>
     </view>
   </view>

@@ -26,41 +26,45 @@ def _validate_extension(filename):
     return ext
 
 
-def _post_object_form(secret_id, secret_key, key, max_bytes, expires=600):
+def _post_object_form(secret_id, secret_key, key, max_bytes, expires=600, public_read=False):
     """构造 COS POST Object 表单直传字段（永久密钥，V5 签名）。
 
     wx.uploadFile 只能发 POST（multipart/form-data），不能发 PUT，因此用
     PUT 预签名 URL 会得到 MalformedPOSTRequest。这里按 COS POST Object
     规范生成 policy + q-signature，前端用 wx.uploadFile 直传存储桶。
+    public_read=True 时给对象加 public-read ACL，使其稳定 URL 可直接访问。
     """
     now = int(time.time())
     key_time = f"{now};{now + expires}"
     sign_key = hmac.new(secret_key.encode("utf-8"), key_time.encode("utf-8"), hashlib.sha1).hexdigest()
 
     expiration = datetime.utcfromtimestamp(now + expires).strftime("%Y-%m-%dT%H:%M:%S.000Z")
-    policy = {
-        "expiration": expiration,
-        "conditions": [
-            {"key": key},
-            ["content-length-range", 1, max_bytes],
-            {"q-sign-algorithm": "sha1"},
-            {"q-ak": secret_id},
-            {"q-sign-time": key_time},
-        ],
+    conditions = [
+        {"key": key},
+        ["content-length-range", 1, max_bytes],
+        {"q-sign-algorithm": "sha1"},
+        {"q-ak": secret_id},
+        {"q-sign-time": key_time},
+    ]
+    form = {
+        "key": key,
+        "q-sign-algorithm": "sha1",
+        "q-ak": secret_id,
+        "q-key-time": key_time,
     }
+    if public_read:
+        conditions.append({"acl": "public-read"})
+        form["acl"] = "public-read"
+
+    policy = {"expiration": expiration, "conditions": conditions}
     policy_text = json.dumps(policy, separators=(",", ":"), ensure_ascii=False)
     policy_b64 = base64.b64encode(policy_text.encode("utf-8")).decode("utf-8")
     string_to_sign = hashlib.sha1(policy_text.encode("utf-8")).hexdigest()
     q_signature = hmac.new(sign_key.encode("utf-8"), string_to_sign.encode("utf-8"), hashlib.sha1).hexdigest()
 
-    return {
-        "key": key,
-        "policy": policy_b64,
-        "q-sign-algorithm": "sha1",
-        "q-ak": secret_id,
-        "q-key-time": key_time,
-        "q-signature": q_signature,
-    }
+    form["policy"] = policy_b64
+    form["q-signature"] = q_signature
+    return form
 
 
 @mp_bp.post("/upload/presign")
@@ -88,7 +92,7 @@ def get_upload_presign():
     key = f"{prefix}/{user.teacher_id}/{uuid.uuid4().hex}{ext}"
 
     if cos_is_configured():
-        form = _post_object_form(cos_secret_id, cos_secret_key, key, 10485760)
+        form = _post_object_form(cos_secret_id, cos_secret_key, key, 10485760, public_read=(prefix == "banners"))
         return {
             # POST Object 直传的目标是存储桶根地址，key 放在 formData 里。
             "uploadUrl": f"https://{cos_bucket}.cos.{cos_region}.myqcloud.com/",

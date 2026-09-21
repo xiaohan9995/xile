@@ -2,28 +2,28 @@
   <div class="banners-page">
     <div class="page-head">
       <div>
-        <h1>页面横幅</h1>
-        <p>设置小程序首页与工作室列表页的顶部横幅图，保存后立即生效</p>
+        <h1>首图设置</h1>
+        <p>设置小程序首页与工作室列表页的顶部首图，保存后立即生效</p>
       </div>
       <button class="primary-btn" :disabled="isLoading || isSaving" @click="handleSave">
-        {{ isSaving ? '保存中…' : '保存横幅' }}
+        {{ isSaving ? '保存中…' : '保存首图' }}
       </button>
     </div>
 
     <section v-if="loadError" class="banners-state banners-state--error" role="alert">
-      <strong>横幅配置加载失败</strong>
+      <strong>首图配置加载失败</strong>
       <span>{{ loadError }}</span>
       <button type="button" class="text-btn" @click="load">重新加载</button>
     </section>
 
-    <section v-else class="panel banners-panel" aria-label="横幅设置">
+    <section v-else class="panel banners-panel" aria-label="首图设置">
       <div class="banner-field">
         <div class="banner-field__head">
-          <h2>首页横幅</h2>
+          <h2>首页首图</h2>
           <p>小程序首页顶部大图</p>
         </div>
         <div class="banner-upload">
-          <img v-if="draft.home" class="banner-preview" :src="draft.home" alt="首页横幅预览" />
+          <img v-if="draft.home" class="banner-preview" :src="draft.home" alt="首页首图预览" />
           <div v-else class="banner-preview banner-preview--empty">未设置</div>
           <label class="banner-upload__action" :class="{ 'is-uploading': uploading === 'home' }">
             {{ uploading === 'home' ? '上传中…' : '上传图片' }}
@@ -34,11 +34,11 @@
 
       <div class="banner-field">
         <div class="banner-field__head">
-          <h2>工作室页横幅</h2>
+          <h2>工作室页首图</h2>
           <p>瑜伽工作室列表页顶部大图</p>
         </div>
         <div class="banner-upload">
-          <img v-if="draft.studio" class="banner-preview" :src="draft.studio" alt="工作室页横幅预览" />
+          <img v-if="draft.studio" class="banner-preview" :src="draft.studio" alt="工作室页首图预览" />
           <div v-else class="banner-preview banner-preview--empty">未设置</div>
           <label class="banner-upload__action" :class="{ 'is-uploading': uploading === 'studio' }">
             {{ uploading === 'studio' ? '上传中…' : '上传图片' }}
@@ -109,7 +109,7 @@ async function handleSave() {
   isSaving.value = true
   try {
     await saveBanners({ home: draft.home, studio: draft.studio })
-    saveMsg.value = '横幅已保存，小程序端立即生效'
+    saveMsg.value = '首图已保存，小程序端立即生效'
     setTimeout(() => { saveMsg.value = '' }, 2000)
   } catch (e) {
     saveMsg.value = '保存失败，请重试'

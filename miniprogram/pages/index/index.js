@@ -20,7 +20,11 @@ Page({
 
   onLoad() {
     if (!auth.requireLogin('/pages/index/index')) return;
-    this.setData({ statusBarHeight: app.globalData.statusBarHeight });
+    this.setData({
+      statusBarHeight: app.globalData.statusBarHeight,
+      // 先用上次缓存的稳定 URL 同步渲染，避免进入页面先闪一下兜底图。
+      homeBanner: wx.getStorageSync('home_banner_url') || '',
+    });
     this.loadStats();
     this.loadHomepage();
     this.loadFeaturedTeachers();
@@ -63,9 +67,11 @@ Page({
   async loadBanners() {
     try {
       const payload = await request({ url: '/api/mp/banners', silent: true });
-      if (payload && payload.home) {
-        this.setData({ homeBanner: payload.home });
-      }
+      if (!payload) return;
+      const home = payload.home || '';
+      this.setData({ homeBanner: home });
+      if (home) wx.setStorageSync('home_banner_url', home);
+      else wx.removeStorageSync('home_banner_url');
     } catch (e) {
       console.warn('load banners failed', e.code || e.message);
     }

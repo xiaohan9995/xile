@@ -66,6 +66,7 @@
         bindtap="onMenuTap"
         data-url="{{item.url}}"
         data-action="{{item.action}}"
+        data-banner-locked="{{item.bannerLocked}}"
       >
         <view class="menu-item-left">
           <text class="menu-icon">{{item.icon}}</text>
