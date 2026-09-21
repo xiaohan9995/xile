@@ -22,6 +22,7 @@ const routes = [
   { path: '/analytics', name: 'Analytics', component: () => import('../views/Analytics.vue'), meta: { roles: ['super_admin'] } },
   { path: '/permissions', name: 'Permissions', component: () => import('../views/Permissions.vue'), meta: { roles: ['super_admin'] } },
   { path: '/settings', name: 'Settings', component: () => import('../views/Settings.vue'), meta: { roles: ['super_admin'] } },
+  { path: '/banners', name: 'Banners', component: () => import('../views/Banners.vue'), meta: { roles: ['admin', 'super_admin'] } },
 ]
 
 const router = createRouter({

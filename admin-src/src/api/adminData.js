@@ -178,6 +178,14 @@ export async function fetchSettings() {
   return api.get('/settings')
 }
 
+export async function fetchBanners() {
+  return api.get('/banners')
+}
+
+export async function saveBanners(data) {
+  return api.put('/banner-config', data)
+}
+
 export async function fetchPermissions() {
   const payload = await api.get('/permissions')
   return payload.items || []

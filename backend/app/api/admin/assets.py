@@ -15,11 +15,12 @@ _ASSET_PREFIXES = {
     "teacher-certificate": "teacher-certificates",
     "studio-cover": "studio-covers",
     "studio-contact": "studio-contacts",
+    "banner": "banners",
 }
 
-# 需要公开读、且以稳定 COS 地址存库的资源类型（头像/封面/联系工作室图片）。
+# 需要公开读、且以稳定 COS 地址存库的资源类型（头像/封面/联系工作室图片/横幅）。
 # 其余（证书等）返回临时签名地址，仅用于即时预览。
-_PUBLIC_ASSET_TYPES = {"teacher-avatar", "studio-cover", "studio-contact"}
+_PUBLIC_ASSET_TYPES = {"teacher-avatar", "studio-cover", "studio-contact", "banner"}
 _IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
 _IMAGE_CONTENT_TYPES = {
     ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp",

@@ -215,10 +215,10 @@
           </label>
           <label class="field-full">
             <span class="field-label">横幅管理权限</span>
-            <label class="checkbox-line">
+            <span class="checkbox-line">
               <input type="checkbox" v-model="editDraft.canManageBanner" />
               <span>允许该教师在小程序设置首页与工作室页横幅图</span>
-            </label>
+            </span>
           </label>
           <label>
             教师头像
@@ -627,8 +627,19 @@ async function uploadTeacherAsset(event, assetType, targetField) {
   align-items: center;
   gap: 8px;
   font-size: 13px;
+  font-weight: 400;
   color: #34445c;
   cursor: pointer;
+}
+
+.checkbox-line input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  flex: 0 0 auto;
+  padding: 0;
+  border-radius: 4px;
+  accent-color: var(--brand-green, #426d58);
 }
 
 .banner-badge {

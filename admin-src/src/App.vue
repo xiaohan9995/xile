@@ -36,13 +36,14 @@
                 <RouterLink to="/teaching-records"><i>04</i>教学记录</RouterLink>
                 <RouterLink to="/service-records"><i>05</i>服务记录</RouterLink>
                 <RouterLink to="/studios"><i>06</i>认证场馆</RouterLink>
+                <RouterLink to="/banners"><i>07</i>页面横幅</RouterLink>
               </template>
               <template v-if="isSuperAdmin">
                 <span class="menu-label">系统</span>
-                <RouterLink to="/import"><i>06</i>批量导入</RouterLink>
-                <RouterLink to="/analytics"><i>07</i>数据分析</RouterLink>
-                <RouterLink to="/permissions"><i>08</i>账号与权限</RouterLink>
-                <RouterLink to="/settings"><i>09</i>认证规则</RouterLink>
+                <RouterLink to="/import"><i>08</i>批量导入</RouterLink>
+                <RouterLink to="/analytics"><i>09</i>数据分析</RouterLink>
+                <RouterLink to="/permissions"><i>10</i>账号与权限</RouterLink>
+                <RouterLink to="/settings"><i>11</i>认证规则</RouterLink>
               </template>
             </nav>
           </div>
