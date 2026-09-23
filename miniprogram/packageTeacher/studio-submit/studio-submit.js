@@ -1,4 +1,4 @@
-const { request, presignUpload } = require('../../utils/request');
+const { request, base64Upload } = require('../../utils/request');
 const auth = require('../../utils/auth');
 const { normalizeMultiline, stripParenthetical } = require('../../utils/text');
 const app = getApp();
@@ -199,10 +199,9 @@ Page({
     this.setData({ 'form.tags': tags });
   },
 
-  // 工作室图片上传：预签名直传 COS，绕开未备案的 API 公网域名（无法作为
-  // uploadFile 合法域名）。返回可预览的下载地址（GET 签名，1 小时有效）。
+  // 工作室图片上传：base64 经 callContainer 上传，绕开 uploadFile 合法域名限制。
   async uploadStudioImage(path, filename) {
-    const { url } = await presignUpload(path, filename, 'studio-images');
+    const { url } = await base64Upload(path, filename, 'studio-images');
     return url;
   },
 
@@ -217,7 +216,7 @@ Page({
       success: async (res) => {
         const files = res.tempFiles || [];
         for (const file of files) {
-          if (file.size > 10 * 1024 * 1024) { wx.showToast({ title: '图片不能超过10MB', icon: 'none' }); continue; }
+          if (file.size > 8 * 1024 * 1024) { wx.showToast({ title: '图片不能超过8MB', icon: 'none' }); continue; }
           const path = file.tempFilePath;
           const matched = path.match(/[\w-]+\.(jpg|jpeg|png|gif|webp)$/i);
           const filename = matched ? matched[0] : 'studio.jpg';
@@ -252,7 +251,7 @@ Page({
       success: async (res) => {
         const file = (res.tempFiles || [])[0];
         if (!file) return;
-        if (file.size > 10 * 1024 * 1024) { wx.showToast({ title: '图片不能超过10MB', icon: 'none' }); return; }
+        if (file.size > 8 * 1024 * 1024) { wx.showToast({ title: '图片不能超过8MB', icon: 'none' }); return; }
         const path = file.tempFilePath;
         const matched = path.match(/[\w-]+\.(jpg|jpeg|png|gif|webp)$/i);
         const filename = matched ? matched[0] : 'studio-contact.jpg';

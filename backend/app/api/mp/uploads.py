@@ -1,6 +1,8 @@
 import base64
+import binascii
 import hashlib
 import hmac
+import io
 import json
 import os
 import time
@@ -12,11 +14,14 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 from werkzeug.utils import secure_filename
 
 from ...extensions import db, limiter
-from ...models import User
+from ...models import Teacher, User
 from ...utils.storage import StorageNotConfiguredError, cos_is_configured, file_url, object_url, upload_to_cos
 from . import mp_bp
 
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".pdf"}
+_IMAGE_CONTENT_TYPES = {
+    ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp", ".gif": "image/gif",
+}
 
 
 def _validate_extension(filename):
@@ -199,6 +204,58 @@ def upload_studio_image():
     # 私有存储桶下，稳定对象 URL 无法直接访问；返回签名 URL 供前端即时预览。
     # 提交后 apply_pending_draft 会归一化为稳定 URL 存库，回显时再重新签名。
     return {"url": file_url(url)}
+
+
+@mp_bp.post("/upload/base64")
+@limiter.limit("20 per minute")
+@jwt_required()
+def upload_image_base64():
+    """base64 图片直传：wx.cloud.callContainer 不支持 multipart，且 wx.uploadFile
+    需要合法域名。图片以 base64 JSON 经 callContainer 上传，后端解码后存 COS。
+    """
+    user = db.session.get(User, int(get_jwt_identity()))
+    if not user or not user.teacher_id:
+        return {"error": "teacher access required"}, 403
+
+    payload = request.get_json(silent=True) or {}
+    prefix = (payload.get("prefix") or "reviews").strip()
+    if prefix not in ("reviews", "studio-images", "banners"):
+        return {"error": "invalid prefix"}, 400
+    if prefix == "banners":
+        teacher = db.session.get(Teacher, user.teacher_id)
+        if not teacher or not teacher.can_manage_banner:
+            return {"error": "无横幅管理权限"}, 403
+
+    raw = payload.get("imageBase64") or payload.get("base64") or ""
+    if not raw:
+        return {"error": "图片数据缺失"}, 400
+    try:
+        encoded = raw.split(",", 1)[-1]
+        image_bytes = base64.b64decode(encoded, validate=True)
+    except (ValueError, binascii.Error):
+        return {"error": "图片数据无效"}, 400
+    if len(image_bytes) > 8 * 1024 * 1024:
+        return {"error": "图片不能超过8MB"}, 413
+
+    filename = (payload.get("filename") or "image.jpg").strip()
+    ext = os.path.splitext(secure_filename(filename))[1].lower()
+    if ext not in _IMAGE_CONTENT_TYPES:
+        return {"error": "仅支持 JPG/PNG/WebP/GIF 图片"}, 400
+
+    key = f"{prefix}/{user.teacher_id}/{uuid.uuid4().hex}{ext}"
+    try:
+        url = upload_to_cos(io.BytesIO(image_bytes), key, _IMAGE_CONTENT_TYPES[ext], public_read=False)
+    except StorageNotConfiguredError:
+        if not (current_app.debug or current_app.testing):
+            return {"error": "对象存储未配置，无法上传"}, 503
+        filename = f"{uuid.uuid4().hex}{ext}"
+        upload_dir = os.path.join(current_app.instance_path, "..", "uploads", prefix)
+        os.makedirs(upload_dir, exist_ok=True)
+        with open(os.path.join(upload_dir, filename), "wb") as fh:
+            fh.write(image_bytes)
+        key = f"{prefix}/{filename}"
+
+    return {"fileKey": key, "url": file_url(key)}
 
 
 @mp_bp.get("/uploads/studio-images/<path:filename>")

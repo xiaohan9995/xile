@@ -257,4 +257,20 @@ const presignUpload = async (filePath, filename, prefix) => {
   return { fileKey: presign.fileKey, url: presign.downloadUrl || presign.publicUrl };
 };
 
-module.exports = { request, uploadFile, presignUpload, RequestError, normalizeUserMessage };
+// base64 直传：wx.cloud.callContainer 不支持 multipart、wx.uploadFile 需要合法域名，
+// 因此把图片读成 base64 经 callContainer 走 JSON 上传（与头像上传同方案）。
+// 返回 { fileKey, url }，url 为可预览的签名下载地址。图片上限 8MB（base64 约 10.7MB）。
+const base64Upload = async (filePath, filename, prefix) => {
+  const fs = wx.getFileSystemManager();
+  const file = await new Promise((resolve, reject) => {
+    fs.readFile({ filePath, encoding: 'base64', success: resolve, fail: reject });
+  });
+  const result = await request({
+    url: '/api/mp/upload/base64',
+    method: 'POST',
+    data: prefix ? { prefix, imageBase64: file.data, filename } : { imageBase64: file.data, filename },
+  });
+  return { fileKey: result.fileKey, url: result.url };
+};
+
+module.exports = { request, uploadFile, presignUpload, base64Upload, RequestError, normalizeUserMessage };
