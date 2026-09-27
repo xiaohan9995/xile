@@ -257,11 +257,12 @@ const presignUpload = async (filePath, filename, prefix) => {
   return { fileKey: presign.fileKey, url: presign.downloadUrl || presign.publicUrl };
 };
 
-// base64 直传：wx.cloud.callContainer 不支持 multipart、wx.uploadFile 需要合法域名，
-// 因此把图片读成 base64 经 callContainer 走 JSON 上传（与头像上传同方案）。
-// callContainer 请求体有大小上限，先压缩到 1080 宽再转 base64（约几百 KB）。
+// 云存储直传：wx.cloud.uploadFile 走云开发私有通道，既不要求 ICP 备案域名，
+// 也不受 wx.cloud.callContainer 100KB 请求体限制（图片 base64 必然超限）。
+// 上传后取临时下载链接交给后端转存到业务 COS，展示逻辑（签名 URL）保持不变。
 // 返回 { fileKey, url }，url 为可预览的签名下载地址。
-const base64Upload = async (filePath, filename, prefix) => {
+const cloudUpload = async (filePath, filename, prefix) => {
+  // 先压缩到 1080 宽减小体积；压缩失败则退回原图继续。
   let uploadPath = filePath;
   try {
     const compressed = await new Promise((resolve, reject) => {
@@ -275,18 +276,31 @@ const base64Upload = async (filePath, filename, prefix) => {
     });
     if (compressed && compressed.tempFilePath) uploadPath = compressed.tempFilePath;
   } catch (e) {
-    // 压缩失败则退回原图继续（仍受体积上限约束）。
+    // 压缩失败不阻断上传。
   }
-  const fs = wx.getFileSystemManager();
-  const file = await new Promise((resolve, reject) => {
-    fs.readFile({ filePath: uploadPath, encoding: 'base64', success: resolve, fail: reject });
+
+  const extMatch = (filename || '').match(/\.(jpg|jpeg|png|gif|webp)$/i);
+  const ext = extMatch ? extMatch[1].toLowerCase() : 'jpg';
+  const cloudPath = `${prefix}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+
+  const uploadRes = await new Promise((resolve, reject) => {
+    wx.cloud.uploadFile({ cloudPath, filePath: uploadPath, success: resolve, fail: reject });
   });
+  const fileID = uploadRes && uploadRes.fileID;
+  if (!fileID) throw new Error('云存储上传失败');
+
+  const tmpRes = await new Promise((resolve, reject) => {
+    wx.cloud.getTempFileURL({ fileList: [fileID], success: resolve, fail: reject });
+  });
+  const tempFileURL = tmpRes && tmpRes.fileList && tmpRes.fileList[0] && tmpRes.fileList[0].tempFileURL;
+  if (!tempFileURL) throw new Error('获取图片临时链接失败');
+
   const result = await request({
-    url: '/api/mp/upload/base64',
+    url: '/api/mp/upload/cloud-file',
     method: 'POST',
-    data: prefix ? { prefix, imageBase64: file.data, filename } : { imageBase64: file.data, filename },
+    data: { downloadUrl: tempFileURL, filename, prefix },
   });
   return { fileKey: result.fileKey, url: result.url };
 };
 
-module.exports = { request, uploadFile, presignUpload, base64Upload, RequestError, normalizeUserMessage };
+module.exports = { request, uploadFile, presignUpload, cloudUpload, RequestError, normalizeUserMessage };

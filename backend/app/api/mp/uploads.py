@@ -1,5 +1,4 @@
 import base64
-import binascii
 import hashlib
 import hmac
 import io
@@ -8,6 +7,9 @@ import os
 import time
 import uuid
 from datetime import datetime
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlparse
+from urllib.request import HTTPRedirectHandler, Request as UrlRequest, build_opener
 
 from flask import current_app, request, send_from_directory
 from flask_jwt_extended import get_jwt_identity, jwt_required
@@ -22,6 +24,31 @@ ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".pdf"}
 _IMAGE_CONTENT_TYPES = {
     ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp", ".gif": "image/gif",
 }
+# 云存储转存只允许从腾讯云域名下载，避免被当作任意 URL 抓取（SSRF）跳板。
+_TRUSTED_CLOUD_FILE_SUFFIXES = (".myqcloud.com", ".qcloud.la", ".tcb.cloud")
+_MAX_CLOUD_FILE_BYTES = 8 * 1024 * 1024
+
+
+def _is_trusted_cloud_url(url):
+    try:
+        parsed = urlparse(url)
+    except ValueError:
+        return False
+    if parsed.scheme not in ("https", "http"):
+        return False
+    host = (parsed.hostname or "").lower()
+    if not host:
+        return False
+    return any(host == suffix[1:] or host.endswith(suffix) for suffix in _TRUSTED_CLOUD_FILE_SUFFIXES)
+
+
+class _TrustedCloudRedirects(HTTPRedirectHandler):
+    """允许跳转，但跳转目标必须仍在腾讯云白名单内，防止重定向绕过白名单做 SSRF。"""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        if not _is_trusted_cloud_url(newurl):
+            return None
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
 
 
 def _validate_extension(filename):
@@ -206,12 +233,14 @@ def upload_studio_image():
     return {"url": file_url(url)}
 
 
-@mp_bp.post("/upload/base64")
+@mp_bp.post("/upload/cloud-file")
 @limiter.limit("20 per minute")
 @jwt_required()
-def upload_image_base64():
-    """base64 图片直传：wx.cloud.callContainer 不支持 multipart，且 wx.uploadFile
-    需要合法域名。图片以 base64 JSON 经 callContainer 上传，后端解码后存 COS。
+def upload_cloud_file():
+    """云存储转存：小程序先用 wx.cloud.uploadFile 直传云存储，绕开 wx.uploadFile
+    所需的备案合法域名，也绕开 wx.cloud.callContainer 的 100KB 请求体上限。
+    小程序再用 wx.cloud.getTempFileURL 拿到临时下载链接传给后端，后端下载后
+    转存到业务 COS，返回签名 URL 供回显与入库。
     """
     user = db.session.get(User, int(get_jwt_identity()))
     if not user or not user.teacher_id:
@@ -226,25 +255,34 @@ def upload_image_base64():
         if not teacher or not teacher.can_manage_banner:
             return {"error": "无横幅管理权限"}, 403
 
-    raw = payload.get("imageBase64") or payload.get("base64") or ""
-    if not raw:
+    download_url = (payload.get("downloadUrl") or "").strip()
+    if not download_url:
         return {"error": "图片数据缺失"}, 400
-    try:
-        encoded = raw.split(",", 1)[-1]
-        image_bytes = base64.b64decode(encoded, validate=True)
-    except (ValueError, binascii.Error):
-        return {"error": "图片数据无效"}, 400
-    if len(image_bytes) > 8 * 1024 * 1024:
-        return {"error": "图片不能超过8MB"}, 413
+    if not _is_trusted_cloud_url(download_url):
+        current_app.logger.warning("upload_cloud_file rejected host: %s", download_url[:120])
+        return {"error": "下载地址不合法"}, 400
 
     filename = (payload.get("filename") or "image.jpg").strip()
     ext = os.path.splitext(secure_filename(filename))[1].lower()
     if ext not in _IMAGE_CONTENT_TYPES:
         return {"error": "仅支持 JPG/PNG/WebP/GIF 图片"}, 400
 
+    try:
+        upstream = UrlRequest(download_url, headers={"User-Agent": "xile-yoga-upload/1.0"})
+        with build_opener(_TrustedCloudRedirects()).open(upstream, timeout=15) as response:
+            image_bytes = response.read(_MAX_CLOUD_FILE_BYTES + 1)
+    except (HTTPError, URLError, OSError, ValueError):
+        current_app.logger.exception("upload_cloud_file download failed")
+        return {"error": "下载云存储图片失败"}, 502
+
+    if not image_bytes:
+        return {"error": "图片数据缺失"}, 400
+    if len(image_bytes) > _MAX_CLOUD_FILE_BYTES:
+        return {"error": "图片不能超过8MB"}, 413
+
     key = f"{prefix}/{user.teacher_id}/{uuid.uuid4().hex}{ext}"
     try:
-        url = upload_to_cos(io.BytesIO(image_bytes), key, _IMAGE_CONTENT_TYPES[ext], public_read=False)
+        upload_to_cos(io.BytesIO(image_bytes), key, _IMAGE_CONTENT_TYPES[ext], public_read=False)
     except StorageNotConfiguredError:
         if not (current_app.debug or current_app.testing):
             return {"error": "对象存储未配置，无法上传"}, 503
@@ -254,6 +292,9 @@ def upload_image_base64():
         with open(os.path.join(upload_dir, filename), "wb") as fh:
             fh.write(image_bytes)
         key = f"{prefix}/{filename}"
+    except Exception as exc:
+        current_app.logger.exception("upload_cloud_file failed")
+        return {"error": f"图片上传失败：{exc}"}, 500
 
     return {"fileKey": key, "url": file_url(key)}
 

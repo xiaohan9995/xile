@@ -1,4 +1,4 @@
-const { request, base64Upload } = require('../../utils/request');
+const { request, cloudUpload } = require('../../utils/request');
 const auth = require('../../utils/auth');
 const { normalizeMultiline, stripParenthetical } = require('../../utils/text');
 const app = getApp();
@@ -199,9 +199,9 @@ Page({
     this.setData({ 'form.tags': tags });
   },
 
-  // 工作室图片上传：base64 经 callContainer 上传，绕开 uploadFile 合法域名限制。
+  // 工作室图片上传：云存储直传，绕开备案域名与 callContainer 100KB 限制。
   async uploadStudioImage(path, filename) {
-    const { url } = await base64Upload(path, filename, 'studio-images');
+    const { url } = await cloudUpload(path, filename, 'studio-images');
     return url;
   },
 

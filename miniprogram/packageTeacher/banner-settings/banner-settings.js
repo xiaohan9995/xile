@@ -1,4 +1,4 @@
-const { request, base64Upload } = require('../../utils/request');
+const { request, cloudUpload } = require('../../utils/request');
 const auth = require('../../utils/auth');
 const app = getApp();
 
@@ -40,9 +40,9 @@ Page({
     }
   },
 
-  // base64 经 callContainer 上传，绕开 uploadFile 合法域名限制。
+  // 云存储直传，绕开备案域名与 callContainer 100KB 限制。
   async uploadBannerImage(path, filename) {
-    const { url } = await base64Upload(path, filename, 'banners');
+    const { url } = await cloudUpload(path, filename, 'banners');
     return url;
   },
 
