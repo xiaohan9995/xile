@@ -100,7 +100,8 @@ def test_parse_workbook_takes_first_non_empty_cert_year_and_dates(application):
     assert advisor_first["currentTierCertifiedOn"] == date(2023, 1, 1)
     assert advisor_first["validUntil"] == date(2028, 9, 30)
     assert advisor_first["district"] == "北京"
-    assert advisor_first["instructorCertification"] == "初级"
+    assert advisor_first["country"] == "中国"
+    assert advisor_first["instructorCertification"] == "高级"
 
     assert initial_only["certifiedYear"] == 2016
     assert initial_only["currentTierCertifiedOn"] == date(2016, 1, 1)
@@ -265,7 +266,7 @@ def test_import_preview_then_commit_updates_existing_and_creates_new(client, app
     assert updated.valid_until == date(2028, 9, 30)
     assert updated.first_certified_on == date(2014, 1, 1)
     assert updated.current_tier_certified_on == date(2016, 1, 1)
-    assert updated.instructor_certification == "初级"
+    assert updated.instructor_certification == "高级"
     assert updated.detail.phone == "13900000000"
 
     created = Teacher.query.filter_by(teacher_no="11010119900101123X").first()
@@ -274,6 +275,9 @@ def test_import_preview_then_commit_updates_existing_and_creates_new(client, app
     assert created.first_certified_on == date(2023, 1, 1)
     assert created.current_tier_certified_on == date(2023, 1, 1)
     assert created.instructor_certification is None
+    assert created.country == "中国"
+    assert created.city == "北京"
+    assert created.district == "北京"
     assert created.valid_until == date(2099, 1, 1)
     assert created.certificate_no == "2050L1XL2023123X"
 

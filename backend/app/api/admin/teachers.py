@@ -41,6 +41,7 @@ def teacher_list():
             "alias": t.alias,
             "tier": t.tier.code if t.tier else None,
             "tierName": t.tier.name if t.tier else None,
+            "country": t.country,
             "city": t.city,
             "district": t.district,
             "status": t.status,
@@ -80,6 +81,7 @@ def get_teacher_detail(teacher_id):
         "idNumber": teacher.teacher_no,
         "tier": teacher.tier.code if teacher.tier else None,
         "tierName": teacher.tier.name if teacher.tier else None,
+        "country": teacher.country,
         "city": teacher.city,
         "district": teacher.district,
         "status": teacher.status,
@@ -160,6 +162,8 @@ def update_teacher(teacher_id):
         teacher.public_profile_settings = json.dumps(settings, ensure_ascii=False)
     if "city" in payload:
         teacher.city = str(payload["city"] or "").strip() or None
+    if "country" in payload:
+        teacher.country = str(payload["country"] or "").strip() or None
     if "district" in payload:
         teacher.district = str(payload["district"] or "").strip() or None
     if "avatarUrl" in payload:
@@ -234,6 +238,7 @@ def create_teacher():
         existing_teacher.real_name = name
         existing_teacher.xile_name = (payload.get("xileName") or "").strip() or None
         existing_teacher.tier_id = tier.id
+        existing_teacher.country = (payload.get("country") or "").strip() or None
         existing_teacher.city = (payload.get("city") or "").strip() or None
         existing_teacher.district = (payload.get("district") or "").strip() or None
         existing_teacher.status = "active"
@@ -262,6 +267,7 @@ def create_teacher():
         tier_code=payload.get("level", "L1"),
         city=payload.get("city", "").strip(),
         district=payload.get("district", "").strip(),
+        country=payload.get("country", "").strip(),
         xile_name=payload.get("xileName", "").strip(),
         phone=payload.get("phone", "").strip(),
         id_number=id_number,

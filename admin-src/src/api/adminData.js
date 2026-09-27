@@ -28,6 +28,7 @@ export function mapAdminTeacher(teacher) {
     avatarUrl: teacher.avatarUrl || '',
     certificateUrl: teacher.certificateUrl || '',
     phone: teacher.phone || '未登记',
+    country: teacher.country || '',
     city: teacher.city,
     district: teacher.district,
     status: teacher.status,

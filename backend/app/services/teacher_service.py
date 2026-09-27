@@ -34,7 +34,7 @@ def generate_certificate_no(tier_code, certified_year, id_number):
 
 def create_teacher(name, tier_code="L1", city=None, district=None, xile_name=None,
                    phone=None, valid_until=None, id_number=None, certificate_no=None,
-                   certified_on=None):
+                   certified_on=None, country=None):
     tier_code = (tier_code or "L1").strip().upper()
     if not tier_code.startswith("L"):
         tier_code = "L1"
@@ -64,6 +64,7 @@ def create_teacher(name, tier_code="L1", city=None, district=None, xile_name=Non
             real_name=name,
             xile_name=xile_name or None,
             tier_id=tier.id,
+            country=country or None,
             city=city or None,
             district=district or None,
             status="active",

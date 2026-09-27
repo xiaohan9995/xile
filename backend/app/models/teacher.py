@@ -11,6 +11,7 @@ class Teacher(db.Model):
     xile_name = db.Column(db.String(32), index=True)
     alias = db.Column(db.String(32), index=True)
     tier_id = db.Column(db.Integer, db.ForeignKey("teacher_tiers.id"), nullable=False, index=True)
+    country = db.Column(db.String(32))
     city = db.Column(db.String(32), index=True)
     district = db.Column(db.String(32))
     status = db.Column(db.String(16), default="active", nullable=False)  # active/expiring/expired/hidden

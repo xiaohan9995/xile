@@ -32,15 +32,17 @@
             <th>教师信息</th>
             <th>认证等级</th>
             <th>证书编号</th>
+            <th>国家</th>
+            <th>省份</th>
             <th>城市</th>
-            <th>师资培训</th>
+            <th>师资培训资格认证</th>
             <th>有效期至</th>
             <th>操作</th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="pagedList.length === 0">
-            <td colspan="7" class="empty-row">{{ hasFilters ? '无匹配结果，请调整筛选条件' : '暂无教师数据' }}</td>
+            <td colspan="9" class="empty-row">{{ hasFilters ? '无匹配结果，请调整筛选条件' : '暂无教师数据' }}</td>
           </tr>
           <tr v-for="teacher in pagedList" :key="teacher.id">
             <td>
@@ -55,6 +57,8 @@
             </td>
             <td><span class="level-text">{{ teacher.level }}</span></td>
             <td><strong class="mono-cert">{{ teacher.certNo }}</strong></td>
+            <td>{{ teacher.country || '—' }}</td>
+            <td>{{ teacher.district || '—' }}</td>
             <td>{{ teacher.city || '—' }}</td>
             <td>
               <span v-if="teacher.instructorCertification" class="badge-instructor">{{ instructorLabel(teacher.instructorCertification) }}</span>
@@ -135,12 +139,16 @@
             <input v-model="createDraft.expiryDate" placeholder="如 2029-12-31" />
           </label>
           <label>
-            城市
-            <input v-model="createDraft.city" placeholder="请输入城市" />
+            国家
+            <input v-model="createDraft.country" placeholder="如 中国" />
           </label>
           <label>
-            地区
-            <input v-model="createDraft.district" placeholder="请输入区/县" />
+            省份
+            <input v-model="createDraft.district" placeholder="如 广东" />
+          </label>
+          <label>
+            城市
+            <input v-model="createDraft.city" placeholder="如 广州" />
           </label>
         </div>
         <div class="modal-actions">
@@ -194,12 +202,16 @@
             <input v-model="editDraft.expiryDate" placeholder="如 2029-12-31" />
           </label>
           <label>
-            城市
-            <input v-model="editDraft.city" placeholder="城市" />
+            国家
+            <input v-model="editDraft.country" placeholder="如 中国" />
           </label>
           <label>
-            地区
-            <input v-model="editDraft.district" placeholder="区/县" />
+            省份
+            <input v-model="editDraft.district" placeholder="如 广东" />
+          </label>
+          <label>
+            城市
+            <input v-model="editDraft.city" placeholder="如 广州" />
           </label>
           <label>
             经常居住地
@@ -311,6 +323,7 @@ const createDraft = reactive({
   level: 'L2',
   certifiedAt: '',
   expiryDate: '',
+  country: '',
   city: '',
   district: '',
 })
@@ -326,6 +339,7 @@ const editDraft = reactive({
   level: 'L2',
   certifiedAt: '',
   expiryDate: '',
+  country: '',
   city: '',
   district: '',
   committeeRemark: '',
@@ -416,6 +430,7 @@ function openCreate() {
   createDraft.level = 'L2'
   createDraft.certifiedAt = ''
   createDraft.expiryDate = ''
+  createDraft.country = '中国'
   createDraft.city = ''
   createDraft.district = ''
   showCreate.value = true
@@ -444,6 +459,7 @@ function openEdit(teacher) {
   editDraft.alias = teacher.alias || ''
   editDraft.idNumber = teacher.idNumber || ''
   editDraft.phone = teacher.phone === '未登记' ? '' : (teacher.phone || '')
+  editDraft.country = teacher.country || ''
   editDraft.city = teacher.city || ''
   editDraft.district = teacher.district || ''
   editDraft.committeeRemark = teacher.committeeRemark || ''
@@ -470,6 +486,7 @@ async function handleCreate() {
     level: createDraft.level,
     certifiedAt: createDraft.certifiedAt,
     expiryDate: createDraft.expiryDate,
+    country: createDraft.country,
     city: createDraft.city,
     district: createDraft.district,
   })
@@ -495,6 +512,7 @@ async function handleUpdate() {
       level: editDraft.level,
       certifiedAt: editDraft.certifiedAt,
       expiryDate: editDraft.expiryDate,
+      country: editDraft.country,
       city: editDraft.city,
       district: editDraft.district,
       committeeRemark: editDraft.committeeRemark,

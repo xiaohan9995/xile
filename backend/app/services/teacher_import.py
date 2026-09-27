@@ -213,7 +213,7 @@ def _derive_current_tier_year(record):
 def _parse_instructor_certification(text):
     """师资培训资格认证：解析出「初级 / 高级」，留空表示本次不调整。
 
-    表里目前只填「授权」，按初级培训师处理；若后续直接写了初级/高级字样，
+    表里目前只填「授权」，按高级培训师处理；若后续直接写了初级/高级字样，
     则按字样取值。明确的否定词视为「未认证」，会清空该字段。
     """
     value = str(text or "").strip()
@@ -224,7 +224,7 @@ def _parse_instructor_certification(text):
     for hint, level in INSTRUCTOR_LEVEL_HINTS:
         if hint in value:
             return level
-    return "初级"
+    return "高级"
 
 
 def _map_columns(row):
@@ -373,7 +373,8 @@ def parse_rows(rows, header_index, columns):
         else:
             record["validUntil"] = valid_until
 
-        record["district"] = record.get("province") or record.get("country") or ""
+        # 国家 / 省份 / 城市各自独立成列，不再把国家兜底写进省份。
+        record["district"] = record.get("province") or ""
 
         if row_errors:
             errors.extend(row_errors)
@@ -432,6 +433,11 @@ def _build_update(teacher, record, tiers):
     if tier and tier.id != teacher.tier_id:
         fields["tier_id"] = tier.id
         note("级别", getattr(teacher.tier, "code", None), record["tier"])
+
+    country = _empty_to_none(record.get("country"))
+    if country and country != teacher.country:
+        fields["country"] = country
+        note("国家", teacher.country, country)
 
     city = _empty_to_none(record.get("city"))
     if city and city != teacher.city:
@@ -530,6 +536,7 @@ def _apply_create(record, tiers, existing_nos, existing_teacher_nos, sort_order)
         real_name=record["name"],
         xile_name=_empty_to_none(record.get("xile_name")),
         tier_id=tier.id,
+        country=_empty_to_none(record.get("country")),
         city=_empty_to_none(record.get("city")),
         district=_empty_to_none(record.get("district")),
         status="active",
