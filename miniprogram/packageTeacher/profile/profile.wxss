@@ -239,9 +239,8 @@
 .menu-item--locked .menu-title { color: var(--color-muted); }
 
 .logout-area {
-  margin-top: 48rpx;
-  padding-top: 32rpx;
-  border-top: 1rpx solid var(--color-line);
+  margin-top: 16rpx;
+  padding-top: 0;
   text-align: center;
 }
 
@@ -251,6 +250,7 @@
   max-width: none;
   height: 96rpx;
   margin: 0;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -262,6 +262,10 @@
   font-weight: 500;
   line-height: 1;
   text-align: center;
+}
+
+.logout-button::after {
+  border: none;
 }
 
 .logout-button:active { opacity: 0.82; }

@@ -11,7 +11,7 @@ page {
 }
 
 .login-shell {
-  padding: 116rpx 40rpx calc(80rpx + env(safe-area-inset-bottom));
+  padding: 280rpx 40rpx calc(140rpx + env(safe-area-inset-bottom));
 }
 
 .login-brand {

@@ -95,12 +95,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(66, 109, 88, 0.14);
+  background: #dce4de;
   color: var(--color-primary-dark);
 }
 
 .search-box__btn:active {
-  background: rgba(66, 109, 88, 0.22);
+  background: #cbd9ce;
 }
 
 .search-box__btn-icon {
