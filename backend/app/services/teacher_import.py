@@ -150,7 +150,14 @@ def _row_is_empty(row):
 
 def _parse_year(text):
     """从「2014」「2014年」「2014.0」这类文本里取出四位年份。"""
-    digits = "".join(ch for ch in str(text or "") if ch.isdigit())
+    raw = str(text or "").strip()
+    # 先处理最常见的情形：本来就是四位年份，允许带小数尾巴（2014.0）。
+    plain = re.sub(r"\.0+$", "", raw)
+    if re.fullmatch(r"\d{4}", plain):
+        year = int(plain)
+        return year if 1900 <= year <= 2100 else None
+
+    digits = "".join(ch for ch in raw if ch.isdigit())
     if len(digits) < 4:
         return None
     value = int(digits[:6])
@@ -392,20 +399,35 @@ def parse_workbook(stream):
 
 
 def _find_teacher(record):
-    """先按身份证号匹配，再按姓名匹配；同名多条且无法确定时返回冲突。"""
+    """先按身份证号匹配，再按姓名匹配。
+
+    返回 (teacher, conflict, match_note)：
+    - conflict 非空表示该行不能导入；
+    - match_note 非空表示匹配上了但需要管理员确认（例如证件号对不上）。
+    """
     id_number = record.get("idNumber")
     if id_number:
         teacher = Teacher.query.filter(Teacher.teacher_no == id_number).first()
         if teacher:
-            return teacher, None
+            if teacher.status == "hidden":
+                return None, "该教师已隐藏，请先在后台恢复后再导入", None
+            return teacher, None, None
 
     matches = Teacher.query.filter(Teacher.real_name == record["name"]).all()
     if not matches:
-        return None, None
+        return None, None, None
     visible = [teacher for teacher in matches if teacher.status != "hidden"]
     if len(visible) > 1:
-        return None, "库中同名教师有多条记录，请先合并后再导入"
-    return (visible or matches)[0], None
+        return None, "库中同名教师有多条记录，请先合并后再导入", None
+    if not visible:
+        return None, "库中同名教师已隐藏，请先恢复后再导入", None
+    teacher = visible[0]
+    if id_number and id_number != teacher.teacher_no:
+        return teacher, None, (
+            "按姓名匹配到教师，但证件号与库中不一致（库中 %s），请确认是否为同一人"
+            % (teacher.teacher_no or "空")
+        )
+    return teacher, None, None
 
 
 def _empty_to_none(value):
@@ -485,7 +507,7 @@ def build_plan(records, tiers=None):
     plan = []
     pending_creates = set()
     for record in records:
-        teacher, conflict = _find_teacher(record)
+        teacher, conflict, match_note = _find_teacher(record)
         if conflict:
             plan.append({**record, "action": "error", "message": conflict})
             continue
@@ -497,7 +519,7 @@ def build_plan(records, tiers=None):
                 plan.append({**record, "action": "error", "message": "同一文件内身份证号重复"})
                 continue
             pending_creates.add(record["idNumber"])
-            plan.append({**record, "action": "create"})
+            plan.append({**record, "action": "create", "note": match_note})
             continue
         fields, changes = _build_update(teacher, record, tiers)
         plan.append(
@@ -508,6 +530,7 @@ def build_plan(records, tiers=None):
                 "teacherNo": teacher.teacher_no,
                 "fields": fields,
                 "changes": changes,
+                "note": match_note,
             }
         )
     return plan

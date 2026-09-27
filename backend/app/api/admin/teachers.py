@@ -1,4 +1,6 @@
+import hashlib
 import json
+from io import BytesIO
 from datetime import date, datetime
 
 from flask import g, request, send_file
@@ -352,6 +354,7 @@ def _plan_preview(plan, limit=50):
                 "idNumber": item.get("idNumber"),
                 "action": item["action"],
                 "message": item.get("message"),
+                "note": item.get("note"),
                 "changes": [
                     {
                         "label": change["label"],
@@ -373,13 +376,14 @@ def _plan_errors(plan):
     ]
 
 
-def _record_batch(total_rows, success_rows, error_rows, errors, status="preview"):
+def _record_batch(total_rows, success_rows, error_rows, errors, status="preview", file_hash=None):
     batch = ImportBatch(
         admin_id=current_admin_id() or 1,
         total_rows=total_rows,
         success_rows=success_rows,
         error_rows=error_rows,
         status=status,
+        file_hash=file_hash,
     )
     db.session.add(batch)
     db.session.flush()
@@ -395,14 +399,16 @@ def _record_batch(total_rows, success_rows, error_rows, errors, status="preview"
 
 @admin_bp.post("/import/teachers/preview")
 @require_admin_token
-@require_admin_roles("admin", "super_admin")
+@require_admin_roles("super_admin")
 def import_preview():
     file = request.files.get("file")
     if not file:
         return {"error": "file required"}, 400
 
+    payload = file.read()
+    file_hash = hashlib.sha256(payload).hexdigest()
     try:
-        sheet_title, records, errors, total_rows = parse_workbook(file)
+        sheet_title, records, errors, total_rows = parse_workbook(BytesIO(payload))
     except Exception:
         return {"error": "invalid excel file"}, 400
 
@@ -412,8 +418,13 @@ def import_preview():
     all_errors.extend(plan_errors)
     counts = _plan_counts(plan)
     valid_rows = counts["createRows"] + counts["updateRows"] + counts["skipRows"]
+    warnings = [
+        {"rowNumber": item["rowNumber"], "name": item.get("name"), "message": item["note"]}
+        for item in plan
+        if item.get("note")
+    ]
 
-    batch = _record_batch(total_rows, valid_rows, len(all_errors), all_errors)
+    batch = _record_batch(total_rows, valid_rows, len(all_errors), all_errors, file_hash=file_hash)
     db.session.commit()
 
     return {
@@ -423,13 +434,14 @@ def import_preview():
         "validRows": valid_rows,
         **counts,
         "errors": all_errors,
+        "warnings": warnings,
         "preview": _plan_preview(plan),
     }
 
 
 @admin_bp.post("/import/teachers/commit")
 @require_admin_token
-@require_admin_roles("admin", "super_admin")
+@require_admin_roles("super_admin")
 def import_commit():
     payload = request.get_json(silent=True) or {}
     batch_id = payload.get("batchId") or request.form.get("batchId")
@@ -440,12 +452,20 @@ def import_commit():
     if batch is None or batch.status != "preview":
         return {"error": "invalid batch"}, 400
 
+    admin_id = current_admin_id()
+    if admin_id is not None and batch.admin_id != admin_id:
+        return {"error": "forbidden"}, 403
+
     file = request.files.get("file")
     if not file:
         return {"error": "file required for commit"}, 400
 
+    file_bytes = file.read()
+    if batch.file_hash and hashlib.sha256(file_bytes).hexdigest() != batch.file_hash:
+        return {"error": "文件与预检时不一致，请重新预检后再提交"}, 409
+
     try:
-        sheet_title, records, errors, total_rows = parse_workbook(file)
+        sheet_title, records, errors, total_rows = parse_workbook(BytesIO(file_bytes))
     except Exception:
         return {"error": "invalid excel file"}, 400
 

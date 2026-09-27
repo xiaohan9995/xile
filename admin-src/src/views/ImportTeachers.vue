@@ -106,6 +106,25 @@
             </table>
           </div>
 
+          <div v-if="preview.warnings.length > 0" class="warning-table-wrap">
+            <table class="data-table warning-table">
+              <thead>
+                <tr>
+                  <th>行号</th>
+                  <th>姓名</th>
+                  <th>需确认</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, idx) in preview.warnings" :key="idx" class="warning-row">
+                  <td>{{ item.rowNumber }}</td>
+                  <td>{{ item.name }}</td>
+                  <td>{{ item.message }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
           <div class="import-actions">
             <button class="sync-btn" @click="resetState">重新上传</button>
             <button
@@ -196,6 +215,7 @@ async function processFile(file) {
       updateRows: res.updateRows || 0,
       skipRows: res.skipRows || 0,
       errors: res.errors || [],
+      warnings: res.warnings || [],
       preview: res.preview || [],
     }
     batchId.value = res.batchId
@@ -227,7 +247,7 @@ async function handleCommit() {
 function resetState() {
   state.value = 'idle'
   selectedFile.value = null
-  preview.value = { totalRows: 0, validRows: 0, createRows: 0, updateRows: 0, skipRows: 0, errors: [], preview: [] }
+  preview.value = { totalRows: 0, validRows: 0, createRows: 0, updateRows: 0, skipRows: 0, errors: [], warnings: [], preview: [] }
   result.value = { createdCount: 0, updatedCount: 0, skippedCount: 0, failedCount: 0 }
   batchId.value = null
   if (fileInputRef.value) fileInputRef.value.value = ''
@@ -238,9 +258,13 @@ function actionLabel(action) {
 }
 
 function describeRow(row) {
-  if (row.message) return row.message
-  if (!row.changes || row.changes.length === 0) return '与库中资料一致'
-  return row.changes.map((item) => `${item.label}：${item.from ?? '空'} → ${item.to ?? '空'}`).join('；')
+  const parts = []
+  if (row.message) parts.push(row.message)
+  if (row.changes && row.changes.length > 0) {
+    parts.push(row.changes.map((item) => `${item.label}：${item.from ?? '空'} → ${item.to ?? '空'}`).join('；'))
+  }
+  if (row.note) parts.push(`⚠ ${row.note}`)
+  return parts.join(' ') || '与库中资料一致'
 }
 </script>
 
@@ -337,6 +361,22 @@ function describeRow(row) {
 .error-row td {
   color: #991b1b;
   background: #fff5f5;
+}
+
+.warning-table-wrap {
+  border: 1px solid #fde68a;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.warning-table th {
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.warning-row td {
+  color: #92400e;
+  background: #fffdf5;
 }
 
 .import-actions {

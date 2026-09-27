@@ -290,6 +290,10 @@
                 <text class="teacher-drawer__dt">等级认证有效期至</text>
                 <text class="teacher-drawer__dd">{{selectedTeacher.validUntil || '—'}}</text>
               </view>
+              <view class="teacher-drawer__row">
+                <text class="teacher-drawer__dt">师资培训资格认证</text>
+                <text class="teacher-drawer__dd">{{selectedTeacher.instructorCertificationLabel}}</text>
+              </view>
             </view>
           </view>
 
@@ -312,12 +316,12 @@
             </view>
             <view class="teacher-drawer__card">
               <view class="teacher-drawer__row">
-                <text class="teacher-drawer__dt">喜乐名</text>
-                <text class="teacher-drawer__dd">{{selectedTeacher.xileName || '—'}}</text>
-              </view>
-              <view class="teacher-drawer__row">
                 <text class="teacher-drawer__dt">姓名/常用名</text>
                 <text class="teacher-drawer__dd">{{selectedTeacher.commonName || '—'}}</text>
+              </view>
+              <view class="teacher-drawer__row" wx:if="{{selectedTeacher.xileName}}">
+                <text class="teacher-drawer__dt">喜乐名</text>
+                <text class="teacher-drawer__dd">{{selectedTeacher.xileName}}</text>
               </view>
               <view class="teacher-drawer__row">
                 <text class="teacher-drawer__dt">经常居住地</text>

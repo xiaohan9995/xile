@@ -10,7 +10,7 @@ from backend.app import create_app
 from backend.app.extensions import db
 from backend.app.models import Teacher, TeacherDetail, TeacherTier
 from backend.app.seed import ensure_initial_admin, ensure_system_defaults
-from backend.app.services.teacher_import import parse_workbook
+from backend.app.services.teacher_import import _parse_year, parse_workbook
 
 # 与年审汇总表一致：表头允许带换行。
 HEADERS = [
@@ -72,6 +72,22 @@ def client(application):
 
 
 ADMIN_HEADERS = {"Authorization": "Bearer test-admin-token"}
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("2014", 2014),
+        ("2014.0", 2014),
+        ("2014年", 2014),
+        ("顾问2023", 2023),
+        ("47026", 2028),  # Excel 日期序列号（2028-09-30）
+        ("2032-01-01", 2032),
+        ("无", None),
+    ],
+)
+def test_parse_year_accepts_common_spreadsheet_forms(application, raw, expected):
+    assert _parse_year(raw) == expected
 
 
 def test_parse_workbook_takes_first_non_empty_cert_year_and_dates(application):
@@ -303,3 +319,102 @@ def test_import_preview_flags_new_teacher_without_id_number(client, application)
     assert payload["createRows"] == 0
     assert payload["failedRows"] == 1
     assert "身份证号" in payload["errors"][0]["message"]
+
+
+def test_import_warns_when_id_number_differs_from_existing_teacher(client, application):
+    tier = TeacherTier.query.filter_by(code="L2").first()
+    db.session.add(
+        Teacher(
+            teacher_no="310101199001011234",
+            real_name="同名教师",
+            tier_id=tier.id,
+            status="active",
+            first_certified_on=date(2020, 1, 1),
+            valid_until=date(2028, 9, 30),
+            sort_order=1,
+        )
+    )
+    db.session.commit()
+
+    stream = build_workbook(
+        [
+            [
+                "L2", "初级", "同名教师", "", "", "女", "中国", "上海", "上海",
+                "", "2020", "", "", "47026", "", "", "110101199001011234", "",
+            ],
+        ]
+    )
+    payload = client.post(
+        "/api/admin/import/teachers/preview",
+        data={"file": (stream, "teachers.xlsx")},
+        headers=ADMIN_HEADERS,
+        content_type="multipart/form-data",
+    ).get_json()
+
+    assert payload["updateRows"] == 1
+    assert payload["errors"] == []
+    assert "证件号与库中不一致" in payload["warnings"][0]["message"]
+    # 证件号不一致时，按姓名匹配到的记录不会被改动登录账号。
+    db.session.expire_all()
+    assert Teacher.query.filter_by(real_name="同名教师").first().teacher_no == "310101199001011234"
+
+
+def test_import_rejects_row_matching_hidden_teacher(client, application):
+    tier = TeacherTier.query.filter_by(code="L2").first()
+    db.session.add(
+        Teacher(
+            teacher_no="310101199001011234",
+            real_name="隐藏教师",
+            tier_id=tier.id,
+            status="hidden",
+            first_certified_on=date(2020, 1, 1),
+            valid_until=date(2028, 9, 30),
+            sort_order=1,
+        )
+    )
+    db.session.commit()
+
+    stream = build_workbook(
+        [
+            [
+                "L2", "初级", "隐藏教师", "", "", "女", "中国", "上海", "上海",
+                "", "2020", "", "", "47026", "", "", "", "",
+            ],
+        ]
+    )
+    payload = client.post(
+        "/api/admin/import/teachers/preview",
+        data={"file": (stream, "teachers.xlsx")},
+        headers=ADMIN_HEADERS,
+        content_type="multipart/form-data",
+    ).get_json()
+
+    assert payload["createRows"] == 0
+    assert payload["updateRows"] == 0
+    assert "已隐藏" in payload["errors"][0]["message"]
+
+
+def test_import_commit_rejects_file_changed_after_preview(client, application):
+    rows = [
+        [
+            "L2", "初级", "提交校验", "", "", "女", "中国", "上海", "上海",
+            "", "2020", "", "", "47026", "", "", "110101199001011234", "",
+        ],
+    ]
+    preview = client.post(
+        "/api/admin/import/teachers/preview",
+        data={"file": (build_workbook(rows), "teachers.xlsx")},
+        headers=ADMIN_HEADERS,
+        content_type="multipart/form-data",
+    ).get_json()
+
+    changed_rows = [rows[0][:2] + ["提交校验改名"] + rows[0][3:]]
+    commit = client.post(
+        "/api/admin/import/teachers/commit",
+        data={"file": (build_workbook(changed_rows), "teachers.xlsx"), "batchId": str(preview["batchId"])},
+        headers=ADMIN_HEADERS,
+        content_type="multipart/form-data",
+    )
+
+    assert commit.status_code == 409
+    assert "不一致" in commit.get_json()["error"]

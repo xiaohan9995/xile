@@ -30,12 +30,31 @@ const router = createRouter({
   routes,
 })
 
+// 后台已知角色。角色缺失或不在该集合内时按未登录处理，避免放行页面。
+const KNOWN_ROLES = ['admin', 'super_admin']
+
 router.beforeEach((to) => {
   if (to.meta.public) return true
   const token = localStorage.getItem('admin_token')
   if (!token) return { name: 'Login', query: { redirect: to.fullPath } }
-  const profile = JSON.parse(localStorage.getItem('admin_profile') || '{}')
-  if (to.meta.roles && !to.meta.roles.includes(profile.role || 'super_admin')) return { name: 'Dashboard' }
+
+  let profile = {}
+  try {
+    profile = JSON.parse(localStorage.getItem('admin_profile') || '{}') || {}
+  } catch {
+    profile = {}
+  }
+  const role = typeof profile.role === 'string' ? profile.role : ''
+
+  if (to.meta.roles && !to.meta.roles.includes(role)) {
+    if (!KNOWN_ROLES.includes(role)) {
+      // 角色缺失/异常：清掉会话回登录页；跳 Dashboard 会与它的角色校验互相重定向。
+      localStorage.removeItem('admin_token')
+      localStorage.removeItem('admin_profile')
+      return { name: 'Login', query: { redirect: to.fullPath } }
+    }
+    return { name: 'Dashboard' }
+  }
   return true
 })
 

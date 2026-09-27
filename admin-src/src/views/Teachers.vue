@@ -16,6 +16,8 @@
       <input v-model="filters.name" placeholder="姓名" />
       <input v-model="filters.xileName" placeholder="喜乐名" />
       <input v-model="filters.certNo" placeholder="证书编号" />
+      <input v-model="filters.country" placeholder="国家" />
+      <input v-model="filters.district" placeholder="省份" />
       <input v-model="filters.city" placeholder="城市" />
       <select v-model="filters.expiry">
         <option value="">全部有效期</option>
@@ -290,7 +292,7 @@ import { normalizeMultiline } from '../utils/text.js'
 
 const { show: toast } = useToast()
 
-const filters = ref({ name: '', xileName: '', certNo: '', city: '', expiry: '' })
+const filters = ref({ name: '', xileName: '', certNo: '', country: '', district: '', city: '', expiry: '' })
 const showCreate = ref(false)
 const showEdit = ref(false)
 const teachers = ref([])
@@ -388,12 +390,16 @@ const filteredList = computed(() => {
   const name = filters.value.name.trim().toLowerCase()
   const xileName = filters.value.xileName.trim().toLowerCase()
   const certNo = filters.value.certNo.trim().toLowerCase()
+  const country = filters.value.country.trim().toLowerCase()
+  const district = filters.value.district.trim().toLowerCase()
   const city = filters.value.city.trim().toLowerCase()
   const expiry = filters.value.expiry
   return teachers.value.filter((t) => {
     if (!matches(t.name, name)) return false
     if (!matches(t.xileName, xileName)) return false
     if (!matches(t.certNo, certNo)) return false
+    if (!matches(t.country, country)) return false
+    if (!matches(t.district, district)) return false
     if (!matches(t.city, city)) return false
     if (expiry && expiryStatus(t) !== expiry) return false
     return true
