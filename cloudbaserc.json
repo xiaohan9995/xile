@@ -1,6 +1,16 @@
 {
-  "envId": "xile-yoga-d4g2za8xi82a16810",
+  "envId": "{{env.ENV_ID}}",
   "cloudrun": {
     "name": "xile-yoga"
+  },
+  "functionRoot": "./functions",
+  "functions": [],
+  "ai": {
+    "defaultAgent": "{{env.AI_DEFAULT_AGENT}}",
+    "agents": {
+      "codebuddy": {
+        "type": "none"
+      }
+    }
   }
 }
