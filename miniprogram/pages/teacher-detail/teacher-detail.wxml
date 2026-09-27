@@ -24,12 +24,12 @@
     <!-- Info card -->
     <view class="info-card">
       <view class="info-row">
-        <text class="info-dt">喜乐名</text>
-        <text class="info-dd">{{teacher.xileName || '—'}}</text>
-      </view>
-      <view class="info-row">
         <text class="info-dt">姓名/常用名</text>
         <text class="info-dd">{{commonName || '—'}}</text>
+      </view>
+      <view wx:if="{{teacher.xileName}}" class="info-row">
+        <text class="info-dt">喜乐名</text>
+        <text class="info-dd">{{teacher.xileName}}</text>
       </view>
       <view class="info-row">
         <text class="info-dt">认证等级</text>
@@ -46,6 +46,10 @@
       <view class="info-row">
         <text class="info-dt">等级认证有效期至</text>
         <text class="info-dd">{{teacher.validUntil || '—'}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-dt">师资培训资格认证</text>
+        <text class="info-dd {{teacher.instructorCertification ? 'info-dd--highlight' : ''}}">{{instructorCertificationLabel}}</text>
       </view>
       <view class="info-row">
         <text class="info-dt">经常居住地</text>

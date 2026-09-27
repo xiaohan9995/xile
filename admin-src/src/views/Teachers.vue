@@ -33,13 +33,14 @@
             <th>认证等级</th>
             <th>证书编号</th>
             <th>城市</th>
+            <th>师资培训</th>
             <th>有效期至</th>
             <th>操作</th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="pagedList.length === 0">
-            <td colspan="6" class="empty-row">{{ hasFilters ? '无匹配结果，请调整筛选条件' : '暂无教师数据' }}</td>
+            <td colspan="7" class="empty-row">{{ hasFilters ? '无匹配结果，请调整筛选条件' : '暂无教师数据' }}</td>
           </tr>
           <tr v-for="teacher in pagedList" :key="teacher.id">
             <td>
@@ -55,6 +56,10 @@
             <td><span class="level-text">{{ teacher.level }}</span></td>
             <td><strong class="mono-cert">{{ teacher.certNo }}</strong></td>
             <td>{{ teacher.city || '—' }}</td>
+            <td>
+              <span v-if="teacher.instructorCertification" class="badge-instructor">{{ instructorLabel(teacher.instructorCertification) }}</span>
+              <span v-else>—</span>
+            </td>
             <td>
               <span :class="['expiry-text', `expiry-text--${expiryStatus(teacher)}`]">{{ teacher.expiryDate }}</span>
             </td>
@@ -162,8 +167,8 @@
             <input v-model="editDraft.xileName" placeholder="喜乐名" />
           </label>
           <label>
-            别名
-            <input v-model="editDraft.alias" placeholder="用于未设置喜乐名时的公开显示" />
+            常用名
+            <input v-model="editDraft.alias" placeholder="如个人常用名 / IP 名，可与本名分开公开" />
           </label>
           <label>
             手机号
@@ -218,6 +223,14 @@
               <input type="checkbox" v-model="editDraft.canManageBanner" />
               <span>允许该教师在小程序设置首页与工作室页横幅图</span>
             </span>
+          </label>
+          <label class="field-full">
+            <span class="field-label">师资培训资格认证</span>
+            <select v-model="editDraft.instructorCertification">
+              <option value="">未认证</option>
+              <option value="初级">喜乐师资初级培训师</option>
+              <option value="高级">喜乐师资高级培训师</option>
+            </select>
           </label>
           <label>
             教师头像
@@ -322,7 +335,17 @@ const editDraft = reactive({
   residencesText: '',
   currentTierCertifiedOn: '',
   canManageBanner: false,
+  instructorCertification: '',
 })
+
+const INSTRUCTOR_LABELS = {
+  初级: '喜乐师资初级培训师',
+  高级: '喜乐师资高级培训师',
+}
+
+function instructorLabel(level) {
+  return INSTRUCTOR_LABELS[level] || level || ''
+}
 
 async function loadTeachers() {
   try {
@@ -433,6 +456,7 @@ function openEdit(teacher) {
   editDraft.expiryDate = teacher.expiryDate === '待确认' ? '' : (teacher.expiryDate || '')
   editDraft.level = teacher.tier || 'L2'
   editDraft.canManageBanner = Boolean(teacher.canManageBanner)
+  editDraft.instructorCertification = teacher.instructorCertification || ''
   showEdit.value = true
 }
 
@@ -480,6 +504,7 @@ async function handleUpdate() {
       residences: editDraft.residencesText.split(/[,，]/).map((item) => item.trim()).filter(Boolean),
       currentTierCertifiedOn: editDraft.currentTierCertifiedOn,
       canManageBanner: editDraft.canManageBanner,
+      instructorCertification: editDraft.instructorCertification,
     })
   } catch (e) {
     toast(e?.response?.data?.error || '保存失败，请稍后重试', 'error')
@@ -560,6 +585,17 @@ async function uploadTeacherAsset(event, assetType, targetField) {
 }
 .expiry-text--unknown {
   color: #8a948d;
+}
+
+.badge-instructor {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--brand-green-light, #eaf4ef);
+  color: var(--brand-green, #2f6d4f);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .cert-no-row {

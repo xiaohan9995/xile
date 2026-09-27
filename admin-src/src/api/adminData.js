@@ -32,6 +32,7 @@ export function mapAdminTeacher(teacher) {
     district: teacher.district,
     status: teacher.status,
     canManageBanner: Boolean(teacher.canManageBanner),
+    instructorCertification: teacher.instructorCertification || '',
     committeeRemark: teacher.committeeRemark,
     teachingSummary: normalizeMultiline(teacher.teachingSummary),
   }
@@ -287,4 +288,3 @@ export async function uploadAdminAsset(file, assetType) {
   formData.append('assetType', assetType)
   return api.upload('/assets/upload', formData)
 }
-

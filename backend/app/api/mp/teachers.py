@@ -247,8 +247,8 @@ def update_my_public_profile():
         return {"error": "仅已关联教师可维护公开资料"}, 403
     teacher = Teacher.query.filter(Teacher.id == user.teacher_id, Teacher.status != "hidden").first_or_404()
     payload = request.get_json(silent=True) or {}
-    if "alias" in payload:
-        teacher.alias = str(payload["alias"] or "").strip()[:32] or None
+    # 本名 / 常用名 / 喜乐名三类姓名只能由管理员在基础信息表里维护，
+    # 教师在小程序端只保留「是否公开」的选择权，不接受姓名内容修改。
     if "residences" in payload:
         residences = payload["residences"]
         if not isinstance(residences, list):
@@ -272,7 +272,7 @@ def update_my_public_profile():
         visibility = payload["visibility"]
         if not isinstance(visibility, dict):
             return {"error": "公开设置格式无效"}, 400
-        allowed = {"showRealName", "showAlias", "showResidences", "showBio", "showFirstCertifiedOn", "showCurrentTierCertifiedOn"}
+        allowed = {"showRealName", "showAlias", "showXileName", "showResidences", "showBio", "showFirstCertifiedOn", "showCurrentTierCertifiedOn"}
         teacher.public_profile_settings = json.dumps({key: bool(visibility.get(key, default)) for key, default in _public_profile_settings(teacher).items() if key in allowed}, ensure_ascii=False)
     db.session.commit()
     return get_my_public_profile()

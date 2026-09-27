@@ -271,10 +271,24 @@ def test_teacher_detail_returns_public_certification_profile(client):
     assert payload["specialties"] == ["阴瑜伽", "流瑜伽", "产后瑜伽"]
     assert payload["certifiedAt"] == "2023.01.01"
     assert payload["certificationNote"] == "该教师已通过喜乐瑜伽教师认证，资质处于有效期内。"
+    # 师资培训资格认证在教师详情页展示（等级认证有效期至 下方）。
+    assert payload["instructorCertification"] is None
     # 显示姓名 defaults to on in 个人设置, so the legal name is public unless
     # the teacher turns the switch off.
     assert payload["realName"] == "张三"
     assert "phone" not in payload
+
+
+def test_teacher_detail_exposes_instructor_certification(client):
+    teacher = db.session.get(Teacher, 1)
+    teacher.instructor_certification = "高级"
+    db.session.commit()
+
+    token = _login_as_teacher(client, 1)
+    response = client.get("/api/mp/teachers/1/summary", headers={"Authorization": f"Bearer {token}"})
+
+    assert response.status_code == 200
+    assert response.get_json()["instructorCertification"] == "高级"
 
 
 def test_teacher_profile_returns_real_name_when_no_xile_name_is_set(client):

@@ -30,7 +30,7 @@ def _teacher_summary(teacher):
         "name": _display_name(teacher),
         "xileName": _public_xile_name(teacher),
         "realName": _public_real_name(teacher),
-        "alias": teacher.alias if settings["showAlias"] else None,
+        "alias": _public_alias(teacher),
         "tier": teacher.tier.code,
         "tierName": teacher.tier.name,
         "city": teacher.city,
@@ -39,6 +39,7 @@ def _teacher_summary(teacher):
         "validUntil": _date_text(teacher.valid_until),
         "certifiedAt": _date_text(teacher.first_certified_on) if settings["showFirstCertifiedOn"] else None,
         "currentTierCertifiedOn": _date_text(teacher.current_tier_certified_on) if settings["showCurrentTierCertifiedOn"] else None,
+        "instructorCertification": _clean_instructor(teacher.instructor_certification),
         "residences": _residences(teacher) if settings["showResidences"] else [],
         "certificationStatus": _certification_status(teacher),
     }
@@ -62,10 +63,11 @@ def _teacher_profile(teacher):
 
 
 _PROFILE_DEFAULTS = {
-    # 姓名 and 别名 are shown on the public teacher page by default; a teacher
-    # can still hide them from 个人设置.
+    # 本名 / 常用名 / 喜乐名三类姓名都由管理员录入，教师可在个人设置里
+    # 分别决定是否公开；默认全部公开。
     "showRealName": True,
     "showAlias": True,
+    "showXileName": True,
     # 经常居住地 and 个人简介 are always public: 个人设置 no longer offers a
     # visibility switch for them, and the teacher page has to show what the
     # teacher filled in.
@@ -108,26 +110,43 @@ def _clean_name(value):
 
 
 def _display_name(teacher):
-    return _clean_name(teacher.xile_name) or _clean_name(teacher.alias) or _clean_name(teacher.real_name) or None
+    """公开显示名：按当事人设置，依次取喜乐名、常用名、本名。"""
+    return (
+        _public_xile_name(teacher)
+        or _public_alias(teacher)
+        or _public_real_name(teacher)
+        or None
+    )
 
 
 def _public_xile_name(teacher):
     """Return the 喜乐名, treating imported fillers such as 无 as unset."""
+    if not _public_profile_settings(teacher)["showXileName"]:
+        return None
     return _clean_name(teacher.xile_name) or None
 
 
-def _public_real_name(teacher):
-    """Expose the legal name when the teacher opted in from 个人设置.
+def _public_alias(teacher):
+    """常用名：由管理员录入，教师可选择是否公开。"""
+    if not _public_profile_settings(teacher)["showAlias"]:
+        return None
+    return _clean_name(teacher.alias) or None
 
-    喜乐名 / 别名 is the public identity, so the legal name stays private by
-    default. It is still returned as a display fallback for teachers who have
-    not been given a 喜乐名 yet, so their profile never renders nameless.
-    """
-    if not _clean_name(teacher.xile_name):
-        return _clean_name(teacher.real_name) or None
+
+def _public_real_name(teacher):
+    """本名（身份证姓名）：由教师自行选择是否公开。"""
     if not _public_profile_settings(teacher)["showRealName"]:
         return None
     return _clean_name(teacher.real_name) or None
+
+
+INSTRUCTOR_CERTIFICATION_LEVELS = ("初级", "高级")
+
+
+def _clean_instructor(value):
+    """师资培训资格认证：只暴露「初级 / 高级」两档。"""
+    text = (value or "").strip()
+    return text if text in INSTRUCTOR_CERTIFICATION_LEVELS else None
 
 
 def _studio_summary(studio):

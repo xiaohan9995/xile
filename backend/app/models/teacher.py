@@ -18,6 +18,8 @@ class Teacher(db.Model):
     sort_order = db.Column(db.Integer, default=0, nullable=False)
     # 是否可维护小程序首页/工作室页横幅图（管理后台授权）。
     can_manage_banner = db.Column(db.Boolean, default=False, nullable=False)
+    # 师资培训资格认证等级：None / 初级 / 高级（年审汇总表「师资培训讲师」列）。
+    instructor_certification = db.Column(db.String(32))
     first_certified_on = db.Column(db.Date)
     valid_until = db.Column(db.Date, index=True)
     current_tier_certified_on = db.Column(db.Date)

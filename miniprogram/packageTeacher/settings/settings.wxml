@@ -55,8 +55,9 @@
       <view class="field-block"><text class="field-label">经常居住地</text><input class="settings-input" maxlength="120" placeholder="最多 3 个，用顿号或逗号分隔" value="{{residencesText}}" bindinput="onPublicInput" data-field="residencesText" /></view>
       <view class="field-block"><text class="field-label">个人简介</text><textarea class="settings-input settings-textarea" maxlength="100" placeholder="100 字以内，未填写时显示无" value="{{teachingSummary}}" bindinput="onPublicInput" data-field="teachingSummary" /></view>
       <view class="visibility-list">
-        <view class="visibility-row"><text>显示姓名</text><switch checked="{{visibility.showRealName}}" color="{{themeColor}}" bindchange="onVisibilityChange" data-field="showRealName" /></view>
-        <view class="visibility-row"><text>显示别名</text><switch checked="{{visibility.showAlias}}" color="{{themeColor}}" bindchange="onVisibilityChange" data-field="showAlias" /></view>
+        <view class="visibility-row"><text>显示本名</text><switch checked="{{visibility.showRealName}}" color="{{themeColor}}" bindchange="onVisibilityChange" data-field="showRealName" /></view>
+        <view class="visibility-row"><text>显示常用名</text><switch checked="{{visibility.showAlias}}" color="{{themeColor}}" bindchange="onVisibilityChange" data-field="showAlias" /></view>
+        <view class="visibility-row"><text>显示喜乐名</text><switch checked="{{visibility.showXileName}}" color="{{themeColor}}" bindchange="onVisibilityChange" data-field="showXileName" /></view>
       </view>
       <button class="btn-primary" bindtap="savePublicProfile" loading="{{savingPublicProfile}}" disabled="{{savingPublicProfile}}">保存公开资料</button>
     </view>

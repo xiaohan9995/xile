@@ -17,8 +17,8 @@ from .models import (
 DEFAULT_TEACHER_TIERS = (
     {"code": "L1", "name": "喜乐顾问", "review_cycle_years": 2, "review_required": True, "sort_order": 1},
     {"code": "L2", "name": "喜乐瑜伽初级教师", "review_cycle_years": 2, "review_required": True, "sort_order": 2},
-    {"code": "L3", "name": "喜乐健康生活管理师（喜乐瑜伽中级教师）", "review_cycle_years": 2, "review_required": True, "sort_order": 3},
-    {"code": "L4", "name": "喜乐智慧生命教练（喜乐瑜伽高级教师）", "review_cycle_years": 2, "review_required": True, "sort_order": 4},
+    {"code": "L3", "name": "喜乐健康生活管理师（中级喜乐瑜伽教师）", "review_cycle_years": 2, "review_required": True, "sort_order": 3},
+    {"code": "L4", "name": "喜乐智慧生命教练（高级喜乐瑜伽教师）", "review_cycle_years": 2, "review_required": True, "sort_order": 4},
     {"code": "L5", "name": "喜乐生命工程师（喜乐智慧导师）", "review_cycle_years": 3, "review_required": True, "sort_order": 5},
 )
 

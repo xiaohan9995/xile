@@ -33,7 +33,7 @@ Page({
     forcePasswordChange: false,
     residencesText: '',
     teachingSummary: '',
-    visibility: { showRealName: true, showAlias: true, showResidences: true, showBio: true, showFirstCertifiedOn: true, showCurrentTierCertifiedOn: true },
+    visibility: { showRealName: true, showAlias: true, showXileName: true, showResidences: true, showBio: true, showFirstCertifiedOn: true, showCurrentTierCertifiedOn: true },
     savingPublicProfile: false,
   },
 

@@ -3,7 +3,7 @@
     <div class="page-head">
       <div>
         <h1>教师批量导入</h1>
-        <p>上传 Excel 后进行字段预检、重复编号校验和导入批次记录。</p>
+        <p>上传年审汇总表后进行字段预检：库中已存在的教师更新资料，不存在的教师新增档案。</p>
       </div>
       <button class="sync-btn" @click="downloadTemplate">下载导入模板</button>
     </div>
@@ -27,8 +27,8 @@
         >
           <strong v-if="state === 'uploading'">正在上传解析中...</strong>
           <template v-else>
-            <strong>将教师资料 Excel 拖拽到这里</strong>
-            <span>支持 .xlsx 格式，字段以客户年审表为准</span>
+            <strong>将年审汇总表 Excel 拖拽到这里</strong>
+            <span>支持 .xlsx 格式；表头需包含「级别」「中文名」「首次…认证年份」等列</span>
           </template>
           <input
             ref="fileInputRef"
@@ -47,13 +47,44 @@
               <strong>{{ preview.totalRows }}</strong>
             </div>
             <div class="preview-stat">
-              <span>有效行数</span>
-              <strong class="valid">{{ preview.validRows }}</strong>
+              <span>将新增</span>
+              <strong class="valid">{{ preview.createRows }}</strong>
             </div>
             <div class="preview-stat">
-              <span>错误数</span>
+              <span>将更新</span>
+              <strong class="valid">{{ preview.updateRows }}</strong>
+            </div>
+            <div class="preview-stat">
+              <span>无变化</span>
+              <strong>{{ preview.skipRows }}</strong>
+            </div>
+            <div class="preview-stat">
+              <span>无法导入</span>
               <strong class="error">{{ preview.errors.length }}</strong>
             </div>
+          </div>
+
+          <div class="preview-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>行号</th>
+                  <th>姓名</th>
+                  <th>等级</th>
+                  <th>操作</th>
+                  <th>变更内容</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="row in preview.preview" :key="row.rowNumber">
+                  <td>{{ row.rowNumber }}</td>
+                  <td>{{ row.name }}</td>
+                  <td>{{ row.tier }}</td>
+                  <td>{{ actionLabel(row.action) }}</td>
+                  <td class="change-cell">{{ describeRow(row) }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
           <div v-if="preview.errors.length > 0" class="error-table-wrap">
@@ -91,7 +122,12 @@
         <div v-if="state === 'done'" class="import-done">
           <div class="empty-check">✓</div>
           <h2>导入完成</h2>
-          <p>成功创建 {{ result.createdCount }} 条教师记录。</p>
+          <p>
+            新增 {{ result.createdCount }} 位教师，更新 {{ result.updatedCount }} 位教师资料<span
+              v-if="result.skippedCount"
+            >，{{ result.skippedCount }} 位无变化</span
+            ><span v-if="result.failedCount">，{{ result.failedCount }} 行无法导入</span>。
+          </p>
           <button class="primary-btn" @click="resetState">继续导入</button>
         </div>
       </section>
@@ -108,7 +144,7 @@ const isDragging = ref(false)
 const fileInputRef = ref(null)
 const selectedFile = ref(null)
 const preview = ref({ totalRows: 0, validRows: 0, errors: [] })
-const result = ref({ createdCount: 0 })
+const result = ref({ createdCount: 0, updatedCount: 0, skippedCount: 0, failedCount: 0 })
 const batchId = ref(null)
 
 const stateLabel = computed(() => {
@@ -156,7 +192,11 @@ async function processFile(file) {
     preview.value = {
       totalRows: res.totalRows || 0,
       validRows: res.validRows || 0,
+      createRows: res.createRows || 0,
+      updateRows: res.updateRows || 0,
+      skipRows: res.skipRows || 0,
       errors: res.errors || [],
+      preview: res.preview || [],
     }
     batchId.value = res.batchId
     state.value = 'preview'
@@ -171,7 +211,12 @@ async function handleCommit() {
   state.value = 'committing'
   try {
     const res = await commitImport(batchId.value, selectedFile.value)
-    result.value = { createdCount: res.createdCount || 0 }
+    result.value = {
+      createdCount: res.createdCount || 0,
+      updatedCount: res.updatedCount || 0,
+      skippedCount: res.skippedCount || 0,
+      failedCount: res.failedCount || 0,
+    }
     state.value = 'done'
   } catch (error) {
     console.warn('导入提交失败', error)
@@ -182,10 +227,20 @@ async function handleCommit() {
 function resetState() {
   state.value = 'idle'
   selectedFile.value = null
-  preview.value = { totalRows: 0, validRows: 0, errors: [] }
-  result.value = { createdCount: 0 }
+  preview.value = { totalRows: 0, validRows: 0, createRows: 0, updateRows: 0, skipRows: 0, errors: [], preview: [] }
+  result.value = { createdCount: 0, updatedCount: 0, skippedCount: 0, failedCount: 0 }
   batchId.value = null
   if (fileInputRef.value) fileInputRef.value.value = ''
+}
+
+function actionLabel(action) {
+  return { create: '新增', update: '更新', skip: '无变化', error: '无法导入' }[action] || action
+}
+
+function describeRow(row) {
+  if (row.message) return row.message
+  if (!row.changes || row.changes.length === 0) return '与库中资料一致'
+  return row.changes.map((item) => `${item.label}：${item.from ?? '空'} → ${item.to ?? '空'}`).join('；')
 }
 </script>
 
@@ -221,8 +276,21 @@ function resetState() {
 
 .preview-summary {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 14px;
+}
+
+.preview-table-wrap {
+  border: 1px solid #eef0ee;
+  border-radius: 18px;
+  overflow: hidden;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.change-cell {
+  color: #4b5a55;
+  font-size: 12px;
 }
 
 .preview-stat {

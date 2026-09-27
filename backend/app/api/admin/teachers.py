@@ -1,13 +1,18 @@
-import calendar
 import json
-from io import BytesIO
 from datetime import date, datetime
 
 from flask import g, request, send_file
 
 from ...extensions import db
 from ...models import AuditLog, ImportBatch, ImportError, Teacher, TeacherDetail, TeacherTier
-from ...services.teacher_service import create_teacher as svc_create_teacher, generate_certificate_no
+from ...services.teacher_service import create_teacher as svc_create_teacher
+from ...services.teacher_import import (
+    apply_plan,
+    build_plan,
+    build_template_workbook,
+    INSTRUCTOR_CERTIFICATION_LEVELS,
+    parse_workbook,
+)
 from ...utils.storage import file_url as _file_url, storage_reference
 from .helpers import current_admin_id, require_admin_roles, require_admin_token, _date_text
 from . import admin_bp
@@ -40,6 +45,7 @@ def teacher_list():
             "district": t.district,
             "status": t.status,
             "canManageBanner": bool(t.can_manage_banner),
+            "instructorCertification": t.instructor_certification,
             "validUntil": _date_text(t.valid_until),
             "certifiedAt": _date_text(t.first_certified_on),
             "currentTierCertifiedOn": _date_text(t.current_tier_certified_on),
@@ -78,6 +84,7 @@ def get_teacher_detail(teacher_id):
         "district": teacher.district,
         "status": teacher.status,
         "canManageBanner": bool(teacher.can_manage_banner),
+        "instructorCertification": teacher.instructor_certification,
         "validUntil": _date_text(teacher.valid_until),
         "certifiedAt": _date_text(teacher.first_certified_on),
         "currentTierCertifiedOn": _date_text(teacher.current_tier_certified_on),
@@ -161,6 +168,11 @@ def update_teacher(teacher_id):
         teacher.certificate_url = storage_reference((payload["certificateUrl"] or "").strip())
     if "canManageBanner" in payload:
         teacher.can_manage_banner = bool(payload["canManageBanner"])
+    if "instructorCertification" in payload:
+        value = str(payload["instructorCertification"] or "").strip()
+        if value and value not in INSTRUCTOR_CERTIFICATION_LEVELS:
+            return {"error": "师资培训资格认证无效（需为初级/高级）"}, 400
+        teacher.instructor_certification = value or None
 
     if "committeeRemark" in payload or "phone" in payload or "specialties" in payload or "teachingSummary" in payload:
         if not teacher.detail:
@@ -284,59 +296,9 @@ def delete_teacher(teacher_id):
 
 
 # ─── Import ──────────────────────────────────────────────────────────────────
-
-VALID_TIERS = {"L1", "L2", "L3", "L4", "L5"}
-
-# Expected column order:
-# A: name, B: phone, C: tier, D: city, E: district,
-# F: certifiedAt, G: validUntil, H: xileName, I: idNumber
-
-
-def _cell_str(row, idx):
-    """Safely extract a stripped string from a row cell, handling short rows."""
-    if idx >= len(row) or row[idx] is None:
-        return ""
-    val = row[idx]
-    if isinstance(val, datetime):
-        return val.strftime("%Y-%m-%d")
-    if isinstance(val, date):
-        return val.isoformat()
-    if isinstance(val, float) and val == int(val):
-        return str(int(val))
-    return str(val).strip()
-
-
-def _parse_date(text):
-    """Parse a date string accepting YYYY-MM-DD, YYYY.MM.DD, YYYY/MM/DD formats."""
-    if not text:
-        return None
-    normalized = text.replace(".", "-").replace("/", "-")
-    try:
-        return date.fromisoformat(normalized)
-    except ValueError:
-        return None
-
-
-def _is_empty_row(row):
-    """Return True if all cells in the row are None or whitespace-only."""
-    if row is None:
-        return True
-    return all(cell is None or str(cell).strip() == "" for cell in row)
-
-
-def _parse_import_row(row):
-    """Parse a single Excel row into a dict of field values."""
-    return {
-        "name": _cell_str(row, 0),
-        "phone": _cell_str(row, 1),
-        "tier": _cell_str(row, 2).upper(),
-        "city": _cell_str(row, 3),
-        "district": _cell_str(row, 4),
-        "certifiedAt": _cell_str(row, 5),
-        "validUntil": _cell_str(row, 6),
-        "xileName": _cell_str(row, 7),
-        "idNumber": _cell_str(row, 8).upper(),
-    }
+#
+# 导入格式以《喜乐瑜伽教师信息汇总表》的「教师名单汇总」工作表为准，
+# 解析与新增/更新判定都在 services/teacher_import.py 里实现。
 
 
 @admin_bp.get("/import/teachers/template")
@@ -344,24 +306,85 @@ def _parse_import_row(row):
 def import_template():
     """Download the canonical teacher import workbook."""
     try:
-        import openpyxl
-        from openpyxl.styles import Font
-        workbook = openpyxl.Workbook()
-        sheet = workbook.active
-        sheet.title = "教师资料"
-        headers = ["姓名", "手机号", "认证等级", "城市", "地区", "首次认证日期", "有效期至", "喜乐名", "身份证号"]
-        sheet.append(headers)
-        sheet.append(["张三", "13800000000", "L1", "上海", "浦东新区", "2024-01-01", "2026-12-31", "张三老师", "310101199001011234"])
-        for cell in sheet[1]:
-            cell.font = Font(bold=True)
-        for index, width in enumerate([16, 16, 12, 14, 16, 18, 16, 16, 22], start=1):
-            sheet.column_dimensions[openpyxl.utils.get_column_letter(index)].width = width
-        output = BytesIO()
-        workbook.save(output)
-        output.seek(0)
+        output = build_template_workbook()
         return send_file(output, as_attachment=True, download_name="教师批量导入模板.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     except Exception:
         return {"error": "导入模板生成失败"}, 500
+
+
+def _json_value(value):
+    """把 date/datetime 转成 ISO 文本，便于接口返回。"""
+    if isinstance(value, datetime):
+        return value.isoformat(sep=" ", timespec="seconds")
+    if isinstance(value, date):
+        return value.isoformat()
+    return value
+
+
+def _plan_counts(plan):
+    return {
+        "createRows": sum(1 for item in plan if item["action"] == "create"),
+        "updateRows": sum(1 for item in plan if item["action"] == "update"),
+        "skipRows": sum(1 for item in plan if item["action"] == "skip"),
+        "failedRows": sum(1 for item in plan if item["action"] == "error"),
+    }
+
+
+def _plan_preview(plan, limit=50):
+    rows = []
+    for item in plan[:limit]:
+        rows.append(
+            {
+                "rowNumber": item["rowNumber"],
+                "name": item.get("name"),
+                "tier": item.get("tier"),
+                "city": item.get("city"),
+                "certifiedYear": item.get("certifiedYear"),
+                "currentTierCertifiedYear": item.get("currentTierCertifiedYear"),
+                "instructorCertification": item.get("instructorCertification"),
+                "validUntil": _json_value(item.get("validUntil")),
+                "idNumber": item.get("idNumber"),
+                "action": item["action"],
+                "message": item.get("message"),
+                "changes": [
+                    {
+                        "label": change["label"],
+                        "from": _json_value(change["from"]),
+                        "to": _json_value(change["to"]),
+                    }
+                    for change in item.get("changes") or []
+                ],
+            }
+        )
+    return rows
+
+
+def _plan_errors(plan):
+    return [
+        {"rowNumber": item["rowNumber"], "field": "row", "message": item["message"]}
+        for item in plan
+        if item["action"] == "error"
+    ]
+
+
+def _record_batch(total_rows, success_rows, error_rows, errors, status="preview"):
+    batch = ImportBatch(
+        admin_id=current_admin_id() or 1,
+        total_rows=total_rows,
+        success_rows=success_rows,
+        error_rows=error_rows,
+        status=status,
+    )
+    db.session.add(batch)
+    db.session.flush()
+    for err in errors:
+        db.session.add(ImportError(
+            batch_id=batch.id,
+            row_number=err["rowNumber"],
+            field=err["field"],
+            error_message=err["message"],
+        ))
+    return batch
 
 
 @admin_bp.post("/import/teachers/preview")
@@ -373,96 +396,28 @@ def import_preview():
         return {"error": "file required"}, 400
 
     try:
-        import openpyxl
-        wb = openpyxl.load_workbook(file, read_only=True, data_only=True)
-        ws = wb.active
+        sheet_title, records, errors, total_rows = parse_workbook(file)
     except Exception:
         return {"error": "invalid excel file"}, 400
 
-    rows = list(ws.iter_rows(min_row=2, values_only=True))
-    wb.close()
+    plan = build_plan(records)
+    plan_errors = _plan_errors(plan)
+    all_errors = [{"rowNumber": row, "field": field, "message": message} for row, field, message in errors]
+    all_errors.extend(plan_errors)
+    counts = _plan_counts(plan)
+    valid_rows = counts["createRows"] + counts["updateRows"] + counts["skipRows"]
 
-    errors = []
-    parsed_rows = []
-
-    existing_id_numbers = set(
-        number for (number,) in db.session.query(Teacher.teacher_no).all()
-    )
-    seen_id_numbers = set()
-
-    for idx, row in enumerate(rows, start=2):
-        # Skip completely empty rows
-        if _is_empty_row(row):
-            continue
-
-        data = _parse_import_row(row)
-        row_errors = []
-
-        # Required: name
-        if not data["name"]:
-            row_errors.append({"rowNumber": idx, "field": "name", "message": "姓名不能为空"})
-
-        # Required: tier (must be L1-L5)
-        if not data["tier"] or data["tier"] not in VALID_TIERS:
-            row_errors.append({"rowNumber": idx, "field": "tier", "message": "等级代码无效（需为L1-L5）"})
-
-        # Required: certifiedAt
-        cert_date = _parse_date(data["certifiedAt"])
-        if not data["certifiedAt"]:
-            row_errors.append({"rowNumber": idx, "field": "certifiedAt", "message": "认证日期不能为空"})
-        elif cert_date is None:
-            row_errors.append({"rowNumber": idx, "field": "certifiedAt", "message": "日期格式无效（需YYYY-MM-DD）"})
-
-        # Optional: validUntil (validate format if provided)
-        if data["validUntil"]:
-            valid_until = _parse_date(data["validUntil"])
-            if valid_until is None:
-                row_errors.append({"rowNumber": idx, "field": "validUntil", "message": "有效期格式无效（需YYYY-MM-DD）"})
-
-        if data["idNumber"]:
-            if len(data["idNumber"]) < 6:
-                row_errors.append({"rowNumber": idx, "field": "idNumber", "message": "身份证号至少需要 6 位"})
-            elif data["idNumber"] in seen_id_numbers:
-                row_errors.append({"rowNumber": idx, "field": "idNumber", "message": "身份证号在文件中重复"})
-            elif data["idNumber"] in existing_id_numbers:
-                row_errors.append({"rowNumber": idx, "field": "idNumber", "message": "该教师已存在（身份证号已关联），导入时将跳过"})
-            else:
-                seen_id_numbers.add(data["idNumber"])
-
-        if row_errors:
-            errors.extend(row_errors)
-        else:
-            parsed_rows.append(data)
-
-    total_rows = len([r for r in rows if not _is_empty_row(r)])
-    valid_rows = len(parsed_rows)
-
-    batch = ImportBatch(
-        admin_id=1,
-        total_rows=total_rows,
-        success_rows=valid_rows,
-        error_rows=total_rows - valid_rows,
-        status="preview",
-    )
-    db.session.add(batch)
-    db.session.flush()
-
-    for err in errors:
-        db.session.add(ImportError(
-            batch_id=batch.id,
-            row_number=err["rowNumber"],
-            field=err["field"],
-            error_message=err["message"],
-        ))
-
+    batch = _record_batch(total_rows, valid_rows, len(all_errors), all_errors)
     db.session.commit()
 
     return {
         "batchId": batch.id,
+        "sheetTitle": sheet_title,
         "totalRows": total_rows,
         "validRows": valid_rows,
-        "errors": errors,
-        "preview": parsed_rows[:50],  # Return first 50 rows for UI preview
+        **counts,
+        "errors": all_errors,
+        "preview": _plan_preview(plan),
     }
 
 
@@ -484,98 +439,38 @@ def import_commit():
         return {"error": "file required for commit"}, 400
 
     try:
-        import openpyxl
-        wb = openpyxl.load_workbook(file, read_only=True, data_only=True)
-        ws = wb.active
+        sheet_title, records, errors, total_rows = parse_workbook(file)
     except Exception:
         return {"error": "invalid excel file"}, 400
 
-    rows = list(ws.iter_rows(min_row=2, values_only=True))
-    wb.close()
+    plan = build_plan(records)
+    created, updated, skipped, failed, failures = apply_plan(plan)
 
-    # 已存在的证书号：自动生成时检查冲突（同年同级别同身份证后四位可能撞号）。
-    existing_nos = set(
-        no for (no,) in db.session.query(Teacher.certificate_no).filter(Teacher.certificate_no.isnot(None)).all()
-    )
-    # 已存在的身份证号：导入时跳过，避免 teacher_no 唯一约束冲突。
-    existing_id_numbers = set(
-        number for (number,) in db.session.query(Teacher.teacher_no).all()
-    )
-    created = 0
-    skipped = 0
-    # 排序号：从当前最大 sort_order 之后继续递增，新导入的教师排在末尾。
-    max_sort = db.session.query(db.func.max(Teacher.sort_order)).scalar() or 0
-    next_order = max_sort + 1
-
-    for row in rows:
-        # Skip empty rows
-        if _is_empty_row(row):
-            continue
-
-        data = _parse_import_row(row)
-
-        # 身份证号已存在：跳过该教师（不重复导入）。
-        if data["idNumber"] and data["idNumber"] in existing_id_numbers:
-            skipped += 1
-            continue
-
-        # Validate required fields — skip invalid rows silently
-        if not data["name"]:
-            continue
-        if not data["tier"] or data["tier"] not in VALID_TIERS:
-            continue
-
-        cert_date = _parse_date(data["certifiedAt"])
-        if cert_date is None:
-            continue
-
-        tier = TeacherTier.query.filter_by(code=data["tier"]).first()
-        if not tier:
-            continue
-
-        # 证书号按新规则自动生成（2050+级别+XL+首次认证年份+身份证后四位）。
-        certificate_no = generate_certificate_no(data["tier"], cert_date.year, data["idNumber"])
-        if certificate_no in existing_nos:
-            # 撞号（同年同级别同身份证后四位）：跳过该行，交由管理员手动处理。
-            skipped += 1
-            continue
-        existing_nos.add(certificate_no)
-
-        # Determine validUntil: use provided date or calculate from tier cycle
-        valid_until = _parse_date(data["validUntil"])
-        if valid_until is None:
-            cycle = tier.review_cycle_years or 3
-            target_year = cert_date.year + cycle
-            target_day = min(cert_date.day, calendar.monthrange(target_year, cert_date.month)[1])
-            valid_until = date(target_year, cert_date.month, target_day)
-
-        teacher = Teacher(
-            teacher_no=data["idNumber"],
-            certificate_no=certificate_no,
-            real_name=data["name"],
-            xile_name=data["xileName"] or None,
-            tier_id=tier.id,
-            city=data["city"] or None,
-            district=data["district"] or None,
-            status="active",
-            first_certified_on=cert_date,
-            valid_until=valid_until,
-            sort_order=next_order,
-        )
-        db.session.add(teacher)
-        db.session.flush()
-
-        if data["phone"]:
-            db.session.add(TeacherDetail(teacher_id=teacher.id, phone=data["phone"]))
-
-        if data["idNumber"]:
-            existing_id_numbers.add(data["idNumber"])
-        created += 1
-        next_order += 1
+    all_errors = [{"rowNumber": row, "field": field, "message": message} for row, field, message in errors]
+    all_errors.extend(_plan_errors(plan))
+    all_errors.extend(failures)
 
     batch.status = "committed"
-    batch.success_rows = created
-    db.session.add(AuditLog(admin_id=1, action="import_teachers", target_type="batch", target_id=batch.id))
+    batch.total_rows = total_rows
+    batch.success_rows = created + updated
+    batch.error_rows = len(all_errors)
+    for err in all_errors:
+        db.session.add(ImportError(
+            batch_id=batch.id,
+            row_number=err["rowNumber"],
+            field=err["field"],
+            error_message=err["message"],
+        ))
+    db.session.add(AuditLog(admin_id=current_admin_id() or 1, action="import_teachers", target_type="batch", target_id=batch.id))
     db.session.commit()
 
-    return {"batchId": batch.id, "createdCount": created, "skippedCount": skipped}
+    return {
+        "batchId": batch.id,
+        "sheetTitle": sheet_title,
+        "totalRows": total_rows,
+        "createdCount": created,
+        "updatedCount": updated,
+        "skippedCount": skipped,
+        "failedCount": failed,
+        "errors": all_errors,
+    }

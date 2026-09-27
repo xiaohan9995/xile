@@ -7,7 +7,7 @@ const app = getApp();
 // Dates arrive as "YYYY.MM.DD"; only the year is shown for certification years.
 const yearOf = (value) => (value ? String(value).slice(0, 4) : '');
 
-// 等级名称里括号内常是补充说明（如「喜乐智慧生命教练（喜乐瑜伽高级教师）」），
+// 等级名称里括号内常是补充说明（如「喜乐智慧生命教练（高级喜乐瑜伽教师）」），
 // 身份区只展示主名称，去掉全角/半角括号及其内容。
 const stripParenthetical = (value) =>
   value ? String(value).replace(/[（(][^（）()]*[）)]/g, '').trim() : '';
