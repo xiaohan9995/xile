@@ -19,17 +19,21 @@
 
 ## 2. 两个必须先理解的风险
 
-1. **换主体 → AppID 变 → openid 全变（最致命）**：微信小程序 `openid` 是 `AppID + 微信用户` 的哈希。换 AppID 后同一用户的 openid 完全不同，`users.openid` 与「教师↔微信」绑定关系全部失效。
+1. **换主体 → AppID 变 → openid 全变**：微信小程序 `openid` 是 `AppID + 微信用户` 的哈希，换 AppID 后同一用户的 openid 完全不同，`users.openid` 记录失效。
+
+   本项目影响面很小：用户身份**不依赖微信**，`users` 表里只有少数用户存了 openid，其余本来就用「身份证号 + 密码」登录。因此采用「用户自助重新关联教师」即可，不强制做 openid 批量映射。
+
 2. **CloudBase 环境不能跨账号「迁移」，只能重建**：新账号下新建环境，重新部署云函数/云托管/数据库/存储，数据靠导出导入搬运。
+3. **对象存储引用必须与账号解耦**：COS 桶名里带腾讯云账号 APPID，换账号后桶名必然变化。历史数据若存绝对 URL 会全部失效，因此库里统一存**对象键**（见第 5 节）。
 
 ## 3. 关键决策：小程序换主体方式
 
-| 路径 | 说明 | openid 影响 | 结论 |
+| 路径 | 说明 | openid 处理 | 结论 |
 | --- | --- | --- | --- |
-| A. 微信官方「主体迁移」 | 旧小程序后台发起迁到新主体 | AppID 变，但提供 openid 新旧转换接口，可批量映射 | ✅ 采用 |
-| B. 重新注册新小程序 | 新主体直接注册 | openid 全新、无法转换，老用户需重授权+重绑教师 | 仅老用户极少时 |
+| A. 用户自助重新关联（推荐） | 用户在新小程序里用「身份证号 + 密码」重新登录并关联教师 | 无需映射，旧 openid 记录作废 | ✅ 采用 |
+| B. 官方「主体迁移」+ openid 映射 | 旧小程序后台发起主体迁移，拿旧→新 openid 映射表批量替换 | 用户无感，但依赖官方接口与迁移窗口 | 可选，作为 A 的加速手段 |
 
-采用 A：拿「旧 openid → 新 openid」映射表，数据层替换，用户基本无感。
+采用 A：`POST /api/mp/auth/link-teacher-by-password` 与小程序 `packageTeacher/link-teacher` 页面已经支持，不需要新开发。openid 变化只表现为这些用户首次进入时重新关联一次。
 
 ## 4. 分步执行清单
 
@@ -54,19 +58,21 @@
 - [ ] 部署云函数 `mp-auth-bridge` 到新环境。
 - [ ] 部署云托管服务，`GET /api/health` 返回 200。
 
-### 4.2 小程序主体迁移（路径 A）
+### 4.2 小程序主体迁移
 
-- [ ] 旧小程序后台发起主体迁移到新主体。
-- [ ] 拿到新 AppID 与 openid 新旧转换接口。
+- [ ] 旧小程序后台发起主体迁移到新主体（或在主体下重新注册小程序）。
+- [ ] 拿到新 AppID，更新 `project.config.json`。
 - [ ] 新 CloudBase 环境绑定新小程序（控制台「小程序认证」）。
+- [ ] 可选：若要走「用户无感」，在迁移窗口内获取「旧 openid → 新 openid」映射表。
 
 ### 4.3 修改代码（见第 5 节清单）
 
-### 4.4 openid 数据修复（核心，切换流量前完成）
+### 4.4 用户重新关联教师（核心，切换流量前完成）
 
-- [ ] 用转换接口取「旧 openid → 新 openid」映射表。
-- [ ] 批量 `UPDATE users SET openid = 新值`，并按需处理关联表。
-- [ ] 校验替换前后用户数与教师绑定关系不丢失。
+- [ ] 迁移前导出 `users`（id / openid / username / teacher_id）作为对照表。
+- [ ] 迁移后通知教师用「身份证号 + 密码」重新登录并关联教师（流程已有，无需新开发）。
+- [ ] 可选（路径 B）：批量 `UPDATE users SET openid = 新值`，再校验绑定关系。
+- [ ] 校验：`teacher_id` 非空的用户数、教师端可见数据与迁移前一致。
 
 ### 4.5 切换与验证
 
@@ -97,10 +103,36 @@ cloudbaserc.json                          {{env.ENV_ID}}（模板，改 .env.loc
 WECHAT_APPID / WECHAT_SECRET              新小程序凭证
 CLOUDBASE_AUTH_BRIDGE_SECRET              云函数与云托管一致（可沿用旧值）
 JWT_SECRET_KEY / SECRET_KEY               建议换新
-MYSQL / COS / TENCENT_MAP_KEY             新环境连接 + 地图 Referer 白名单
+MYSQL_DATABASE_URI                        新环境数据库连接
+COS_BUCKET / COS_REGION / COS_SECRET_ID / COS_SECRET_KEY   新账号对象存储（桶名会随账号变化）
+TENCENT_MAP_KEY                           地图 Referer 白名单加入新域名
 ```
 
 管理后台（`admin-src`）不含微信身份，随云托管一起迁移；管理员账号随 MySQL 迁移，无需额外处理。
+
+### 存储引用（已改造，迁移前再核对一次）
+
+历史数据里曾把头像/证书/横幅存成**绝对 COS 地址**，域名包含当前账号 APPID，换账号后必然失效。现已统一改为存**对象键**：
+
+- 代码：`backend/app/utils/storage.py` 的 `storage_reference()` 入库前归一成对象键（COS 绝对地址→键；微信头像等外部地址原样保留）。
+- 数据：历史绝对地址已批量归一（teachers / users / studios / system_configs）。迁移前若又有新增绝对地址，用同样的 SQL 再跑一次：
+
+```
+UPDATE <表> SET <列> = REPLACE(<列>, 'https://<旧桶>.cos.<region>.myqcloud.com/', '')
+WHERE <列> LIKE '%<旧桶>.cos%';
+```
+
+涉及列：`teachers.avatar_url` / `teachers.certificate_url` / `users.avatar_url` /
+`studios.cover_url` / `studios.images` / `studios.contact_image` / `system_configs.value`（`home_banner_url`、`studio_banner_url`）。
+
+迁移后核对（结果应为 0；`thirdwx.qlogo.cn` 的微信头像保留属正常）：
+
+```
+SELECT COUNT(*) FROM teachers WHERE COALESCE(avatar_url,'') LIKE '%myqcloud.com%'
+  OR COALESCE(certificate_url,'') LIKE '%myqcloud.com%';
+```
+
+改完之后，换 COS 桶或换腾讯云账号只需要改 `COS_BUCKET` / `COS_REGION` 环境变量，历史数据不需要动。
 
 ## 6. 回滚方案
 

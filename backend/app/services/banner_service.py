@@ -1,7 +1,7 @@
 """首页 / 工作室页横幅图配置的公共读写逻辑，供管理后台与小程序端复用。
 
-横幅图 URL 存入 system_configs（home_banner_url / studio_banner_url），
-统一存「稳定对象 URL」，读取时经 file_url 重新签名（与工作室图片策略一致）。
+横幅图存入 system_configs（home_banner_url / studio_banner_url），
+统一存对象键，读取时经 file_url 重新签名（与工作室图片策略一致）。
 """
 from ..extensions import db
 from ..models import SystemConfig

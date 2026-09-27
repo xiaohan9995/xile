@@ -18,7 +18,8 @@ _ASSET_PREFIXES = {
     "banner": "banners",
 }
 
-# 需要公开读、且以稳定 COS 地址存库的资源类型（头像/封面/联系工作室图片/横幅）。
+# 需要公开读的资源类型（头像/封面/联系工作室图片/横幅）：上传后直接返回可公开访问的
+# 地址用于预览；入库时统一由 storage_reference 归一成对象键。
 # 其余（证书等）返回临时签名地址，仅用于即时预览。
 _PUBLIC_ASSET_TYPES = {"teacher-avatar", "studio-cover", "studio-contact", "banner"}
 _IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
@@ -60,9 +61,7 @@ def upload_asset():
         )
     except StorageNotConfiguredError as error:
         return {"error": str(error)}, 503
-    # Public admin images are stored as their stable COS URL. Returning a
-    # presigned URL here can exceed the database's legacy 256-char cover/avatar
-    # columns and makes a subsequent edit fail with a 500. Private assets use
-    # a temporary URL for immediate preview as before.
+    # 公开资源直接给稳定的公开地址，私有资源给临时签名地址；两者都只用于前端预览，
+    # 真正入库的是 storage_reference 归一后的对象键（见 assets 的保存接口）。
     preview_url = url if asset_type in _PUBLIC_ASSET_TYPES else file_url(url)
     return {"key": key, "url": preview_url}, 201

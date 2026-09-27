@@ -8,7 +8,14 @@ from sqlalchemy import extract
 
 from ...extensions import db, limiter
 from ...models import Announcement, AnnualReview, ReviewCycle, Studio, Teacher, TeacherTier, User
-from ...utils.storage import StorageNotConfiguredError, cos_is_configured, download_cos_object, file_url, upload_to_cos
+from ...utils.storage import (
+    StorageNotConfiguredError,
+    cos_is_configured,
+    download_cos_object,
+    file_url,
+    storage_reference,
+    upload_to_cos,
+)
 from .helpers import (
     _certification_status,
     _date_text,
@@ -383,10 +390,13 @@ def generate_certificate_image():
 
     if cos_is_configured():
         try:
-            teacher.certificate_url = upload_to_cos(
-                buffer,
-                f"teacher-certificates/generated/{teacher.certificate_no or teacher.id}.png",
-                "image/png",
+            # 入库统一存对象键，换桶/换账号时历史数据不需要改。
+            teacher.certificate_url = storage_reference(
+                upload_to_cos(
+                    buffer,
+                    f"teacher-certificates/generated/{teacher.certificate_no or teacher.id}.png",
+                    "image/png",
+                )
             )
             db.session.commit()
             content, content_type = download_cos_object(teacher.certificate_url)

@@ -28,14 +28,19 @@ def object_url(file_key):
 
 
 def storage_reference(file_ref):
-    """Return a stable COS object URL without temporary signature parameters."""
+    """把外部传入的文件引用归一成长期存储值：COS 对象键。
+
+    存对象键而不是绝对 URL，是为了让「换 COS 桶 / 换腾讯云账号」不需要改历史数据：
+    绝对 URL 里的桶名带账号 APPID，换账号后旧域名必然失效。
+    微信头像等外部地址无法转成对象键，按原样保留。
+    """
     if not file_ref:
         return None
     settings = _cos_settings()
     if settings["bucket"] and settings["region"]:
         key = _cos_key(file_ref, settings)
         if key:
-            return object_url(key)
+            return key
     return file_ref
 
 

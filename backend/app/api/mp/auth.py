@@ -15,7 +15,7 @@ from werkzeug.utils import secure_filename
 
 from ...extensions import db, limiter
 from ...models import Teacher, User
-from ...utils.storage import StorageNotConfiguredError, file_url as _file_url, upload_to_cos
+from ...utils.storage import StorageNotConfiguredError, file_url as _file_url, storage_reference, upload_to_cos
 from ...services.auth_service import (
     AuthError,
     cloudbase_login,
@@ -335,11 +335,13 @@ def update_profile():
         if avatar_url is None:
             return {"error": "avatar must be jpg/png/gif/webp"}, 400
         saved_avatar_url = avatar_url
-        user.avatar_url = avatar_url
+        # 入库统一存对象键（换桶/换账号不需要改历史数据），响应里仍返回可访问地址。
+        avatar_ref = storage_reference(avatar_url) or avatar_url
+        user.avatar_url = avatar_ref
         if user.teacher_id:
             teacher = db.session.get(Teacher, user.teacher_id)
             if teacher:
-                teacher.avatar_url = avatar_url
+                teacher.avatar_url = avatar_ref
                 teacher_avatar_url = avatar_url
 
     if xile_name:

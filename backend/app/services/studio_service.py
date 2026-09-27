@@ -3,12 +3,12 @@ from ..utils.storage import storage_reference
 
 
 def normalize_storage_url(url):
-    """把 COS 签名 URL 转成稳定对象 URL（无签名、长度短）。
+    """把外部传入的图片地址归一成对象键（入库用）。
 
     教师提交的图片可能是签名 URL（带签名参数，长度可达数百字符），直接写入
     cover_url(String 256)/contact_image(String 512) 会在 MySQL 上触发
-    "Data too long"。这里把 http(s) 图片地址归一化为稳定对象 URL；相对路径
-    （本地开发）保持原样。
+    "Data too long"，而且换 COS 桶后会失效。这里统一归一成对象键；相对路径
+    （本地开发）与外部地址（微信头像等）保持原样。
     """
     if not url:
         return None

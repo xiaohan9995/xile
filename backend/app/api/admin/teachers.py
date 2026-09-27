@@ -53,7 +53,7 @@ def teacher_list():
             "certifiedAt": _date_text(t.first_certified_on),
             "currentTierCertifiedOn": _date_text(t.current_tier_certified_on),
             "residences": [item.strip() for item in (t.residences or "").split(",") if item.strip()],
-            "avatarUrl": storage_reference(t.avatar_url),
+            "avatarUrl": _file_url(t.avatar_url),
             "certificateUrl": _file_url(t.certificate_url),
             **({
                 "idNumber": t.teacher_no,
@@ -94,7 +94,7 @@ def get_teacher_detail(teacher_id):
         "currentTierCertifiedOn": _date_text(teacher.current_tier_certified_on),
         "residences": [item.strip() for item in (teacher.residences or "").split(",") if item.strip()],
         "publicProfileSettings": json.loads(teacher.public_profile_settings or "{}"),
-        "avatarUrl": storage_reference(teacher.avatar_url),
+        "avatarUrl": _file_url(teacher.avatar_url),
         "certificateUrl": _file_url(teacher.certificate_url),
         "phone": teacher.detail.phone if teacher.detail else None,
         "specialties": teacher.detail.specialties if teacher.detail else None,
