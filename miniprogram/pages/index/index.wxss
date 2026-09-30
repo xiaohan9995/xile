@@ -419,7 +419,7 @@
   line-height: 1;
 }
 
-/* Same type as the banner headline "喜乐瑜伽 · 教师认证中心" */
+/* Same type as the banner headline "喜乐瑜伽 · 教师管理认证平台" */
 .affirmation__title {
   display: block;
   text-align: center;
@@ -439,7 +439,7 @@
   font-weight: 700;
   line-height: 1.25;
   letter-spacing: 2rpx;
-  color: var(--color-primary);
+  color: var(--color-primary-dark);
 }
 
 .homepage-state { padding: 34rpx 0 12rpx; color: var(--color-muted); font-size: 24rpx; text-align: center; }

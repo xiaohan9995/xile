@@ -5,15 +5,15 @@
     <view class="home-visual__overlay"></view>
     <view class="home-visual__text">
       <text class="home-visual__eyebrow">JOY YOGA · TEACHER CERTIFICATION</text>
-      <text class="home-visual__title">喜乐瑜伽 · 教师认证中心</text>
-      <text class="home-visual__tagline">喜乐智慧 · 凤凰传承</text>
+      <text class="home-visual__title">喜乐瑜伽 · 教师管理认证平台</text>
+      <text class="home-visual__tagline">YOGA OF JOY TEACHER CERTIFICATION</text>
     </view>
   </view>
 
   <!-- Body content -->
   <view class="home-body">
     <view class="home-intro">
-      <text class="section-title">喜乐瑜伽教师管理认证</text>
+      <text class="section-title">喜乐智慧 · 凤凰传承</text>
       <text class="home-intro__note">浪漫开悟  智慧勇敢  富贵成佛  慈悲爱心</text>
     </view>
 

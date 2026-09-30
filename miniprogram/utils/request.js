@@ -41,6 +41,53 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const canRetry = (method, retryCount) => RETRYABLE_METHODS.includes(method) && retryCount < MAX_RETRY;
 const isAbsoluteHttpUrl = (url) => /^https?:\/\//i.test(url || '');
 
+// 服务端 /api/mp/upload/cloud-file 的体积上限（8MB）。
+const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
+
+// 微信上传类 API 的失败信息在 errMsg / errCode 上（message 通常为空），
+// 统一转成可读文案，避免用户只看到「图片上传失败」而无法判断原因。
+const describeUploadFailure = (error, fallback = '图片上传失败，请重试') => {
+  const raw = String((error && (error.errMsg || error.message)) || '').trim();
+  const code = error && error.errCode;
+  const lower = raw.toLowerCase();
+  if (/timeout|time out/.test(lower)) return '上传超时，请检查网络后重试';
+  if (code === -601002 || /env.*(not exist|不存在)|invalid env/.test(lower)) {
+    return '云开发环境未绑定当前小程序，请联系管理员';
+  }
+  if (/exceed|too large|size limit|max size/.test(lower)) return '图片过大，请选择较小的图片后重试';
+  if (code === -502005 || /permission|denied|forbidden/.test(lower)) return '没有上传权限，请重新登录后再试';
+  if (/network|fail to fetch|request:fail/.test(lower)) return '网络连接失败，请检查网络后重试';
+  return code ? `${fallback}（错误码 ${code}）` : fallback;
+};
+
+// 压缩图片；失败时返回空字符串，由调用方决定是否退回原图。
+const compressImageTo = (src, quality) => new Promise((resolve) => {
+  if (!wx.compressImage) {
+    resolve('');
+    return;
+  }
+  wx.compressImage({
+    src,
+    quality,
+    compressedWidth: 1080,
+    success: (res) => resolve((res && res.tempFilePath) || ''),
+    fail: () => resolve(''),
+  });
+});
+
+const fileSizeOf = (filePath) => new Promise((resolve) => {
+  const fs = wx.getFileSystemManager && wx.getFileSystemManager();
+  if (!fs || !fs.getFileInfo) {
+    resolve(0);
+    return;
+  }
+  fs.getFileInfo({
+    filePath,
+    success: (info) => resolve((info && info.size) || 0),
+    fail: () => resolve(0),
+  });
+});
+
 const readErrorCode = (payload = {}) => payload.code || payload.errorCode || '';
 const readRequestId = (response = {}) => {
   const header = response.header || {};
@@ -207,13 +254,10 @@ const uploadFile = (options) => new Promise((resolve, reject) => {
     reject(requestError);
   };
   const handleFail = (error) => {
-    const requestError = toRequestError({
-      statusCode: error && error.statusCode,
-      header: error && error.header,
-      requestId: error && error.requestId,
-      data: error || {},
-    });
-    if (!requestError.code && !requestError.statusCode) requestError.message = '上传失败，请检查网络后重试';
+    const requestError = new RequestError(
+      describeUploadFailure(error, '上传失败，请检查网络后重试'),
+      { statusCode: (error && error.statusCode) || 0, requestId: (error && error.requestId) || '' },
+    );
     showError(requestError, false);
     reject(requestError);
   };
@@ -263,20 +307,16 @@ const presignUpload = async (filePath, filename, prefix) => {
 // 返回 { fileKey, url }，url 为可预览的签名下载地址。
 const cloudUpload = async (filePath, filename, prefix) => {
   // 先压缩到 1080 宽减小体积；压缩失败则退回原图继续。
-  let uploadPath = filePath;
-  try {
-    const compressed = await new Promise((resolve, reject) => {
-      wx.compressImage({
-        src: filePath,
-        quality: 80,
-        compressedWidth: 1080,
-        success: resolve,
-        fail: reject,
-      });
-    });
-    if (compressed && compressed.tempFilePath) uploadPath = compressed.tempFilePath;
-  } catch (e) {
-    // 压缩失败不阻断上传。
+  let uploadPath = (await compressImageTo(filePath, 80)) || filePath;
+
+  // 部分 Android 机型会忽略 compressedWidth，压缩后仍可能超过服务端上限，
+  // 这里按实际体积再压一次；仍超限就直接提示，避免服务端返回 413。
+  if ((await fileSizeOf(uploadPath)) > MAX_UPLOAD_BYTES) {
+    const smaller = await compressImageTo(uploadPath, 60);
+    if (smaller) uploadPath = smaller;
+    if ((await fileSizeOf(uploadPath)) > MAX_UPLOAD_BYTES) {
+      throw new Error('图片超过 8MB，请选择较小的图片后重试');
+    }
   }
 
   const extMatch = (filename || '').match(/\.(jpg|jpeg|png|gif|webp)$/i);
@@ -284,13 +324,22 @@ const cloudUpload = async (filePath, filename, prefix) => {
   const cloudPath = `${prefix}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
   const uploadRes = await new Promise((resolve, reject) => {
-    wx.cloud.uploadFile({ cloudPath, filePath: uploadPath, success: resolve, fail: reject });
+    wx.cloud.uploadFile({
+      cloudPath,
+      filePath: uploadPath,
+      success: resolve,
+      fail: (error) => reject(new Error(describeUploadFailure(error, '云存储上传失败'))),
+    });
   });
   const fileID = uploadRes && uploadRes.fileID;
   if (!fileID) throw new Error('云存储上传失败');
 
   const tmpRes = await new Promise((resolve, reject) => {
-    wx.cloud.getTempFileURL({ fileList: [fileID], success: resolve, fail: reject });
+    wx.cloud.getTempFileURL({
+      fileList: [fileID],
+      success: resolve,
+      fail: (error) => reject(new Error(describeUploadFailure(error, '获取图片临时链接失败'))),
+    });
   });
   const tempFileURL = tmpRes && tmpRes.fileList && tmpRes.fileList[0] && tmpRes.fileList[0].tempFileURL;
   if (!tempFileURL) throw new Error('获取图片临时链接失败');
@@ -303,4 +352,4 @@ const cloudUpload = async (filePath, filename, prefix) => {
   return { fileKey: result.fileKey, url: result.url };
 };
 
-module.exports = { request, uploadFile, presignUpload, cloudUpload, RequestError, normalizeUserMessage };
+module.exports = { request, uploadFile, presignUpload, cloudUpload, RequestError, normalizeUserMessage, describeUploadFailure };

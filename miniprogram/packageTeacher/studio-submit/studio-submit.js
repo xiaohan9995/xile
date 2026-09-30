@@ -216,7 +216,8 @@ Page({
       success: async (res) => {
         const files = res.tempFiles || [];
         for (const file of files) {
-          if (file.size > 8 * 1024 * 1024) { wx.showToast({ title: '图片不能超过8MB', icon: 'none' }); continue; }
+          // 只拦明显过大的原图；上传前会压缩并按实际体积校验（见 utils/request cloudUpload）。
+          if (file.size > 20 * 1024 * 1024) { wx.showToast({ title: '图片过大，请选择较小的图片', icon: 'none' }); continue; }
           const path = file.tempFilePath;
           const matched = path.match(/[\w-]+\.(jpg|jpeg|png|gif|webp)$/i);
           const filename = matched ? matched[0] : 'studio.jpg';
@@ -251,7 +252,7 @@ Page({
       success: async (res) => {
         const file = (res.tempFiles || [])[0];
         if (!file) return;
-        if (file.size > 8 * 1024 * 1024) { wx.showToast({ title: '图片不能超过8MB', icon: 'none' }); return; }
+        if (file.size > 20 * 1024 * 1024) { wx.showToast({ title: '图片过大，请选择较小的图片', icon: 'none' }); return; }
         const path = file.tempFilePath;
         const matched = path.match(/[\w-]+\.(jpg|jpeg|png|gif|webp)$/i);
         const filename = matched ? matched[0] : 'studio-contact.jpg';
