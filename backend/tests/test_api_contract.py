@@ -260,6 +260,37 @@ def test_teacher_search_supports_exact_certificate_and_region_modes(client):
     assert all(item["city"] == "上海市" for item in region.get_json()["items"])
 
 
+def test_region_search_prefers_residences_and_falls_back_to_province_city(client):
+    token = _login_as_teacher(client, 1)
+    headers = {"Authorization": f"Bearer {token}"}
+    zhang = db.session.get(Teacher, 1)  # 上海市 / 静安区
+    li = db.session.get(Teacher, 2)  # 北京市 / 朝阳区
+    zhang.residences = "上海,杭州"
+    li.residences = None
+    li.country = "中国"
+    db.session.commit()
+
+    def names(term):
+        payload = client.get(
+            f"/api/mp/teachers/search?mode=region&q={term}", headers=headers
+        ).get_json()
+        return [item["name"] for item in payload["items"]]
+
+    # 1) 维护了常住地的教师按常住地命中。
+    assert names("上海") == ["善悦"]
+    # 2) 未维护常住地的教师逐级降级：国家 → 省份 → 城市。
+    assert names("中国") == ["清心"]  # 李四只填了国家
+    assert names("朝阳") == ["清心"]  # 省份（区县）级
+    assert names("北京") == ["清心"]  # 城市级
+    # 3) 维护了常住地的教师不再回退到国家/省份/城市：静安区在档案里但常住地没有。
+    assert names("静安") == []
+
+    # 清空常住地后即可按省份降级命中。
+    zhang.residences = None
+    db.session.commit()
+    assert names("静安") == ["善悦"]
+
+
 def test_teacher_detail_returns_public_certification_profile(client):
     token = _login_as_teacher(client, 1)
     response = client.get("/api/mp/teachers/1/summary", headers={"Authorization": f"Bearer {token}"})

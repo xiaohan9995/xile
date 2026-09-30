@@ -35,6 +35,23 @@ from . import mp_bp
 MAX_CERTIFICATE_IMAGE_LENGTH = 512
 
 
+def _region_match_filter(term):
+    """按地区检索的条件。
+
+    优先模糊匹配教师在小程序里维护的「经常居住地」；没有维护常住地的教师，
+    按 国家 → 省份 → 城市 逐级降级，先命中的一级为准。
+    """
+    like = f"%{escape_like(term)}%"
+    has_residences = db.and_(Teacher.residences.isnot(None), Teacher.residences != "")
+    no_residences = db.not_(has_residences)
+    return db.or_(
+        db.and_(has_residences, Teacher.residences.like(like)),
+        db.and_(no_residences, Teacher.country.like(like)),
+        db.and_(no_residences, Teacher.district.like(like)),
+        db.and_(no_residences, Teacher.city.like(like)),
+    )
+
+
 @mp_bp.get("/homepage")
 @jwt_required()
 def homepage_data():
@@ -141,8 +158,10 @@ def search_teachers():
             | (Teacher.xile_name.like(like_keyword))
             | (Teacher.certificate_no.like(like_keyword))
         )
-    if city:
-        query = query.filter(Teacher.city == city)
+    # 按地区检索：小程序地区筛选走 city 参数（选择器），也兼容 q 传关键词。
+    region_term = city or (keyword if mode == "region" else "")
+    if region_term:
+        query = query.filter(_region_match_filter(region_term))
     if tier:
         query = query.join(Teacher.tier).filter_by(code=tier)
 
@@ -161,9 +180,16 @@ def search_teachers():
         .all()
     )
 
-    cities = [row[0] for row in db.session.query(db.distinct(Teacher.city)).filter(
-        Teacher.status != "hidden", Teacher.city.isnot(None)
-    ).order_by(Teacher.city).all()]
+    # 地区筛选项：国家 / 省份 / 城市三级都列出，便于直接按省份或国家检索。
+    regions = set()
+    for column in (Teacher.country, Teacher.district, Teacher.city):
+        for (value,) in db.session.query(db.distinct(column)).filter(
+            Teacher.status != "hidden", column.isnot(None)
+        ).all():
+            text = (value or "").strip()
+            if text:
+                regions.add(text)
+    region_options = sorted(regions)
 
     return {
         "items": [_teacher_summary(t) for t in teachers],
@@ -171,7 +197,9 @@ def search_teachers():
         "page": page,
         "pageSize": page_size,
         "hasMore": page * page_size < total,
-        "cities": cities,
+        "regions": region_options,
+        # 兼容旧字段名（历史客户端读的是 cities）。
+        "cities": region_options,
     }
 
 
