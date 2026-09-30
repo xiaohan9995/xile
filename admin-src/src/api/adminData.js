@@ -27,6 +27,8 @@ export function mapAdminTeacher(teacher) {
     avatar: resolveAvatar(teacher.avatarUrl),
     avatarUrl: teacher.avatarUrl || '',
     certificateUrl: teacher.certificateUrl || '',
+    pendingCertificateUrl: teacher.pendingCertificateUrl || '',
+    certificateRejectReason: teacher.certificateRejectReason || '',
     phone: teacher.phone || '未登记',
     country: teacher.country || '',
     city: teacher.city,
@@ -205,6 +207,14 @@ export async function updateTeacher(id, data) {
 
 export async function deleteTeacher(id) {
   return api.delete(`/teachers/${id}`)
+}
+
+export async function approveTeacherCertificate(id) {
+  return api.post(`/teachers/${id}/certificate/approve`, {})
+}
+
+export async function rejectTeacherCertificate(id, reason) {
+  return api.post(`/teachers/${id}/certificate/reject`, { reason })
 }
 
 export async function createStudio(data) {

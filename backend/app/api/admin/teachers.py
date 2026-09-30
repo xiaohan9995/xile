@@ -55,6 +55,8 @@ def teacher_list():
             "residences": [item.strip() for item in (t.residences or "").split(",") if item.strip()],
             "avatarUrl": _file_url(t.avatar_url),
             "certificateUrl": _file_url(t.certificate_url),
+            "pendingCertificateUrl": _file_url(t.pending_certificate_url),
+            "certificateRejectReason": t.pending_certificate_reject_reason,
             **({
                 "idNumber": t.teacher_no,
                 "phone": t.detail.phone if t.detail else None,
@@ -96,6 +98,8 @@ def get_teacher_detail(teacher_id):
         "publicProfileSettings": json.loads(teacher.public_profile_settings or "{}"),
         "avatarUrl": _file_url(teacher.avatar_url),
         "certificateUrl": _file_url(teacher.certificate_url),
+        "pendingCertificateUrl": _file_url(teacher.pending_certificate_url),
+        "certificateRejectReason": teacher.pending_certificate_reject_reason,
         "phone": teacher.detail.phone if teacher.detail else None,
         "specialties": teacher.detail.specialties if teacher.detail else None,
         "teachingSummary": teacher.detail.teaching_summary if teacher.detail else None,
@@ -301,6 +305,54 @@ def delete_teacher(teacher_id):
     db.session.add(AuditLog(admin_id=1, action="delete_teacher", target_type="teacher", target_id=teacher.id))
     db.session.commit()
     return {"id": teacher.id, "status": "hidden"}
+
+
+# ─── 证书图片审核 ─────────────────────────────────────────────────────────────
+#
+# 教师在小程序端上传的新证书先存 pending_certificate_url，管理员通过后才
+# 覆盖 certificate_url；驳回时保留原因，教师端可见。
+
+
+@admin_bp.post("/teachers/<int:teacher_id>/certificate/approve")
+@require_admin_token
+@require_admin_roles("admin", "super_admin")
+def approve_teacher_certificate(teacher_id):
+    teacher = db.session.get(Teacher, teacher_id)
+    if teacher is None or teacher.status == "hidden":
+        return {"error": "not found"}, 404
+    if not teacher.pending_certificate_url:
+        return {"error": "该教师没有待审核的证书图片"}, 400
+
+    teacher.certificate_url = teacher.pending_certificate_url
+    teacher.pending_certificate_url = None
+    teacher.pending_certificate_reject_reason = None
+    db.session.add(AuditLog(admin_id=current_admin_id() or 1, action="approve_teacher_certificate",
+                            target_type="teacher", target_id=teacher.id))
+    db.session.commit()
+    return {"id": teacher.id, "certificateUrl": _file_url(teacher.certificate_url)}
+
+
+@admin_bp.post("/teachers/<int:teacher_id>/certificate/reject")
+@require_admin_token
+@require_admin_roles("admin", "super_admin")
+def reject_teacher_certificate(teacher_id):
+    teacher = db.session.get(Teacher, teacher_id)
+    if teacher is None or teacher.status == "hidden":
+        return {"error": "not found"}, 404
+    if not teacher.pending_certificate_url:
+        return {"error": "该教师没有待审核的证书图片"}, 400
+
+    payload = request.get_json(silent=True) or {}
+    reason = str(payload.get("reason") or "").strip()
+    if not reason:
+        return {"error": "请填写驳回原因"}, 400
+
+    teacher.pending_certificate_url = None
+    teacher.pending_certificate_reject_reason = reason[:256]
+    db.session.add(AuditLog(admin_id=current_admin_id() or 1, action="reject_teacher_certificate",
+                            target_type="teacher", target_id=teacher.id))
+    db.session.commit()
+    return {"id": teacher.id, "reason": teacher.pending_certificate_reject_reason}
 
 
 # ─── Import ──────────────────────────────────────────────────────────────────

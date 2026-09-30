@@ -70,6 +70,7 @@
               <span :class="['expiry-text', `expiry-text--${expiryStatus(teacher)}`]">{{ teacher.expiryDate }}</span>
             </td>
             <td class="table-actions">
+              <button v-if="teacher.pendingCertificateUrl" class="table-action table-action--review" @click="openCertReview(teacher)">审核证书</button>
               <button class="table-action" @click="openEdit(teacher)">编辑</button>
               <button class="table-action" @click="openAccount(teacher)">设置密码</button>
               <button class="danger-action" @click="handleDelete(teacher)">删除</button>
@@ -280,13 +281,44 @@
         </div>
       </form>
     </div>
+
+    <!-- Certificate Review Modal -->
+    <div v-if="certReview.visible" class="modal-backdrop" @click.self="closeCertReview">
+      <div class="admin-modal">
+        <div class="modal-head">
+          <h2>证书图片审核 — {{ certReview.teacher && certReview.teacher.name }}</h2>
+          <button type="button" @click="closeCertReview">×</button>
+        </div>
+        <div class="cert-review">
+          <div class="cert-review__col">
+            <span class="cert-review__label">当前证书</span>
+            <img v-if="certReview.teacher && certReview.teacher.certificateUrl" class="cert-review__img" :src="certReview.teacher.certificateUrl" alt="当前证书" />
+            <span v-else class="cert-review__empty">暂无</span>
+          </div>
+          <div class="cert-review__col">
+            <span class="cert-review__label">待审核证书</span>
+            <img v-if="certReview.teacher && certReview.teacher.pendingCertificateUrl" class="cert-review__img" :src="certReview.teacher.pendingCertificateUrl" alt="待审核证书" />
+            <span v-else class="cert-review__empty">暂无</span>
+          </div>
+        </div>
+        <label class="field-full">
+          驳回原因（驳回时必填）
+          <input v-model="certReview.reason" placeholder="如：证书图片模糊，请重新上传" />
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="sync-btn" @click="closeCertReview">取消</button>
+          <button type="button" class="sync-btn" :disabled="certReview.busy" @click="handleCertReject">驳回</button>
+          <button type="button" class="primary-btn" :disabled="certReview.busy" @click="handleCertApprove">通过并更新</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import ImagePreview from '../components/ImagePreview.vue'
-import { fetchAdminTeachers, createTeacher, updateTeacher, deleteTeacher, createTeacherAccount, uploadAdminAsset } from '../api/adminData'
+import { fetchAdminTeachers, createTeacher, updateTeacher, deleteTeacher, createTeacherAccount, uploadAdminAsset, approveTeacherCertificate, rejectTeacherCertificate } from '../api/adminData'
 import { useToast } from '../composables/useToast'
 import { normalizeMultiline } from '../utils/text.js'
 
@@ -547,6 +579,58 @@ async function handleDelete(teacher) {
 }
 
 const showAccount = ref(false)
+
+// 证书图片审核：教师在小程序提交的新证书，通过后才替换正式证书图片。
+const certReview = reactive({ visible: false, busy: false, reason: '', teacher: null })
+
+function openCertReview(teacher) {
+  certReview.teacher = teacher
+  certReview.reason = ''
+  certReview.busy = false
+  certReview.visible = true
+}
+
+function closeCertReview() {
+  certReview.visible = false
+  certReview.teacher = null
+  certReview.reason = ''
+}
+
+async function handleCertApprove() {
+  const teacher = certReview.teacher
+  if (!teacher || certReview.busy) return
+  certReview.busy = true
+  try {
+    await approveTeacherCertificate(teacher.id)
+    toast('证书图片已更新')
+    closeCertReview()
+    await loadTeachers()
+  } catch (e) {
+    toast(e?.response?.data?.error || '审核失败，请稍后重试', 'error')
+  } finally {
+    certReview.busy = false
+  }
+}
+
+async function handleCertReject() {
+  const teacher = certReview.teacher
+  if (!teacher || certReview.busy) return
+  if (!certReview.reason.trim()) {
+    toast('请填写驳回原因', 'error')
+    return
+  }
+  certReview.busy = true
+  try {
+    await rejectTeacherCertificate(teacher.id, certReview.reason.trim())
+    toast('已驳回并通知教师', 'info')
+    closeCertReview()
+    await loadTeachers()
+  } catch (e) {
+    toast(e?.response?.data?.error || '驳回失败，请稍后重试', 'error')
+  } finally {
+    certReview.busy = false
+  }
+}
 const accountDraft = reactive({ teacherId: null, name: '' })
 
 function openAccount(teacher) {
@@ -620,6 +704,51 @@ async function uploadTeacherAsset(event, assetType, targetField) {
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
+}
+
+.table-action--review {
+  color: #b45309;
+  font-weight: 700;
+}
+
+.cert-review {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.cert-review__col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid #eef0ee;
+  border-radius: 16px;
+  padding: 12px;
+  background: #fbfcfb;
+}
+
+.cert-review__label {
+  font-size: 12px;
+  font-weight: 800;
+  color: #6b7280;
+}
+
+.cert-review__img {
+  width: 100%;
+  height: 180px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.cert-review__empty {
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9aa1a8;
+  font-size: 13px;
 }
 
 .cert-no-row {

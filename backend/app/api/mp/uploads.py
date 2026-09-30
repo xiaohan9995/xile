@@ -115,7 +115,7 @@ def get_upload_presign():
     if not ext:
         return {"error": f"file type not allowed, accepted: {', '.join(sorted(ALLOWED_EXTENSIONS))}"}, 400
     prefix = (payload.get("prefix") or "reviews").strip()
-    if prefix not in ("reviews", "studio-images", "banners"):
+    if prefix not in ("reviews", "studio-images", "banners", "certificates"):
         return {"error": "invalid prefix"}, 400
     key = f"{prefix}/{user.teacher_id}/{uuid.uuid4().hex}{ext}"
 
@@ -248,7 +248,7 @@ def upload_cloud_file():
 
     payload = request.get_json(silent=True) or {}
     prefix = (payload.get("prefix") or "reviews").strip()
-    if prefix not in ("reviews", "studio-images", "banners"):
+    if prefix not in ("reviews", "studio-images", "banners", "certificates"):
         return {"error": "invalid prefix"}, 400
     if prefix == "banners":
         teacher = db.session.get(Teacher, user.teacher_id)

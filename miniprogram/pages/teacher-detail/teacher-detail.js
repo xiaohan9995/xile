@@ -1,4 +1,4 @@
-const { request } = require('../../utils/request');
+const { request, cloudUpload } = require('../../utils/request');
 const auth = require('../../utils/auth');
 const { normalizeMultiline } = require('../../utils/text');
 
@@ -42,6 +42,7 @@ Page({
     loading: false,
     error: '',
     bioExpanded: false,
+    certUploading: false,
   },
 
   onLoad(options) {
@@ -101,5 +102,45 @@ Page({
       return;
     }
     wx.previewImage({ urls: [url], current: url });
+  },
+
+  // 本人上传新证书：先直传云存储，再提交待审核；审核通过后才会替换证书图片。
+  chooseCertificateImage() {
+    const teacher = this.data.teacher || {};
+    if (!teacher.isOwner || this.data.certUploading) return;
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album', 'camera'],
+      sizeType: ['compressed'],
+      success: async (res) => {
+        const file = (res.tempFiles || [])[0];
+        if (!file) return;
+        if (file.size > 20 * 1024 * 1024) {
+          wx.showToast({ title: '图片过大，请选择较小的图片', icon: 'none' });
+          return;
+        }
+        const matched = (file.tempFilePath || '').match(/[\w-]+\.(jpg|jpeg|png|gif|webp)$/i);
+        const filename = matched ? matched[0] : 'certificate.jpg';
+        this.setData({ certUploading: true });
+        wx.showLoading({ title: '上传中' });
+        try {
+          const { url } = await cloudUpload(file.tempFilePath, filename, 'certificates');
+          await request({
+            url: '/api/mp/teachers/me/certificate',
+            method: 'POST',
+            data: { certificateUrl: url },
+            silent: true,
+          });
+          await this.loadTeacher(teacher.id);
+          wx.showToast({ title: '已提交，等待管理员审核', icon: 'none' });
+        } catch (error) {
+          wx.showToast({ title: (error && error.message) || '证书上传失败，请稍后重试', icon: 'none' });
+        } finally {
+          wx.hideLoading();
+          this.setData({ certUploading: false });
+        }
+      },
+    });
   },
 });

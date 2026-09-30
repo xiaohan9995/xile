@@ -27,6 +27,9 @@ class Teacher(db.Model):
     residences = db.Column(db.String(255))
     public_profile_settings = db.Column(db.Text)
     certificate_url = db.Column(db.Text)
+    # 教师在小程序端提交的证书图片，管理员审核通过后才替换 certificate_url。
+    pending_certificate_url = db.Column(db.Text)
+    pending_certificate_reject_reason = db.Column(db.String(256))
     avatar_url = db.Column(db.Text)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())

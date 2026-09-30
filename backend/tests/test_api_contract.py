@@ -355,6 +355,93 @@ def _login_as_teacher(client, teacher_id=1):
     return resp.get_json()["token"]
 
 
+def test_teacher_certificate_upload_waits_for_admin_review(client):
+    teacher = db.session.get(Teacher, 1)
+    original_certificate = teacher.certificate_url
+    token = _login_as_teacher(client, 1)
+    headers = {"Authorization": f"Bearer {token}"}
+
+    submit = client.post(
+        "/api/mp/teachers/me/certificate",
+        json={"certificateUrl": "certificates/1/new-cert.png"},
+        headers=headers,
+    )
+
+    assert submit.status_code == 200
+    assert submit.get_json()["status"] == "pending"
+    # 审核通过前，正式证书图片保持不变。
+    db.session.expire_all()
+    assert db.session.get(Teacher, 1).certificate_url == original_certificate
+    assert db.session.get(Teacher, 1).pending_certificate_url == "certificates/1/new-cert.png"
+
+    # 本人可见待审核状态，其他教师看不到。
+    own = client.get("/api/mp/teachers/1/summary", headers=headers).get_json()
+    assert own["isOwner"] is True
+    assert own["pendingCertificateUrl"]
+
+    other_token = _login_as_teacher(client, 2)
+    other = client.get(
+        "/api/mp/teachers/1/summary",
+        headers={"Authorization": f"Bearer {other_token}"},
+    ).get_json()
+    assert not other.get("isOwner")
+    assert "pendingCertificateUrl" not in other
+
+
+def test_admin_approves_pending_certificate_and_updates_image(client):
+    teacher = db.session.get(Teacher, 1)
+    teacher.pending_certificate_url = "certificates/1/approved.png"
+    teacher.pending_certificate_reject_reason = None
+    db.session.commit()
+
+    response = client.post(
+        "/api/admin/teachers/1/certificate/approve",
+        headers={"Authorization": "Bearer test-admin-token"},
+    )
+
+    assert response.status_code == 200
+    db.session.expire_all()
+    updated = db.session.get(Teacher, 1)
+    assert updated.certificate_url == "certificates/1/approved.png"
+    assert updated.pending_certificate_url is None
+
+
+def test_admin_rejects_pending_certificate_with_reason(client):
+    teacher = db.session.get(Teacher, 1)
+    teacher.pending_certificate_url = "certificates/1/rejected.png"
+    db.session.commit()
+
+    rejected = client.post(
+        "/api/admin/teachers/1/certificate/reject",
+        json={"reason": "证书图片模糊，请重新上传"},
+        headers={"Authorization": "Bearer test-admin-token"},
+    )
+    assert rejected.status_code == 200
+
+    db.session.expire_all()
+    updated = db.session.get(Teacher, 1)
+    assert updated.pending_certificate_url is None
+    assert updated.pending_certificate_reject_reason == "证书图片模糊，请重新上传"
+
+    # 驳回原因回传本人，便于页面提示。
+    token = _login_as_teacher(client, 1)
+    own = client.get(
+        "/api/mp/teachers/1/summary",
+        headers={"Authorization": f"Bearer {token}"},
+    ).get_json()
+    assert own["certificateRejectReason"] == "证书图片模糊，请重新上传"
+
+    # 驳回必须填原因。
+    teacher.pending_certificate_url = "certificates/1/rejected-2.png"
+    db.session.commit()
+    empty_reason = client.post(
+        "/api/admin/teachers/1/certificate/reject",
+        json={},
+        headers={"Authorization": "Bearer test-admin-token"},
+    )
+    assert empty_reason.status_code == 400
+
+
 def test_mp_review_submission_creates_admin_visible_review_with_files(client):
     token = _login_as_teacher(client, 1)
     response = client.post(

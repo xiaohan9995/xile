@@ -78,6 +78,20 @@
         <image wx:if="{{teacher.certificateUrl}}" class="cert-preview-image" src="{{teacher.certificateUrl}}" mode="aspectFit" />
         <text wx:else class="cert-preview-text">喜乐瑜伽教师认证证书</text>
       </view>
+      <!-- 本人可提交新证书图片，需管理员审核通过后才会替换 -->
+      <view wx:if="{{teacher.isOwner}}" class="cert-upload">
+        <text wx:if="{{teacher.pendingCertificateUrl}}" class="cert-upload__status">新证书已提交，等待管理员审核</text>
+        <text wx:elif="{{teacher.certificateRejectReason}}" class="cert-upload__status cert-upload__status--reject">上次提交未通过：{{teacher.certificateRejectReason}}</text>
+        <button
+          class="cert-upload__button"
+          loading="{{certUploading}}"
+          disabled="{{certUploading}}"
+          bindtap="chooseCertificateImage"
+        >
+          {{teacher.certificateUrl ? '更换证书图片' : '上传证书图片'}}
+        </button>
+        <text class="cert-upload__hint">支持 JPG/PNG/WebP/GIF，上传后需管理员审核</text>
+      </view>
     </view>
 
     <!-- Verification note -->

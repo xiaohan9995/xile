@@ -31,6 +31,9 @@ from .helpers import (
 )
 from . import mp_bp
 
+# 证书图片地址（对象键或签名地址）的最大长度。
+MAX_CERTIFICATE_IMAGE_LENGTH = 512
+
 
 @mp_bp.get("/homepage")
 @jwt_required()
@@ -176,7 +179,46 @@ def search_teachers():
 @jwt_required()
 def get_teacher_summary(teacher_id):
     teacher = Teacher.query.filter(Teacher.id == teacher_id, Teacher.status != "hidden").first_or_404()
-    return _teacher_profile(teacher)
+    profile = _teacher_profile(teacher)
+    # 本人查看自己的资料时，额外下发「证书待审核」状态，供详情页展示与提交入口使用。
+    if _is_owner_teacher(_get_current_user(), teacher_id):
+        profile.update(
+            {
+                "isOwner": True,
+                "pendingCertificateUrl": file_url(teacher.pending_certificate_url),
+                "certificateRejectReason": teacher.pending_certificate_reject_reason,
+            }
+        )
+    return profile
+
+
+@mp_bp.post("/teachers/me/certificate")
+@limiter.limit("10 per minute")
+@jwt_required()
+def submit_my_certificate():
+    """教师提交证书图片，等待管理员审核；审核通过前仍展示原证书。"""
+    user = db.session.get(User, int(get_jwt_identity()))
+    if not user or not user.teacher_id:
+        return {"error": "not a teacher"}, 403
+    teacher = db.session.get(Teacher, user.teacher_id)
+    if not teacher or teacher.status == "hidden":
+        return {"error": "teacher not found"}, 404
+
+    payload = request.get_json(silent=True) or {}
+    certificate_ref = str(payload.get("certificateUrl") or "").strip()
+    if not certificate_ref:
+        return {"error": "请先上传证书图片"}, 400
+    if len(certificate_ref) > MAX_CERTIFICATE_IMAGE_LENGTH:
+        return {"error": "证书图片地址过长，请重新上传"}, 400
+
+    teacher.pending_certificate_url = storage_reference(certificate_ref) or certificate_ref
+    teacher.pending_certificate_reject_reason = None
+    db.session.commit()
+    return {
+        "status": "pending",
+        "pendingCertificateUrl": file_url(teacher.pending_certificate_url),
+        "certificateUrl": file_url(teacher.certificate_url),
+    }
 
 
 def _certification_payload(teacher, include_reviews=True):
