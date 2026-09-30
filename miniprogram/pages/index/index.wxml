@@ -1,12 +1,12 @@
 <view class="home-page">
   <!-- Hero visual -->
   <view class="home-visual">
-    <image class="home-visual__img" src="{{homeBanner || 'https://images.unsplash.com/photo-1545389336-cf090694435e?auto=format&fit=crop&w=640&q=80'}}" mode="aspectFill" alt="" />
+    <!-- 后台未配置横幅图时不渲染图片，仅保留底色遮罩与标题；不再使用外部兜底图 -->
+    <image wx:if="{{homeBanner}}" class="home-visual__img" src="{{homeBanner}}" mode="aspectFill" alt="" />
     <view class="home-visual__overlay"></view>
     <view class="home-visual__text">
       <text class="home-visual__eyebrow">JOY YOGA · TEACHER CERTIFICATION</text>
       <text class="home-visual__title">喜乐瑜伽 · 教师管理认证平台</text>
-      <text class="home-visual__tagline">YOGA OF JOY TEACHER CERTIFICATION</text>
     </view>
   </view>
 
