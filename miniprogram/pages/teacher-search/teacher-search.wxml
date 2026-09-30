@@ -11,11 +11,12 @@
     <view class="search-mode-row">
       <view wx:for="{{searchModes}}" wx:key="id" class="search-mode {{searchMode === item.id ? 'search-mode--active' : ''}}" bindtap="switchMode" data-mode="{{item.id}}">{{item.label}}</view>
     </view>
-    <view class="search-box" wx:if="{{searchMode === 'name' || searchMode === 'certificate'}}">
+    <!-- 关键词搜索框：按姓名 / 证书编号 / 地区 三种模式均可用 -->
+    <view class="search-box" wx:if="{{searchMode === 'name' || searchMode === 'certificate' || searchMode === 'region'}}">
       <input
         class="search-input"
         value="{{keyword}}"
-        placeholder="{{searchMode === 'certificate' ? '请输入完整教师证书编号' : '请输入教师姓名或喜乐名'}}"
+        placeholder="{{searchMode === 'certificate' ? '请输入完整教师证书编号' : (searchMode === 'region' ? '请输入地区，如 北京 / 上海' : '请输入教师姓名或喜乐名')}}"
         placeholder-class="search-placeholder"
         confirm-type="search"
         bindinput="onInput"
@@ -26,20 +27,14 @@
       </view>
     </view>
 
-    <!-- Filter row with real pickers: region→city, tier→level; hidden for name/certificate -->
-    <view class="filter-row" wx:if="{{searchMode === 'region' || searchMode === 'tier'}}">
-      <!-- 按地区 filters by city; 按认证等级 filters by level. -->
-      <picker wx:if="{{searchMode === 'region'}}" mode="selector" range="{{cityOptions}}" value="{{cityIndex}}" bindchange="onCityChange">
-        <view class="filter-pill {{cityIndex > 0 ? 'filter-pill--active' : ''}}">
-          {{cityIndex > 0 ? cityOptions[cityIndex] : '浏览全部'}}
-        </view>
-      </picker>
-      <picker wx:else mode="selector" range="{{tierOptions}}" value="{{tierIndex}}" bindchange="onTierChange">
+    <!-- 过滤行：仅「按认证等级」显示等级 picker；「按地区」已改为关键词搜索，不再显示“浏览全部” -->
+    <view class="filter-row" wx:if="{{searchMode === 'tier'}}">
+      <picker mode="selector" range="{{tierOptions}}" value="{{tierIndex}}" bindchange="onTierChange">
         <view class="filter-pill {{tierIndex > 0 ? 'filter-pill--active' : ''}}">
-          {{tierIndex > 0 ? tierOptions[tierIndex] : '浏览全部'}}
+          {{tierIndex > 0 ? tierOptions[tierIndex] : '点击选择认证等级'}}
         </view>
       </picker>
-      <view class="filter-pill filter-pill--reset" wx:if="{{tierIndex > 0 || cityIndex > 0}}" bindtap="resetFilters">
+      <view class="filter-pill filter-pill--reset" wx:if="{{tierIndex > 0}}" bindtap="resetFilters">
         重置
       </view>
     </view>

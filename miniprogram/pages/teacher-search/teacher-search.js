@@ -10,12 +10,13 @@ Page({
   data: {
     statusBarHeight: 20,
     keyword: '',
-    searchMode: 'region',
+    // 默认不选中任何筛选：进入页面按默认排序浏览全部教师。
+    searchMode: '',
     searchModes: [
       { id: 'name', label: '按姓名/喜乐名' },
       { id: 'certificate', label: '按证书编号' },
-      { id: 'tier', label: '按认证等级' },
       { id: 'region', label: '按地区' },
+      { id: 'tier', label: '按认证等级' },
     ],
     searched: false,
     // Filter state
@@ -97,7 +98,9 @@ Page({
 
   _buildUrl(page) {
     const { keyword, searchMode, tierIndex, tierOptions, cityIndex, cityOptions } = this.data;
-    let url = `/api/mp/teachers/search?mode=${searchMode}&q=${encodeURIComponent(keyword)}&page=${page}&pageSize=20`;
+    // 未选择筛选时用 region 模式但不带关键词，后端不做过滤，仍按默认排序返回。
+    const mode = searchMode || 'region';
+    let url = `/api/mp/teachers/search?mode=${mode}&q=${encodeURIComponent(keyword)}&page=${page}&pageSize=20`;
     if (tierIndex > 0) {
       url += `&tier=${encodeURIComponent(tierOptions[tierIndex])}`;
     }
@@ -108,10 +111,6 @@ Page({
   },
 
   async doSearch() {
-    if ((this.data.searchMode === 'name' || this.data.searchMode === 'certificate') && !this.data.keyword.trim()) {
-      this.setData({ searched: false, teachers: [], error: '' });
-      return;
-    }
     this.setData({ loading: true, error: '' });
     try {
       const payload = await request({ url: this._buildUrl(1) });
