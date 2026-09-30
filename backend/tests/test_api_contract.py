@@ -386,6 +386,34 @@ def _login_as_teacher(client, teacher_id=1):
     return resp.get_json()["token"]
 
 
+def test_changing_teacher_id_number_keeps_login_account_in_sync(client):
+    """改教师身份证号后登录账号与初始密码一起同步，避免只能回后台重设密码。"""
+    admin = {"Authorization": "Bearer test-admin-token"}
+
+    created = client.post("/api/admin/teacher-accounts", json={"teacherId": 1}, headers=admin)
+    assert created.status_code == 201
+    assert created.get_json()["username"] == "310101199001011231"
+    # 初始密码 = 身份证号后六位
+    assert client.post(
+        "/api/mp/auth/password-login",
+        json={"username": "310101199001011231", "password": "011231"},
+    ).status_code == 200
+
+    assert client.put(
+        "/api/admin/teachers/1",
+        json={"idNumber": "110101199001019999"},
+        headers=admin,
+    ).status_code == 200
+
+    user = User.query.filter_by(teacher_id=1).first()
+    assert user.username == "110101199001019999"
+    # 仍是初始密码状态：密码同步为新号码后六位，教师直接就能登录
+    assert client.post(
+        "/api/mp/auth/password-login",
+        json={"username": "110101199001019999", "password": "019999"},
+    ).status_code == 200
+
+
 def test_teacher_certificate_upload_waits_for_admin_review(client):
     teacher = db.session.get(Teacher, 1)
     original_certificate = teacher.certificate_url

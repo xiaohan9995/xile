@@ -7,6 +7,7 @@ from flask import g, request, send_file
 
 from ...extensions import db
 from ...models import AuditLog, ImportBatch, ImportError, Teacher, TeacherDetail, TeacherTier
+from ...services.auth_service import sync_teacher_account_identifier
 from ...services.teacher_service import create_teacher as svc_create_teacher
 from ...services.teacher_import import (
     apply_plan,
@@ -134,6 +135,9 @@ def update_teacher(teacher_id):
         if duplicate:
             return {"error": "该身份证号已关联其他教师"}, 409
         teacher.teacher_no = id_number
+        # 身份证号就是教师登录账号：改了号码必须同步账号，否则教师无法登录，
+        # 只能回到后台重新「设置密码」。
+        sync_teacher_account_identifier(teacher)
     if "certificateNo" in payload:
         certificate_no = str(payload["certificateNo"] or "").strip().upper() or None
         duplicate = Teacher.query.filter(Teacher.certificate_no == certificate_no, Teacher.id != teacher.id).first() if certificate_no else None

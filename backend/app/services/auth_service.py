@@ -312,6 +312,36 @@ def _ensure_initial_teacher_password(user, teacher):
     user.must_change_password = True
 
 
+def sync_teacher_account_identifier(teacher):
+    """教师身份证号（=登录账号）变更后同步关联账号，避免旧账号/初始密码失效。
+
+    管理端改了教师身份证号却不同步账号时会出现：
+    用新身份证号登录找不到账号，用旧身份证号登录又与档案不一致，只能重新「设置密码」。
+
+    同步规则：
+    - 仍是初始密码（must_change_password）或还没有密码：账号与密码一起更新为
+      新身份证号及其后六位，保持「初始密码 = 身份证后六位」成立；
+    - 教师已自行改过密码：只更新登录账号，保留教师自己的密码；
+    - 没有账号、新号码不足 6 位、或新号码已被其他账号占用：不改动，
+      交由管理端「设置密码」处理。
+    """
+    id_number = (teacher.teacher_no or "").strip().upper()
+    if len(id_number) < 6:
+        return None
+    user = User.query.filter_by(teacher_id=teacher.id).first()
+    if user is None:
+        return None
+    duplicate = User.query.filter(User.username == id_number, User.id != user.id).first()
+    if duplicate:
+        return None
+    user.username = id_number
+    if user.must_change_password or not user.password_hash:
+        user.password_hash = generate_password_hash(id_number[-6:], method="pbkdf2:sha256")
+        user.must_change_password = True
+        user.session_version = (user.session_version or 0) + 1
+    return user
+
+
 def link_wechat_user_to_teacher_by_password(user, id_number, password):
     """Bind a WeChat user after verifying the teacher password account."""
     if not user or not user.openid:
