@@ -7,8 +7,9 @@
   </view>
 
   <!-- Studio Hero Section -->
-  <view class="studio-hero">
-    <image class="studio-hero__bg" src="{{studioBanner || 'https://images.unsplash.com/photo-1593810450967-f9c42742e326?auto=format&fit=crop&w=760&q=84'}}" mode="aspectFill" />
+  <!-- 后台未配置横幅图时不展示该区域，不再使用兜底占位图 -->
+  <view wx:if="{{studioBanner}}" class="studio-hero">
+    <image class="studio-hero__bg" src="{{studioBanner}}" mode="aspectFill" />
   </view>
 
   <!-- Search Box -->
